@@ -11,17 +11,17 @@ compete_calc(
   target_tree,
   type = c("ID", "coordinates"),
   tolerance = 0.1,
-  method = c("Hegyi", "CI12", "CI13")
+  method = c("all", "Hegyi", "CI12", "CI13")
 )
 }
 \arguments{
-\item{path}{character string path to .csv file with inventory data with structure (ID, X, Y, DBH, h)}
+\item{path}{character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H)}
 
 \item{radius}{numeric, Search radius around target tree, wherein all neighboring trees are classified as competitors}
 
 \item{dbh_threshold}{numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m)}
 
-\item{target_tree}{numeric (ID) or a vector of coordinates}
+\item{target_tree}{numeric (ID) or a vector of coordinates (X, Y)}
 
 \item{type}{character string assigning the type of input of target_tree "ID" or "coordinates"}
 

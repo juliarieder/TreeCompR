@@ -1,0 +1,23 @@
+---
+title: "TreeCompR"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{TreeCompR}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+This is a Text by ChatGPT (placeholder)
+This R package is designed for the quantitative analysis of individual tree competition within forest ecosystems. It accepts inputs such as LiDAR point clouds (currently only as .txt files) of forest plots or individual target trees, and inventory tables (including tree ID, X, Y, DBH, H). By leveraging a range of tools and algorithms, it allows to assess and measure tree-to-tree competition dynamics, providing valuable insights for forest ecology, inventory assessments, and forest management strategies. This package facilitates a systematic approach to understanding the interactions and resource competition among trees, enabling informed decision-making in forest management.
+
+```{r setup}
+library(TreeCompR)
+```
