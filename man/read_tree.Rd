@@ -15,3 +15,9 @@ data frame with X,Y,Z of the tree point cloud
 \description{
 Read a single tree point cloud
 }
+\examples{
+\dontrun{
+# Read the tree point cloud
+tree <- read_tree(path = "path/to/tree_point_cloud.txt")
+}
+}

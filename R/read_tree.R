@@ -6,6 +6,10 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # Read the tree point cloud
+#' tree <- read_tree(path = "path/to/tree_point_cloud.txt")
+#' }
 read_tree <- function(path){
 data <- data.table::fread(path)
 tree <- data.frame(data[, 1:3])

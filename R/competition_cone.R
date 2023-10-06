@@ -1,4 +1,4 @@
-#' Quantify Tree Crown Competition (Cone Method)
+#' Quantify Tree Crown Competition (Cone Method or cylinder method)
 #'
 #' @param forest_path character path to file of neighborhood point cloud (including the target tree and neighbors, not height normalized, can include ground points)
 #' @param tree_path character path to file of target tree point cloud
@@ -9,7 +9,14 @@
 #' @export
 #'
 #' @examples
-competition_cone <- function(forest_path, tree_path, comp_method = c("cone", "cylinder"), cylinder_r = 4){
+#' \dontrun{
+#' #Quantify crown competition for a single tree within a plot using cone method, opening angle 60°, spanned in 50 % of target tree's height
+#' Comp_cone <- competition_pc(forest_path = "path/to/forest_pc.txt", tree_path = "path/to/tree_pc.txt", comp_method = "cone")
+#'
+#' #Quantify competition for a single tree within a plot using cylinder method with a cylinder radius of 4 m
+#' Comp_cyl <- competition_pc(forest_path = "path/to/forest_pc.txt", tree_path = "path/to/tree_pc.txt", comp_method = "cylinder", cylinder_r = 4)
+#' }
+competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cylinder"), cylinder_r = 4){
   tree <- read_tree(tree_path)
   pos <- position(tree)
   h <- height(tree)

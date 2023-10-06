@@ -15,3 +15,11 @@ X,Y,Z coordinates of the tree's position
 \description{
 Position of the Tree from Point Cloud
 }
+\examples{
+\dontrun{
+# Read the tree point cloud
+tree <- read_tree(path = "path/to/tree_point_cloud.txt")
+# Get the position of this tree (X, Y, Z)
+pos <- position(tree)
+}
+}

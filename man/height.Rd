@@ -15,3 +15,13 @@ tree height (numeric)
 \description{
 Tree Height of the Point Cloud
 }
+\examples{
+\dontrun{
+# Read the tree point cloud
+tree <- read_tree(path = "path/to/tree_point_cloud.txt")
+# Get the position of this tree (X, Y, Z)
+pos <- position(tree)
+# Calculate the tree height in m
+H_tree <- height(tree)
+}
+}

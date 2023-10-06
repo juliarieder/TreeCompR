@@ -7,6 +7,12 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # Read the tree point cloud
+#' tree <- read_tree(path = "path/to/tree_point_cloud.txt")
+#' # Get the position of this tree (X, Y, Z)
+#' pos <- position(tree)
+#' }
 position <- function(tree){
   lowest <- tree[order, tree$Z, decreasing = FALSE, ][1:50, ]
   return(c(stats::median(lowest$X), stats::median(lowest$Y), stats::median(lowest$Z)))
@@ -20,6 +26,14 @@ position <- function(tree){
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # Read the tree point cloud
+#' tree <- read_tree(path = "path/to/tree_point_cloud.txt")
+#' # Get the position of this tree (X, Y, Z)
+#' pos <- position(tree)
+#' # Calculate the tree height in m
+#' H_tree <- height(tree)
+#' }
 height <- function(tree){
   h <- max(tree$Z) - min(tree$Z)
   return(h)

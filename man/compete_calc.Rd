@@ -35,3 +35,14 @@ numeric. Competition Index value
 \description{
 Calculating distance-dependant Tree Competition Using Inventory Data (field or from LiDAR data)
 }
+\examples{
+\dontrun{
+# Calculate some distance-dependent Competition Indices for one tree inside a forest plot, using the coordinates of the target tree
+target_coords <- c(15, 9)
+Competition_indices <- compete_calc(path = "path/to/inventory_table.csv", dbh_threshold = 0.1, target_tree = target_coords, type = "coordinates", tolerance =0.1, method = "all")
+
+# Calculate the Hegyi-Index for one tree inside a forest plot, giving the ID of the target tree
+ID_tree <- 5
+Competition_indices <- compete_calc(path = "path/to/inventory_table.csv", dbh_threshold = 0.1, target_tree = ID_tree, type = "ID", tolerance =0.1, method = "Hegyi"
+#}
+}
