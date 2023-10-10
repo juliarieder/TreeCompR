@@ -60,7 +60,7 @@ competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cyli
       points <- nrow(points)
       voxel <- neighbor %>% VoxR::vox(res = 0.1)
       colnames(voxel) <- c("X", "Y", "Z", "npts")
-      voxel <- voxel %>% dplyr::mutate(dist = sqrt((.data$X-pos[1])^2 + (.data$Y-pos[2])^2)) %>% dplyr::filter(.data$dist <= .data$cyl_r)
+      voxel <- voxel %>% dplyr::mutate(dist = sqrt((.data$X-pos[1])^2 + (.data$Y-pos[2])^2)) %>% dplyr::filter(.data$dist <= cyl_r)
       voxel <- nrow(voxel)
     } else {
       stop("Invalid method. Use 'cone' or 'cylinder'.")
