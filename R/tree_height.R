@@ -14,7 +14,7 @@
 #' pos <- position(tree)
 #' }
 position <- function(tree){
-  lowest <- tree[order, tree$Z, decreasing = FALSE, ][1:50, ]
+  lowest <- tree[order(tree$Z, decreasing = FALSE), ][1:50, ]
   return(c(stats::median(lowest$X), stats::median(lowest$Y), stats::median(lowest$Z)))
 }
 
