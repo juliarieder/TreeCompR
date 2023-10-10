@@ -29,9 +29,9 @@ opening angle 60°, spanned in 50 \% of target tree's height
 \examples{
 \dontrun{
 #Quantify crown competition for a single tree within a plot using cone method
-CI_cone <- competition_pc(forest_path = "path/to/forest_pc.txt", tree_path = "path/to/tree_pc.txt", comp_method = "cone")
+CI_cone <- competition_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt", "cone")
 
 #Quantify competition for a single tree within a plot using cylinder method with radius 4 m
-CI_cyl <- competition_pc(forest_path = "path/to/forest_pc.txt", tree_path = "path/to/tree_pc.txt", comp_method = "cylinder", cyl_r = 4)
+CI_cyl <- competition_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt", "cylinder", cyl_r = 4)
 }
 }

@@ -7,7 +7,7 @@
 compete_calc(
   path,
   radius = 10,
-  dbh_threshold = 0.1,
+  dbh_thr = 0.1,
   target_tree,
   type = c("ID", "coordinates"),
   tolerance = 0.1,
@@ -19,7 +19,7 @@ compete_calc(
 
 \item{radius}{numeric, Search radius around target tree, wherein all neighboring trees are classified as competitors}
 
-\item{dbh_threshold}{numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m)}
+\item{dbh_thr}{numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m)}
 
 \item{target_tree}{numeric (ID) or a vector of coordinates (X, Y)}
 
@@ -37,12 +37,13 @@ Calculating distance-dependant Tree Competition Using Inventory Data (field or f
 }
 \examples{
 \dontrun{
-# Calculate some distance-dependent Competition Indices for one tree inside a forest plot, using the coordinates of the target tree
-target_coords <- c(15, 9)
-Competition_indices <- compete_calc(path = "path/to/inventory_table.csv", dbh_threshold = 0.1, target_tree = target_coords, type = "coordinates", tolerance =0.1, method = "all")
+# Calculate some distance-dependent CIs for one tree inside forest plot
+# input coordinates target tree
+ttree <- c(15, 9)
+CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ttree, "coordinates", 0.1, method = "all")
 
 # Calculate the Hegyi-Index for one tree inside a forest plot, giving the ID of the target tree
 ID_tree <- 5
-Competition_indices <- compete_calc(path = "path/to/inventory_table.csv", dbh_threshold = 0.1, target_tree = ID_tree, type = "ID", tolerance =0.1, method = "Hegyi"
+CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ID_tree, "ID", 0.1, method = "Hegyi")
 #}
 }

@@ -13,7 +13,9 @@ Imports:
     data.table,
     dplyr,
     stats,
-    VoxR
+    VoxR,
+    magrittr,
+    rlang
 Suggests: 
     knitr,
     rmarkdown,
