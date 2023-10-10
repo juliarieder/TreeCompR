@@ -8,7 +8,7 @@ competition_pc(
   forest_path,
   tree_path,
   comp_method = c("cone", "cylinder"),
-  cylinder_r = 4
+  cyl_r = 4
 )
 }
 \arguments{
@@ -18,20 +18,20 @@ competition_pc(
 
 \item{comp_method}{character string with competition method "cone" or "cylinder"}
 
-\item{cylinder_r}{(Optional) only important when using comp_method "cylinder"; numeric value of cylinder radius in m. Default is 4 m.}
+\item{cyl_r}{(Optional) only important when using comp_method "cylinder"; numeric value of cylinder radius in m. Default is 4 m.}
 }
 \value{
 vector of counted points and voxels of neighborhood point cloud that reach into the cone spanned over the target tree
 }
 \description{
-Quantify Tree Crown Competition (Cone Method or cylinder method)
+opening angle 60°, spanned in 50 \% of target tree's height
 }
 \examples{
 \dontrun{
-#Quantify crown competition for a single tree within a plot using cone method, opening angle 60°, spanned in 50 \% of target tree's height
-Comp_cone <- competition_pc(forest_path = "path/to/forest_pc.txt", tree_path = "path/to/tree_pc.txt", comp_method = "cone")
+#Quantify crown competition for a single tree within a plot using cone method
+CI_cone <- competition_pc(forest_path = "path/to/forest_pc.txt", tree_path = "path/to/tree_pc.txt", comp_method = "cone")
 
-#Quantify competition for a single tree within a plot using cylinder method with a cylinder radius of 4 m
-Comp_cyl <- competition_pc(forest_path = "path/to/forest_pc.txt", tree_path = "path/to/tree_pc.txt", comp_method = "cylinder", cylinder_r = 4)
+#Quantify competition for a single tree within a plot using cylinder method with radius 4 m
+CI_cyl <- competition_pc(forest_path = "path/to/forest_pc.txt", tree_path = "path/to/tree_pc.txt", comp_method = "cylinder", cyl_r = 4)
 }
 }
