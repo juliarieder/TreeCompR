@@ -23,8 +23,26 @@ test_that("Hegyi index works with target tree ID", {
     2)
 })
 
+test_that("CI12 index works with target tree ID", {
+  expect_equal(length(
+    compete_calc(path = "../data/inventory.csv",  radius = 10, dbh_thr = 0.1, target_tree = 14, type = "ID", method = "CI12")),
+    2)
+})
+
 test_that("Hegyi index works with coordinates", {
   expect_equal(length(
     compete_calc(path = "../data/inventory.csv",  radius = 10, dbh_thr = 0.1, target_tree = c(0.2581, -0.4883), type = "coordinates", tolerance = 1, method = "Hegyi")),
     2)
+})
+
+test_that("all indices at once work with coordinates", {
+  expect_equal(length(
+    compete_calc(path = "../data/inventory.csv",  radius = 10, dbh_thr = 0.1, target_tree = c(0.2581, -0.4883), type = "coordinates", tolerance = 1, method = "all")),
+    5)
+})
+
+test_that("all indices at once work with target ID", {
+  expect_equal(length(
+    compete_calc(path = "../data/inventory.csv",  radius = 10, dbh_thr = 0.1, target_tree = 14, type = "ID", method = "all")),
+    5)
 })

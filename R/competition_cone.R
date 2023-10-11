@@ -8,8 +8,7 @@
 #' @return vector of counted points and voxels of neighborhood point cloud that reach into the cone spanned over the target tree
 #' @importFrom magrittr %>%
 #' @importFrom utils data
-#' @importFrom dplyr filter
-#' @importFrom dplyr mutate
+#' @import dplyr
 #' @importFrom rlang .data
 #' @importFrom tools file_path_sans_ext
 #' @importFrom VoxR vox
@@ -39,28 +38,28 @@ competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cyli
 
     if (comp_method == "cone") {
 
-      points <- neighbor %>% dplyr::mutate(dist = sqrt((.data$X-pos[1])^2 + (.data$Y-pos[2])^2)) %>%
-        dplyr::mutate(r_cone = abs(0.577 * (.data$Z-cone_h))) %>%
-        dplyr::filter(.data$Z >= cone_h) %>%
-        dplyr::filter(.data$dist <= .data$r_cone)
+      points <- neighbor %>% dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>%
+        dplyr::mutate(r_cone = abs(0.577 * (Z-cone_h))) %>%
+        dplyr::filter(Z >= cone_h) %>%
+        dplyr::filter(dist <= r_cone)
       points <- nrow(points)
 
 
       voxel <- neighbor %>% VoxR::vox(res = 0.1)
       colnames(voxel) <- c("X", "Y", "Z", "npts")
-      voxel %>% dplyr::mutate(r_cone = abs(0.577 * (.data$Z-cone_h))) %>%
-        dplyr::mutate(dist = sqrt((.data$X-pos[1])^2 + (.data$Y-pos[2])^2)) %>%
-        dplyr::filter(.data$Z >= cone_h) %>%
-        dplyr::filter(.data$dist <= .data$r_cone)
+      voxel %>% dplyr::mutate(r_cone = abs(0.577 * (Z-cone_h))) %>%
+        dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>%
+        dplyr::filter(Z >= cone_h) %>%
+        dplyr::filter(dist <= r_cone)
       voxel <- nrow(voxel)
 
     } else if (comp_method == "cylinder"){
 
-      points <- neighbor %>% dplyr::mutate(dist = sqrt((.data$X-pos[1])^2 + (.data$Y-pos[2])^2)) %>% dplyr::filter(.data$dist <= cyl_r)
+      points <- neighbor %>% dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>% dplyr::filter(dist <= cyl_r)
       points <- nrow(points)
       voxel <- neighbor %>% VoxR::vox(res = 0.1)
       colnames(voxel) <- c("X", "Y", "Z", "npts")
-      voxel <- voxel %>% dplyr::mutate(dist = sqrt((.data$X-pos[1])^2 + (.data$Y-pos[2])^2)) %>% dplyr::filter(.data$dist <= cyl_r)
+      voxel <- voxel %>% dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>% dplyr::filter(dist <= cyl_r)
       voxel <- nrow(voxel)
     } else {
       stop("Invalid method. Use 'cone' or 'cylinder'.")
