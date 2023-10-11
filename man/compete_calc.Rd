@@ -21,7 +21,7 @@ compete_calc(
 
 \item{dbh_thr}{numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m)}
 
-\item{target_tree}{numeric (ID) or a vector of coordinates (X, Y)}
+\item{target_tree}{vector or numeric (ID) or a vector of coordinates (X, Y)}
 
 \item{type}{character string assigning the type of input of target_tree "ID" or "coordinates"}
 

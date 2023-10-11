@@ -3,7 +3,7 @@
 #' @param path character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H)
 #' @param radius numeric, Search radius around target tree, wherein all neighboring trees are classified as competitors
 #' @param dbh_thr numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m)
-#' @param target_tree numeric (ID) or a vector of coordinates (X, Y)
+#' @param target_tree vector or numeric (ID) or a vector of coordinates (X, Y)
 #' @param type character string assigning the type of input of target_tree "ID" or "coordinates"
 #' @param tolerance numeric. tolerance for matching the tree coordinates. If a field measured value is used for target_tree, take a higher tolerance value (default=0.1 m), depending on measurement accuracy
 #'
@@ -13,10 +13,7 @@
 #' @importFrom utils data
 #' @importFrom data.table fread
 #' @importFrom rlang .data
-#' @importFrom dplyr filter
-#' @importFrom dplyr group_by
-#' @importFrom dplyr select
-#' @importFrom dplyr summarise
+#' @import dplyr
 #' @export
 #'
 #' @examples
@@ -32,79 +29,85 @@
 #' #}
 compete_calc <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("ID", "coordinates"), tolerance = 0.1, method = c("all", "Hegyi", "CI12", "CI13")) {
 
-  #Meldung einbauen, falls invalid extension
-  trees <- data.table::fread(path)
-  trees <- data.frame(trees[, 1:5])
-  target_tree <- as.numeric(target_tree)
-  colnames(trees) <- c("ID", "X", "Y", "DBH", "H")
+    trees <- data.table::fread(path)
+    trees <- data.frame(trees[, 1:5])
+    target_tree <- as.numeric(target_tree)
+    colnames(trees) <- c("ID", "X", "Y", "DBH", "H")
 
-  if (type == "ID") {
-    #user provides the ID of the target tree
-    #Look up the right coordinates
-    #matching_rows <- trees[trees$ID == target_tree]
-    matching_rows <- subset(trees, trees$ID == target_tree)
-    if (nrow(matching_rows) == 0){
-      stop("This Tree ID is not existing within this plot!")
-    } else if(nrow(matching_rows) > 1) {
-      stop("Warning: there are more than 1 Trees with this ID, please check!")
-    } else if(nrow(matching_rows) == 1){
-      trees <- trees %>% dplyr::mutate(status = ifelse(.data$ID == target_tree, "target_tree", "competitor"))
-    }
-    else if(type == "coordinates"){
-      #make sure that the coordinates are in the same coordinate system!
+    CIs <- NULL  # Initialize CIs
+
+    if (type == "ID") {
+      matching_rows <- subset(trees, ID == target_tree)
+      if (nrow(matching_rows) == 0) {
+        stop("This Tree ID is not existing within this plot!")
+      } else if (nrow(matching_rows) > 1) {
+        stop("Warning: there are more than 1 Trees with this ID, please check!")
+      } else if (nrow(matching_rows) == 1) {
+        trees <- trees %>% dplyr::mutate(status = ifelse(ID == target_tree, "target_tree", "competitor"))
+      }
+    } else if (type == "coordinates") {
       X_pos = target_tree[1]
       Y_pos = target_tree[2]
-      trees <- trees %>% dplyr::mutate(euc_dist = sqrt((X_pos - .data$X)^2 + (Y_pos - .data$Y)^2)) %>%
-        dplyr::mutate(status = ifelse(.data$euc_dist == min(.data$euc_dist), "target_tree", ifelse(.data$euc_dist > min(.data$euc_dist),"competitor", NA)))
-      if (min(.data$euc_dist) < tolerance){
-        stop("There was no tree found within the tolerance threshold. Check the coordinates again or if the accuracy of field data was low, set a new tolerance value.")
+      trees <- trees %>%
+        dplyr::mutate(euc_dist = sqrt((X_pos - X)^2 + (Y_pos - Y)^2)) %>%
+        dplyr::mutate(status = ifelse(euc_dist == min(euc_dist), "target_tree", ifelse(euc_dist > min(euc_dist), "competitor", NA)))
+
+      if (min(trees$euc_dist) > tolerance) {
+        stop("There was no tree found within the tolerance threshold. Check the coordinates again or, if the accuracy of field data was low, set a new tolerance value.")
       } else {
+        matching_rows <- subset(trees, status == "target_tree")
+      }
+    } else {
+      stop("This input format is not supported, please enter an existing Tree ID or the coordinates of the target tree.")
+    }
 
-      }}}
-  trees <- trees %>% dplyr::mutate(
-    H_target = matching_rows$H,
-    dbh_target = matching_rows$DBH,
-    X_target = matching_rows$X,
-    Y_target = matching_rows$Y,
-    target_ID = matching_rows$ID)
+    if (!is.null(matching_rows)) {
+      H_target <- matching_rows$H
+      dbh_target <- matching_rows$DBH
+      X_target <- matching_rows$X
+      Y_target <- matching_rows$Y
+      target_ID <- matching_rows$ID
 
-  trees <- trees %>% dplyr::mutate(euc_dist_comp = sqrt((.data$X_target - .data$X)^2 + (.data$Y_target - .data$Y)^2)) %>% dplyr::filter(.data$euc_dist_comp <= radius) %>%
-    dplyr::mutate(CI_h_part = .data$DBH / (.data$dbh_target * .data$euc_dist_comp)) %>%
-    dplyr::mutate(CI12_part = atan(.data$H / .data$euc_dist_comp), CI13_part = (.data$H / .data$H_target) * atan(.data$H / .data$euc_dist_comp)) %>% dplyr::mutate(CI11_part = (.data$DBH / .data$dbh_target) * atan(.data$DBH / .data$euc_dist_comp)) %>%
-    dplyr::filter(.data$status == "competitor")
+      trees <- trees %>%
+        dplyr::mutate(
+          H_target = H_target,
+          dbh_target = dbh_target,
+          X_target = X_target,
+          Y_target = Y_target,
+          target_ID = target_ID
+        )
 
-  CIs <- trees %>% dplyr::group_by(.data$target_ID) %>% dplyr::summarise(
-    CI_Hegyi = sum(.data$CI_h_part),
-    CI11 = sum(.data$CI11_part),
-    CI12 = sum(.data$CI12_part),
-    CI13 = sum(.data$CI13_part)
-  )
+      CIs <- trees %>%
+        dplyr::mutate(euc_dist_comp = sqrt((X_target - X)^2 + (Y_target - Y)^2)) %>%
+        dplyr::filter(euc_dist_comp <= radius) %>%
+        dplyr::mutate(CI_h_part = DBH / (dbh_target * euc_dist_comp)) %>%
+        dplyr::mutate(CI12_part = atan(H / euc_dist_comp), CI13_part = (H / H_target) * atan(H / euc_dist_comp)) %>%
+        dplyr::mutate(CI11_part = DBH / dbh_target * atan(DBH / euc_dist_comp)) %>%
+        dplyr::filter(status == "competitor")
 
-  if (method == "all") {
-    return(CIs)
-  } else if (method == "Hegyi") {
-    CI_Hegyi <- CIs %>%
-      dplyr::select(.data$target_ID, .data$CI_Hegyi)
-    return(CI_Hegyi)
-  } else if (method == "CI11") {
-    CI_11 <- CIs %>%
-      dplyr::select(.data$target_ID, .data$CI11)
-    return(CI_11)
-  } else if (method == "CI12") {
-    CI_12 <- CIs %>%
-      dplyr::select(.data$target_ID, .data$CI12)
-    return(CI_12)
-  } else if (method == "CI13") {
-    CI_13 <- CIs %>%
-      dplyr::select(.data$target_ID, .data$CI13)
-    return(CI_13)
-  } else {
-    stop("This input format is not supported, please enter an existing Tree ID or the coordinates of the target tree.")
+      CIs <- CIs %>% dplyr::group_by(target_ID) %>% dplyr::summarise(
+        CI_Hegyi = sum(CI_h_part),
+        CI11 = sum(CI11_part),
+        CI12 = sum(CI12_part),
+        CI13 = sum(CI13_part))
+    }
+
+
+    if (method == "all") {
+      return(CIs)
+    } else if (method == "Hegyi") {
+      CI_Hegyi <- CIs %>% dplyr::select(target_ID, CI_Hegyi)
+      return(CI_Hegyi)
+    } else if (method == "CI11") {
+      CI_11 <- CIs %>% dplyr::select(target_ID, CI11)
+      return(CI_11)
+    } else if (method == "CI12") {
+      CI_12 <- CIs %>% dplyr::select(target_ID, CI12)
+      return(CI_12)
+    } else if (method == "CI13") {
+      CI_13 <- CIs %>% dplyr::select(target_ID, CI13)
+      return(CI_13)
+    } else {
+      stop("Invalid method. Supported methods: 'all', 'Hegyi', 'CI11', 'CI12', 'CI13'.")
+    }
   }
-  #provide different indices (all, or just some!)
-  #Methoden gut beschreiben und Literatur einfügen
-  #alle relevanten distance dependent competition indices einbinden
-  #Warnmeldung ausgeben, falls target tree nicht mindestens search radius von edge of plot weit weg ist!!
-  #fehlt noch ein else() auf Ebene type_ttree??
-}
-
