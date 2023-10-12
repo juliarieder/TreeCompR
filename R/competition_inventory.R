@@ -1,15 +1,24 @@
-#' Calculating distance-dependant Tree Competition Using Inventory Data (field or from LiDAR data)
+#' Calculate Tree Competition Indices From Inventory Data
 #'
-#' @param path character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H)
-#' @param radius numeric, Search radius around target tree, wherein all neighboring trees are classified as competitors
+#' @description
+#' 'compete_calc()' returns a specific distance-dependent competition index (or group of indexes) for a target tree within a forest plot
+#'
+#' Using an inventory table to easily quantify distance-dependant tree competition for a single tree within a plot.
+#' The input data can either be taken directly from field measurements or derived beforehand from LiDAR point clouds.
+#' It is possible to choose between certain Competition indices, like the Hegyi index (method = "Hegyi") according to Hegyi (1974). .....
+#'
+#' @param path character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H), DBH and H in m. Each row indicates one tree within the plot
+#' @param radius numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors
 #' @param dbh_thr numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m)
-#' @param target_tree vector or numeric (ID) or a vector of coordinates (X, Y)
-#' @param type character string assigning the type of input of target_tree "ID" or "coordinates"
-#' @param tolerance numeric. tolerance for matching the tree coordinates. If a field measured value is used for target_tree, take a higher tolerance value (default=0.1 m), depending on measurement accuracy
+#' @param target_tree numeric (ID) or a vector of coordinates c(X, Y)
+#' @param type character string specifying the type of input of target_tree "ID" or "coordinates".
+#' @param tolerance numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=0.1 m), depending on the measurement accuracy
 #'
-#' @param method character string assigning the method for quantifying competition "Hegyi", "CI12", "CI13"
+#' @param method character string assigning the method for quantifying competition "Hegyi", "CI11", "CI12", "CI13" or "all"
 #'
 #' @return numeric. Competition Index value
+#'
+#' @seealso [competition_pc()] to quantify competition directly from point clouds
 #' @importFrom utils data
 #' @importFrom data.table fread
 #' @importFrom rlang .data
@@ -27,7 +36,7 @@
 #' ID_tree <- 5
 #' CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ID_tree, "ID", 0.1, method = "Hegyi")
 #' #}
-compete_calc <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("ID", "coordinates"), tolerance = 0.1, method = c("all", "Hegyi", "CI12", "CI13")) {
+compete_calc <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("ID", "coordinates"), tolerance = 0.1, method = c("all", "Hegyi","CI11", "CI12", "CI13")) {
 
     trees <- data.table::fread(path)
     trees <- data.frame(trees[, 1:5])

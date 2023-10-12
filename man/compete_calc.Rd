@@ -2,7 +2,7 @@
 % Please edit documentation in R/competition_inventory.R
 \name{compete_calc}
 \alias{compete_calc}
-\title{Calculating distance-dependant Tree Competition Using Inventory Data (field or from LiDAR data)}
+\title{Calculate Tree Competition Indices From Inventory Data}
 \usage{
 compete_calc(
   path,
@@ -11,29 +11,33 @@ compete_calc(
   target_tree,
   type = c("ID", "coordinates"),
   tolerance = 0.1,
-  method = c("all", "Hegyi", "CI12", "CI13")
+  method = c("all", "Hegyi", "CI11", "CI12", "CI13")
 )
 }
 \arguments{
-\item{path}{character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H)}
+\item{path}{character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H), DBH and H in m. Each row indicates one tree within the plot}
 
-\item{radius}{numeric, Search radius around target tree, wherein all neighboring trees are classified as competitors}
+\item{radius}{numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors}
 
 \item{dbh_thr}{numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m)}
 
-\item{target_tree}{vector or numeric (ID) or a vector of coordinates (X, Y)}
+\item{target_tree}{numeric (ID) or a vector of coordinates c(X, Y)}
 
-\item{type}{character string assigning the type of input of target_tree "ID" or "coordinates"}
+\item{type}{character string specifying the type of input of target_tree "ID" or "coordinates".}
 
-\item{tolerance}{numeric. tolerance for matching the tree coordinates. If a field measured value is used for target_tree, take a higher tolerance value (default=0.1 m), depending on measurement accuracy}
+\item{tolerance}{numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=0.1 m), depending on the measurement accuracy}
 
-\item{method}{character string assigning the method for quantifying competition "Hegyi", "CI12", "CI13"}
+\item{method}{character string assigning the method for quantifying competition "Hegyi", "CI11", "CI12", "CI13" or "all"}
 }
 \value{
 numeric. Competition Index value
 }
 \description{
-Calculating distance-dependant Tree Competition Using Inventory Data (field or from LiDAR data)
+'compete_calc()' returns a specific distance-dependent competition index (or group of indexes) for a target tree within a forest plot
+
+Using an inventory table to easily quantify distance-dependant tree competition for a single tree within a plot.
+The input data can either be taken directly from field measurements or derived beforehand from LiDAR point clouds.
+It is possible to choose between certain Competition indices, like the Hegyi index (method = "Hegyi") according to Hegyi (1974). .....
 }
 \examples{
 \dontrun{
@@ -46,4 +50,7 @@ CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ttree, "coordinates", 
 ID_tree <- 5
 CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ID_tree, "ID", 0.1, method = "Hegyi")
 #}
+}
+\seealso{
+\code{\link[=competition_pc]{competition_pc()}} for quantifying Competition directly from point clouds
 }
