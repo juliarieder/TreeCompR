@@ -2,20 +2,36 @@
 #'
 #' @param path character path to point cloud of individual tree or a whole plot
 #'
-#' @return data frame with X,Y,Z of the tree point cloud
+#' @return data frame with X,Y,Z of the tree or forest point cloud in txt or las/laz format
 #'
 #' @importFrom data.table fread
+#' @importFrom lidR readTLSLAS
 #' @importFrom utils data
+#' @importFrom utils tail
+#' @import dplyr
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' # Read the tree point cloud
+#' # Read the tree point cloud in txt format
 #' tree <- read_tree(path = "path/to/tree_point_cloud.txt")
+#' # Read the tree point cloud in las or laz format
+#' tree <- read_tree(path = "path/to/tree_point_cloud.las")
 #' }
-read_tree <- function(path){
-  data <- data.table::fread(path)
-  tree <- data.frame(data[, 1:3])
-  colnames(tree) <- c("X", "Y", "Z")
+read_tree <- function(path) {
+  extension <- utils::tail(base::strsplit(path, split = ".", fixed = TRUE)[[1]], 1)
+  if (extension == "txt") {
+    tree <- data.table::fread(path) %>%
+      data.frame() %>%
+      .[, 1:3] %>%
+      setNames(c("X", "Y", "Z"))
+  } else if (extension %in% c("las", "laz")) {
+    las <- lidR::readTLSLAS(path)
+    tree <- data.frame("X" = las$X, "Y" = las$Y, "Z" = las$Z)
+  } else {
+    stop("Cannot read this extension. Please use point cloud with extension .txt or las/laz")
+    tree <- data.frame(X = numeric(0), Y = numeric(0), Z = numeric(0))
+  }
+
   return(tree)
 }

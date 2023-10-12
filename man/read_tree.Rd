@@ -10,14 +10,16 @@ read_tree(path)
 \item{path}{character path to point cloud of individual tree or a whole plot}
 }
 \value{
-data frame with X,Y,Z of the tree point cloud
+data frame with X,Y,Z of the tree or forest point cloud in txt or las/laz format
 }
 \description{
 Read a single tree point cloud
 }
 \examples{
 \dontrun{
-# Read the tree point cloud
+# Read the tree point cloud in txt format
 tree <- read_tree(path = "path/to/tree_point_cloud.txt")
+# Read the tree point cloud in las or laz format
+tree <- read_tree(path = "path/to/tree_point_cloud.las")
 }
 }

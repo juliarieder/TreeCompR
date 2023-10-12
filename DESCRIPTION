@@ -15,7 +15,8 @@ Imports:
     stats,
     VoxR,
     magrittr,
-    rlang
+    rlang,
+    lidR
 Suggests: 
     knitr,
     rmarkdown,
