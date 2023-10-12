@@ -10,6 +10,18 @@ test_that("reading a forest point cloud in txt format works", {
     3)
 })
 
+test_that("reading a tree point cloud in las format works", {
+  expect_equal(length(
+    read_tree(path = "../data/tree.las")),
+    3)
+})
+
+test_that("reading a tree point cloud in laz format works", {
+  expect_equal(length(
+    read_tree(path = "../data/tree.laz")),
+    3)
+})
+
 test_that("quantify competition (cone) for .txt file point clouds works", {
   expect_equal(length(
     competition_pc(forest_path = "../data/neighborhood.txt",  tree_path = "../data/tree.txt", comp_method = "cone")),
