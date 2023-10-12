@@ -19,10 +19,7 @@
 #' @return numeric. Competition Index value
 #'
 #' @seealso [competition_pc()] to quantify competition directly from point clouds
-#' @importFrom utils data
-#' @importFrom data.table fread
-#' @importFrom rlang .data
-#' @import dplyr
+#'
 #' @export
 #'
 #' @examples

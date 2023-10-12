@@ -4,11 +4,6 @@
 #'
 #' @return data frame with X,Y,Z of the tree or forest point cloud in txt or las/laz format
 #'
-#' @importFrom data.table fread
-#' @importFrom lidR readTLSLAS
-#' @importFrom utils data
-#' @importFrom utils tail
-#' @import dplyr
 #' @export
 #'
 #' @examples

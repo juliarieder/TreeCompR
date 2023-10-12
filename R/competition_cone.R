@@ -6,12 +6,7 @@
 #' @param cyl_r (Optional) only important when using comp_method "cylinder"; numeric value of cylinder radius in m. Default is 4 m.
 #'
 #' @return vector of counted points and voxels of neighborhood point cloud that reach into the cone spanned over the target tree
-#' @importFrom magrittr %>%
-#' @importFrom utils data
-#' @import dplyr
-#' @importFrom rlang .data
-#' @importFrom tools file_path_sans_ext
-#' @importFrom VoxR vox
+#'
 #' @export
 #'
 #' @examples
