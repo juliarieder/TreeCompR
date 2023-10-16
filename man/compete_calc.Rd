@@ -47,6 +47,7 @@ It is possible to choose between certain Competition indices, like the Hegyi ind
 \item CI11 according to Rouvinen & Kuuluvainen (1997)
 \item CI12 according to Rouvinen & Kuuluvainen (1997)
 \item CI13 according to Rouvinen & Kuuluvainen (1997)
+...
 }
 
 @section Literature:
