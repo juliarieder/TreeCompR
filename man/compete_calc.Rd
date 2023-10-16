@@ -34,11 +34,28 @@ numeric. Competition Index value
 }
 \description{
 'compete_calc()' returns a specific distance-dependent competition index (or group of indexes) for a target tree within a forest plot
-
+}
+\details{
 Using an inventory table to easily quantify distance-dependant tree competition for a single tree within a plot.
 The input data can either be taken directly from field measurements or derived beforehand from LiDAR point clouds.
-It is possible to choose between certain Competition indices, like the Hegyi index (method = "Hegyi") according to Hegyi (1974). .....
+It is possible to choose between certain Competition indices, like the Hegyi index (method = "Hegyi") according to Hegyi (1974).
 }
+\section{Methods}{
+
+\itemize{
+\item Hegyi Index introduced by Hegyi (1974) ...
+\item CI11 according to Rouvinen & Kuuluvainen (1997)
+\item CI12 according to Rouvinen & Kuuluvainen (1997)
+\item CI13 according to Rouvinen & Kuuluvainen (1997)
+}
+
+@section Literature:
+\itemize{
+\item Hegyi, F., 1974. A simulation model for managing jackpine stands. In: Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models for tree and stand simulation, Royal College of Forestry, Stockolm.
+\item Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
+}
+}
+
 \examples{
 \dontrun{
 # Calculate some distance-dependent CIs for one tree inside forest plot
