@@ -2,7 +2,7 @@
 % Please edit documentation in R/competition_cone.R
 \name{competition_pc}
 \alias{competition_pc}
-\title{Quantify Tree Crown Competition (Cone Method or cylinder method)}
+\title{Quantify Tree Competition from Point Clouds (Cone or cylinder method)}
 \usage{
 competition_pc(
   forest_path,
@@ -24,7 +24,22 @@ competition_pc(
 vector of counted points and voxels of neighborhood point cloud that reach into the cone spanned over the target tree
 }
 \description{
-opening angle 60°, spanned in 50 \% of target tree's height
+Counting the points or voxels of neighboring trees that reach into search cone or cylinder for the target tree
+}
+\details{
+\itemize{
+\item Cone Method: search cone with opening angle 60°, spanned in 50 \% of target tree's height, counting the points and voxels of neighboring trees that reach within
+\item Cylinder Method: search cylinder with specific radius (target tree in center), counting the points and voxels of neighboring trees that reach within
+}
+
+Check the Literature:
+\itemize{
+\item Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. & Ammer, C. (2013). Crown modeling by terrestrial laser scanning
+as an approach to assess the effect of aboveground intra- and interspecific competition on tree growth. Forest Ecology and Management,
+310: 275-288. https://doi.org/10.1016/j.foreco.2013.08.014
+\item Seidel, D., Hoffmann, N., Ehbrecht, M., Juchheim, J. & Ammer, C. (2015). How neighborhood affects tree diameter increment – New insights from
+terrestrial laser scanning and some methodical considerations. Forest Ecology and Management, 336: 119-128. http://dx.doi.org/10.1016/j.foreco.2014.10.020
+}
 }
 \examples{
 \dontrun{
