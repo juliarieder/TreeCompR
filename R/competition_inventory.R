@@ -33,7 +33,7 @@
 #' @return numeric. Competition Index value
 #'
 #' @seealso [competition_pc()] to quantify competition directly from point clouds
-#'
+#' @importFrom rlang .data
 #' @export
 #'
 #' @examples
