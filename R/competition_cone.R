@@ -53,7 +53,7 @@ competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cyli
 
       voxel <- neighbor %>% VoxR::vox(res = 0.1)
       colnames(voxel) <- c("X", "Y", "Z", "npts")
-      voxel %>% dplyr::mutate(r_cone = abs(0.577 * (Z-cone_h))) %>%
+      voxel <- voxel %>% dplyr::mutate(r_cone = abs(0.577 * (Z-cone_h))) %>%
         dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>%
         dplyr::filter(Z >= cone_h) %>%
         dplyr::filter(dist <= r_cone)
