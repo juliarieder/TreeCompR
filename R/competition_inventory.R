@@ -102,7 +102,7 @@ compete_calc <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c
         dplyr::filter(euc_dist_comp <= radius) %>%
         dplyr::mutate(CI_h_part = DBH / (dbh_target * euc_dist_comp)) %>%
         dplyr::mutate(CI12_part = atan(H / euc_dist_comp), CI13_part = (H / H_target) * atan(H / euc_dist_comp)) %>%
-        dplyr::mutate(CI11_part = DBH / dbh_target * atan(DBH / euc_dist_comp)) %>%
+        dplyr::mutate(CI11_part = (DBH / dbh_target) * atan(DBH / euc_dist_comp)) %>%
         dplyr::filter(status == "competitor")
 
       CIs <- CIs %>% dplyr::group_by(target_ID) %>% dplyr::summarise(
