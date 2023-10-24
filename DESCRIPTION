@@ -16,7 +16,8 @@ Imports:
     VoxR,
     magrittr,
     rlang,
-    lidR
+    lidR,
+    sf
 Suggests: 
     knitr,
     rmarkdown,

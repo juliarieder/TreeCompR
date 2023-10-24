@@ -32,7 +32,7 @@
 #'
 #' @return numeric. Competition Index value
 #'
-#' @seealso [competition_pc()] to quantify competition directly from point clouds
+#' @seealso [competition_pc()] to quantify competition directly from point clouds, or [compete_ALS()] if you do not have DBH data
 #' @importFrom rlang .data
 #' @export
 #'

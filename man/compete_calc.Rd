@@ -72,5 +72,5 @@ CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ID_tree, "ID", 0.1, me
 #}
 }
 \seealso{
-\code{\link[=competition_pc]{competition_pc()}} to quantify competition directly from point clouds
+\code{\link[=competition_pc]{competition_pc()}} to quantify competition directly from point clouds, or \code{\link[=compete_ALS]{compete_ALS()}} if you do not have DBH data
 }
