@@ -26,7 +26,7 @@
 #' @param dbh_thr numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m)
 #' @param target_tree numeric (ID) or a vector of coordinates c(X, Y)
 #' @param type character string specifying the type of input of target_tree "ID" or "coordinates".
-#' @param tolerance numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=0.1 m), depending on the measurement accuracy
+#' @param tolerance numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy
 #'
 #' @param method character string assigning the method for quantifying competition "Hegyi", "CI11", "CI12", "CI13" or "all"
 #'
@@ -41,13 +41,13 @@
 #' # Calculate some distance-dependent CIs for one tree inside forest plot
 #' # input coordinates target tree
 #' ttree <- c(15, 9)
-#' CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ttree, "coordinates", 0.1, method = "all")
+#' CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ttree, "coordinates", 1, method = "all")
 #'
 #' # Calculate the Hegyi-Index for one tree inside a forest plot, giving the ID of the target tree
 #' ID_tree <- 5
-#' CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ID_tree, "ID", 0.1, method = "Hegyi")
+#' CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ID_tree, "ID", 1, method = "Hegyi")
 #' #}
-compete_calc <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("ID", "coordinates"), tolerance = 0.1, method = c("all", "Hegyi","CI11", "CI12", "CI13")) {
+compete_calc <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("ID", "coordinates"), tolerance = 1, method = c("all", "Hegyi","CI11", "CI12", "CI13")) {
 
     trees <- data.table::fread(path)
     trees <- data.frame(trees[, 1:5])

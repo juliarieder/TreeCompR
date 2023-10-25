@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <img src="man/figures/hex-TreeCompR.png" height="180" alt="Hexsticker" style="float: right;">
 R Package for calculating distance-dependent individual Tree Competition on Plot level
+[![R-CMD-check](https://github.com/juliarieder/TreeCompR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/juliarieder/TreeCompR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 This R package is designed for the quantitative analysis of individual tree competition within forest ecosystems. It accepts inputs such as LiDAR point clouds (as .txt or las/laz files) of forest plots and individual target trees, or inventory tables (including tree ID, X, Y, DBH, H). Through the use of various competition indices, it enables the assessment and measurement of competition between trees, providing valuable insights for forest ecology, inventories, and forest management strategies. This package facilitates a systematic approach to understanding interactions and resource competition among trees and enables informed decision making in forest management.
