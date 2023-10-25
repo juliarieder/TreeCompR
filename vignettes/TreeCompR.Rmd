@@ -15,9 +15,26 @@ knitr::opts_chunk$set(
 ```
 
 ## Introduction
-This is a Text by ChatGPT (placeholder)
-This R package is designed for the quantitative analysis of individual tree competition within forest ecosystems. It accepts inputs such as LiDAR point clouds (currently only as .txt files) of forest plots or individual target trees, and inventory tables (including tree ID, X, Y, DBH, H). By leveraging a range of tools and algorithms, it allows to assess and measure tree-to-tree competition dynamics, providing valuable insights for forest ecology, inventory assessments, and forest management strategies. This package facilitates a systematic approach to understanding the interactions and resource competition among trees, enabling informed decision-making in forest management.
 
-```{r setup}
+This R package is designed for the quantitative analysis of individual tree competition within forest ecosystems. It accepts inputs such as LiDAR point clouds (in .las/.laz or .txt format including X, Y, Z) of forest plots or individual target trees, and inventory tables (including ID, X, Y, DBH, H). 
+
+```{r setup, message=FALSE, warning=FALSE}
 library(TreeCompR)
 ```
+
+## Quantify Competition with Cylinder Method (4 m Radius around Target Trees) 
+
+If you have a certain number of target trees, you might want the function to run for all of your trees. For faster processing, the neighborhood point clouds can be trimmed to a smaller extent beforehand. Make sure that the target tree does not take an edge position, otherwise the competition may be underestimated.For an easier connection of target tree and neighborhood files, use identifying file names, e.g. names that include the Tree ID. You can create a lookup-table with each row representing one target tree. The lookup-table should include two columns (forest_path, tree_path) connecting the target tree files (path to that file) with the fitting neighborhood files (path to that file). Depending on the method you want to use within the function `competition_pc()`, use `dplyr::mutate()` to add a column, specifying the method (e.g. "cone"). You can then run the function for all target trees within the lookup-table using `purrr:pmap()`.
+
+```{r example, eval=FALSE}
+library(purrr)
+library(dplyr)
+
+lookup <- lookup %>% dplyr::mutate(comp_method = "cone")
+
+lookup_results <- lookup %>% purrr:pmap(competition_pc)
+
+lookup_results <- as.data.frame(do.call(rbind, lookup_results))
+colnames(lookup_results) <- c('Tree_ID', 'CI_cone_pts', 'CI_cone_vox')
+```
+
