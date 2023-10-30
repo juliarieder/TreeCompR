@@ -10,17 +10,17 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports: 
-    data.table,
-    dplyr,
-    stats,
-    VoxR,
-    magrittr,
-    rlang,
-    lidR,
-    sf
+    data.table (>= 1.14.8),
+    dplyr (>= 1.1.2),
+    stats (>= 4.3.1),
+    VoxR (>= 1.0.0),
+    magrittr (>= 2.0.3),
+    rlang (>= 1.1.1),
+    lidR (>= 4.0.3),
+    sf (>= 1.0-14)
 Suggests: 
-    knitr,
-    rmarkdown,
+    knitr (>= 1.43),
+    rmarkdown (>= 2.24),
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
