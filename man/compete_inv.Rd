@@ -8,7 +8,7 @@ compete_inv(
   seg_path,
   tree_path,
   radius,
-  method = c("all", "Hegyi", "CI11", "CI12", "CI13")
+  method = c("all", "Hegyi", "CI10", "CI11", "CI12", "CI13")
 )
 }
 \arguments{
@@ -21,7 +21,7 @@ compete_inv(
 \item{method}{character string assigning the method for quantifying competition "Hegyi", "CI11", "CI12", "CI13" or "all"}
 }
 \value{
-dataframe with ID_target, and one or more indices per tree
+dataframe with ID_target, and one or more indices per tree, which depends on the chosen method
 }
 \description{
 'compete_inv()' returns a specific distance-dependent competition index (or group of indexes) for a list of target trees within a forest plot

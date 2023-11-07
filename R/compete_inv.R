@@ -8,14 +8,14 @@
 #' @param radius numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors
 #' @param method character string assigning the method for quantifying competition "Hegyi", "CI11", "CI12", "CI13" or "all"
 #'
-#' @return dataframe with ID_target, and one or more indices per tree
+#' @return dataframe with ID_target, and one or more indices per tree, which depends on the chosen method
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' CI <- compete_inv("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10, method = "all")
 #' }
-compete_inv <- function(seg_path, tree_path, radius, method = c("all", "Hegyi","CI11", "CI12", "CI13")) {
+compete_inv <- function(seg_path, tree_path, radius, method = c("all", "Hegyi", "CI10","CI11", "CI12", "CI13")) {
   segtrees <- fread(seg_path, header = T)
   colnames(segtrees) <- c("ID", "X_seg", "Y_seg", "DBH", "H")
   segtrees_sf <- sf::st_as_sf(segtrees, coords = c("X_seg", "Y_seg"))
@@ -40,6 +40,7 @@ compete_inv <- function(seg_path, tree_path, radius, method = c("all", "Hegyi","
   #calculate part of the Competition indices for each competitor
   trees_competition <- trees_competition %>%
     dplyr::mutate(CI_h_part = DBH / (dbh_target * euc_dist_comp),
+                  CI10_part = atan(DBH / euc_dist_comp),
                   CI11_part = (DBH / dbh_target) * atan(DBH / euc_dist_comp),
                   CI12_part = atan(H / euc_dist_comp),
                   CI13_part = (H / H_target) * atan(H / euc_dist_comp))
@@ -48,6 +49,7 @@ compete_inv <- function(seg_path, tree_path, radius, method = c("all", "Hegyi","
   #calculate competition index CI12 and CI13 for each target tree
   CIs <- trees_competition %>% dplyr::group_by(ID_target) %>% dplyr::summarise(
     CI_Hegyi = sum(CI_h_part),
+    CI10 = sum(CI10_part),
     CI11 = sum(CI11_part),
     CI12 = sum(CI12_part),
     CI13 = sum(CI13_part))
@@ -58,6 +60,9 @@ if (method == "all") {
 } else if (method == "Hegyi") {
   CI_Hegyi <- CIs %>% dplyr::select(ID_target, CI_Hegyi)
   return(CI_Hegyi)
+} else if (method == "CI10") {
+  CI_10 <- CIs %>% dplyr::select(ID_target, CI10)
+  return(CI_10)
 } else if (method == "CI11") {
   CI_11 <- CIs %>% dplyr::select(ID_target, CI11)
   return(CI_11)
@@ -68,6 +73,6 @@ if (method == "all") {
   CI_13 <- CIs %>% dplyr::select(ID_target, CI13)
   return(CI_13)
 } else {
-  stop("Invalid method. Supported methods: 'all', 'Hegyi', 'CI11', 'CI12', 'CI13'.")
+  stop("Invalid method. Supported methods: 'all', 'Hegyi', 'CI10', 'CI11', 'CI12', 'CI13'.")
 }
 }

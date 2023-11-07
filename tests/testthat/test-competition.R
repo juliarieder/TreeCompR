@@ -90,5 +90,5 @@ test_that("all indices at once for ALS inventory", {
 test_that("all indices at once for list of target trees from inventory table", {
   expect_equal(ncol(
     compete_inv(seg_path = "../data/inventory.csv", tree_path = "../data/targettrees_inventory.csv", radius = 10, method = "all")),
-    5)
+    6)
 })

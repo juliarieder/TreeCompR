@@ -8,6 +8,13 @@
 \description{
 Quantify individual tree competition using inventory data or point clouds.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item Report bugs at \url{https://github.com/juliarieder/TreeCompR/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Julia Rieder \email{julia.rieder@uni-wuerzburg.de} (\href{https://orcid.org/0000-0001-7233-0488}{ORCID})
 

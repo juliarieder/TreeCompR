@@ -3,18 +3,24 @@
 #' 'Compete_ALS()' returns a specific distance-dependent competition index (or group of indexes) for a target tree within a forest plot
 #'
 #' @details
-#' Using an inventory table to easily quantify distance-dependant tree competition for row of trees within a plot.
+#' Using an inventory table to easily quantify distance-dependent tree competition for row of trees within a plot.
 #' The input data can either be taken directly from field measurements or derived beforehand from LiDAR point clouds.
 #' It calculates two Competition indices, based on tree heights and distance to competitors.
 #'
 #' @section Methods:
 #'  * CI12 according to Rouvinen & Kuuluvainen (1997)
 #'  * CI13 according to Rouvinen & Kuuluvainen (1997)
-#'  ...
+#'  Both indices are also described and compared with others in Contreras et al. (2011).
 #'
-#' @section Literature:
+#' Various approaches can be used to segment airborne laser scanning point clouds into single trees and to obtain inventory data based it. Existing R packages for this are for example:
+#' * lidR package with different options to segment the point cloud or a Canopy Height Model (CHM)
+#' * itcLiDARallo within the package itcSegment
+#' Be careful with low resolution/low density point clouds, as oversegmentation of trees is usually an issue!
+#'
+#' Literature:
 #'
 #'  * Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
+#'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 #'
 #' @param seg_path character path to inventory table (.csv or .txt) with structure: ID, X, Y, H
 #' @param tree_path character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table)
