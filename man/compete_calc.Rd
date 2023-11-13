@@ -44,10 +44,15 @@ It is possible to choose between certain Competition indices, like the Hegyi ind
 
 \itemize{
 \item Hegyi Index introduced by Hegyi (1974)
+\eqn{\sum_{i=1}^{n} d_{i} / (d * dist_{i})}
 \item CI10 according to Rouvinen & Kuuluvainen (1997)
+\eqn{\sum_{i=1}^{n} arctan(d_{i} / dist_{i})}
 \item CI11 according to Rouvinen & Kuuluvainen (1997)
+\eqn{\sum_{i=1}^{n} (d_{i} / d) * arctan(d_{i} / dist_{i})}
 \item CI12 according to Rouvinen & Kuuluvainen (1997)
+\eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
 \item CI13 according to Rouvinen & Kuuluvainen (1997)
+\eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
 }
 }
 

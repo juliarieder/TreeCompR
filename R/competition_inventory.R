@@ -10,10 +10,15 @@
 #'
 #' @section Methods:
 #'  * Hegyi Index introduced by Hegyi (1974)
+#'    \eqn{\sum_{i=1}^{n} d_{i} / (d * dist_{i})}
 #'  * CI10 according to Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} arctan(d_{i} / dist_{i})}
 #'  * CI11 according to Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} (d_{i} / d) * arctan(d_{i} / dist_{i})}
 #'  * CI12 according to Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
 #'  * CI13 according to Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
 #'
 #'
 #' @section Literature:

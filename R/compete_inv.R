@@ -3,7 +3,26 @@
 #' @description
 #' 'compete_inv()' returns a specific distance-dependent competition index (or group of indexes) for a list of target trees within a forest plot
 #'
+#' @section Methods:
+#'  * Hegyi Index introduced by Hegyi (1974)
+#'    \eqn{\sum_{i=1}^{n} d_{i} / (d * dist_{i})}
+#'  * CI10 according to Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} arctan(d_{i} / dist_{i})}
+#'  * CI11 according to Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} (d_{i} / d) * arctan(d_{i} / dist_{i})}
+#'  * CI12 according to Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
+#'  * CI13 according to Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
+#'
+#'
+#' @section Literature:
+#'
+#'  * Hegyi, F., 1974. A simulation model for managing jackpine stands. In: Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models for tree and stand simulation, Royal College of Forestry, Stockholm.
+#'  * Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
+#'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 #' @param seg_path character path to inventory table (.csv or .txt) with structure: ID, X, Y, H
+#'
 #' @param tree_path character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table)
 #' @param radius numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors
 #' @param method character string assigning the method for quantifying competition "Hegyi", "CI11", "CI12", "CI13" or "all"

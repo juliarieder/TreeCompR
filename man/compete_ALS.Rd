@@ -2,7 +2,7 @@
 % Please edit documentation in R/comp_inv_ALS_calc.R
 \name{compete_ALS}
 \alias{compete_ALS}
-\title{QUantify Competition using inventory data from ALS}
+\title{Quantify Competition using inventory data from ALS}
 \usage{
 compete_ALS(seg_path, tree_path, radius)
 }
@@ -28,9 +28,14 @@ It calculates two Competition indices, based on tree heights and distance to com
 
 \itemize{
 \item CI12 according to Rouvinen & Kuuluvainen (1997)
+\eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
 \item CI13 according to Rouvinen & Kuuluvainen (1997)
-Both indices are also described and compared with others in Contreras et al. (2011).
+\eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
 }
+
+Both indices are also described and compared with others in Contreras et al. (2011).
+
+Tree Segmentation:
 
 Various approaches can be used to segment airborne laser scanning point clouds into single trees and to obtain inventory data based it. Existing R packages for this are for example:
 \itemize{
