@@ -20,6 +20,7 @@
 #' Various approaches can be used to segment airborne laser scanning point clouds into single trees and to obtain inventory data based it. Existing R packages for this are for example:
 #' * lidR package with different options to segment the point cloud or a Canopy Height Model (CHM)
 #' * itcLiDARallo within the package itcSegment
+#'
 #' Be careful with low resolution/low density point clouds, as oversegmentation of trees is usually an issue!
 #'
 #' Literature:

@@ -41,8 +41,9 @@ Various approaches can be used to segment airborne laser scanning point clouds i
 \itemize{
 \item lidR package with different options to segment the point cloud or a Canopy Height Model (CHM)
 \item itcLiDARallo within the package itcSegment
-Be careful with low resolution/low density point clouds, as oversegmentation of trees is usually an issue!
 }
+
+Be careful with low resolution/low density point clouds, as oversegmentation of trees is usually an issue!
 
 Literature:
 \itemize{

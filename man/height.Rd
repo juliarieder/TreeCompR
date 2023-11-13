@@ -2,7 +2,7 @@
 % Please edit documentation in R/tree_height.R
 \name{height}
 \alias{height}
-\title{Tree Height of the Point Cloud}
+\title{Height of the Tree Point Cloud}
 \usage{
 height(tree)
 }
@@ -13,7 +13,7 @@ height(tree)
 tree height (numeric)
 }
 \description{
-Tree Height of the Point Cloud
+Height of the Tree Point Cloud
 }
 \examples{
 \dontrun{
