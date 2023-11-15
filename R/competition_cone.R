@@ -44,13 +44,6 @@ competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cyli
 
     if (comp_method == "cone") {
 
-      points <- neighbor %>% dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>%
-        dplyr::mutate(r_cone = abs(0.577 * (Z-cone_h))) %>%
-        dplyr::filter(Z >= cone_h) %>%
-        dplyr::filter(dist <= r_cone)
-      points <- nrow(points)
-
-
       voxel <- neighbor %>% VoxR::vox(res = 0.1)
       colnames(voxel) <- c("X", "Y", "Z", "npts")
       voxel <- voxel %>% dplyr::mutate(r_cone = abs(0.577 * (Z-cone_h))) %>%
@@ -58,21 +51,17 @@ competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cyli
         dplyr::filter(Z >= cone_h) %>%
         dplyr::filter(dist <= r_cone)
       voxel <- nrow(voxel)
+      result <- data.table::data.table(target = filename, CI_cone = log(voxel))
 
     } else if (comp_method == "cylinder"){
 
-      points <- neighbor %>% dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>% dplyr::filter(dist <= cyl_r)
-      points <- nrow(points)
       voxel <- neighbor %>% VoxR::vox(res = 0.1)
       colnames(voxel) <- c("X", "Y", "Z", "npts")
       voxel <- voxel %>% dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>% dplyr::filter(dist <= cyl_r)
       voxel <- nrow(voxel)
+      result <- data.table::data.table(target = filename, CI_cyl = log(voxel))
     } else {
       stop("Invalid method. Use 'cone' or 'cylinder'.")
     }
-
-    result <- data.table::data.table(target = filename, CI_cone_pts = points, CI_cone_vox = voxel)
-    return(result)
-
-
+      return(result)
   }}

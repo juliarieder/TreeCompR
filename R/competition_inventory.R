@@ -38,7 +38,7 @@
 #'
 #' @return numeric. Competition Index value
 #'
-#' @seealso [competition_pc()] to quantify competition directly from point clouds, or [compete_ALS()] if you do not have DBH data
+#' @seealso [competition_pc()] to quantify competition directly from point clouds, or [compete_dh()] if you do not have DBH data
 #' @importFrom rlang .data
 #' @export
 #'
@@ -53,7 +53,7 @@
 #' ID_tree <- 5
 #' CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ID_tree, "ID", 1, method = "Hegyi")
 #' #}
-compete_calc <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("ID", "coordinates"), tolerance = 1, method = c("all", "Hegyi","CI11", "CI12", "CI13")) {
+compete_dd <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("ID", "coordinates"), tolerance = 1, method = c("all", "Hegyi","CI11", "CI12", "CI13")) {
 
     trees <- data.table::fread(path)
     trees <- data.frame(trees[, 1:5])

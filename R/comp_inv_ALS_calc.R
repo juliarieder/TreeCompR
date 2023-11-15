@@ -1,6 +1,6 @@
 #' Quantify Competition using inventory data from ALS
 #' @description
-#' 'Compete_ALS()' returns a specific distance-dependent competition index (or group of indexes) for a target tree within a forest plot
+#' 'compete_dh()' returns a specific distance-dependent competition index (or group of indexes) for a target tree within a forest plot
 #'
 #' @details
 #' Using an inventory table to easily quantify distance-dependent tree competition for row of trees within a plot.
@@ -39,7 +39,7 @@
 #' \dontrun{
 #' CI <- compete_ALS("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10)
 #' }
-compete_ALS <- function(seg_path, tree_path, radius) {
+compete_dh <- function(seg_path, tree_path, radius) {
   segtrees <- fread(seg_path, header = T)
   colnames(segtrees) <- c("ID", "X_seg", "Y_seg", "H")
   segtrees_sf <- sf::st_as_sf(segtrees, coords = c("X_seg", "Y_seg"))
