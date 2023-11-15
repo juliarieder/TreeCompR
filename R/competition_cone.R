@@ -1,7 +1,7 @@
 #' Quantify Tree Competition from Point Clouds (Cone or cylinder method)
 #' @description Counting the points or voxels of neighboring trees that reach into search cone or cylinder for the target tree
-#' @param forest_path character path to file of neighborhood point cloud (including the target tree and neighbors, not height normalized, can include ground points)
-#' @param tree_path character path to file of target tree point cloud
+#' @param forest_path character path to file of neighborhood point cloud (including the target tree and neighbors, not height normalized, can include ground points) Coordinates have to be in metric system!
+#' @param tree_path character path to file of target tree point cloud. Coordinates have to be in metric system!
 #' @param comp_method character string with competition method "cone" or "cylinder"
 #' @param cyl_r (Optional) only important when using comp_method "cylinder"; numeric value of cylinder radius in m. Default is 4 m.
 #'

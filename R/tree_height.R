@@ -1,6 +1,6 @@
 #' Position of the Tree from Point Cloud
 #'
-#' @param tree data frame (X, Y, Z) of the tree point cloud
+#' @param tree data frame (X, Y, Z) of the tree point cloud. Coordinates have to be in metric system!
 #'
 #' @return X,Y,Z coordinates of the tree's position
 #'
@@ -20,7 +20,7 @@ position <- function(tree){
 
 #' Height of the Tree Point Cloud
 #'
-#' @param tree data frame (X, Y, Z) of the tree point cloud
+#' @param tree data frame (X, Y, Z) of the tree point cloud. Coordinates have to be in metric system!
 #'
 #' @return tree height (numeric)
 #' @export

@@ -28,8 +28,8 @@
 #'  * Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
 #'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 #'
-#' @param seg_path character path to inventory table (.csv or .txt) with structure: ID, X, Y, H
-#' @param tree_path character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table)
+#' @param seg_path character path to inventory table (.csv or .txt) with structure: ID, X, Y, H (in m). Coordinates have to be in metric system!
+#' @param tree_path character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!
 #' @param radius numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors
 #'
 #' @return dataframe with ID_target, CI12, CI13

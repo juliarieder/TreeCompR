@@ -27,7 +27,7 @@
 #'  * Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
 #'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 #'
-#' @param path character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H), DBH and H in m. Each row indicates one tree within the plot
+#' @param path character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H), DBH and H in m. Coordinates have to be in metric system! Each row indicates one tree within the plot.
 #' @param radius numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors
 #' @param dbh_thr numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m)
 #' @param target_tree numeric (ID) or a vector of coordinates c(X, Y)
