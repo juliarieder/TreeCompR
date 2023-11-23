@@ -12,9 +12,9 @@ compete_inv(
 )
 }
 \arguments{
-\item{seg_path}{character path to inventory table (.csv or .txt) with structure: ID, X, Y, H}
+\item{seg_path}{character path to inventory table (.csv or .txt) with structure: ID, X, Y, H (in m). Coordinates have to be in metric system!}
 
-\item{tree_path}{character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table)}
+\item{tree_path}{character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!}
 
 \item{radius}{numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors}
 

@@ -12,9 +12,9 @@ competition_pc(
 )
 }
 \arguments{
-\item{forest_path}{character path to file of neighborhood point cloud (including the target tree and neighbors, not height normalized, can include ground points)}
+\item{forest_path}{character path to file of neighborhood point cloud (including the target tree and neighbors, not height normalized, can include ground points) Coordinates have to be in metric system!}
 
-\item{tree_path}{character path to file of target tree point cloud}
+\item{tree_path}{character path to file of target tree point cloud. Coordinates have to be in metric system!}
 
 \item{comp_method}{character string with competition method "cone" or "cylinder"}
 

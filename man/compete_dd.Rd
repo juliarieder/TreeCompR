@@ -15,7 +15,7 @@ compete_dd(
 )
 }
 \arguments{
-\item{path}{character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H), DBH and H in m. Each row indicates one tree within the plot}
+\item{path}{character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H), DBH and H in m. Coordinates have to be in metric system! Each row indicates one tree within the plot.}
 
 \item{radius}{numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors}
 

@@ -7,7 +7,9 @@
 
 <img src="man/figures/hex-TreeCompR.png" height="180" alt="Hexsticker" style="float: right;">
 R Package for calculating distance-dependent individual Tree Competition
-on Plot level <!-- badges: end -->
+on Plot level
+
+<!-- badges: end -->
 
 This R package is designed for the quantitative analysis of individual
 tree competition within forest ecosystems. It accepts inputs such as
@@ -39,7 +41,7 @@ segmented beforehand. Since it is crucial whether a part of the point
 cloud is classified as “competing” or as part of the target tree itself,
 a manual segmentation (e.g. in CloudCompare) is most accurate.
 
-<img src="man/figures/cone_cyl_method.png" alt="Methods Workflow" width="900">
+<img src="man/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="900">
 
 ## Example
 

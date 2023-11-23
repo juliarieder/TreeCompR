@@ -7,7 +7,7 @@
 height(tree)
 }
 \arguments{
-\item{tree}{data frame (X, Y, Z) of the tree point cloud}
+\item{tree}{data frame (X, Y, Z) of the tree point cloud. Coordinates have to be in metric system!}
 }
 \value{
 tree height (numeric)
