@@ -1,15 +1,12 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# TreeCompR
+# TreeCompR <img src="man/figures/logo.png" align="right" height="139" alt="" />
 
-<!-- badges: start -->
 
-<img src="man/figures/hex-TreeCompR.png" height="180" alt="Hexsticker" style="float: right;">
 R Package for calculating distance-dependent individual Tree Competition
 on Plot level
 
-<!-- badges: end -->
 
 This R package is designed for the quantitative analysis of individual
 tree competition within forest ecosystems. It accepts inputs such as

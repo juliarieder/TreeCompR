@@ -1,5 +1,5 @@
 Package: TreeCompR
-Title: QUantifying individual tree competition
+Title: Quantifying individual tree competition
 Version: 0.0.0.9000
 Authors@R: 
     person("Julia", "Rieder", , "julia.rieder@uni-wuerzburg.de", role = c("aut", "cre"),

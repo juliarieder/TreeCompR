@@ -33,7 +33,7 @@ compete_dd(
 numeric. Competition Index value
 }
 \description{
-'compete_calc()' returns a specific distance-dependent competition index (or group of indexes) for a target tree within a forest plot
+'compete_dd()' returns a specific distance-dependent competition index (or group of indexes) for a target tree within a forest plot
 }
 \details{
 Using an inventory table to easily quantify distance-dependant tree competition for a single tree within a plot.
@@ -70,12 +70,12 @@ It is possible to choose between certain Competition indices, like the Hegyi ind
 # Calculate some distance-dependent CIs for one tree inside forest plot
 # input coordinates target tree
 ttree <- c(15, 9)
-CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ttree, "coordinates", 1, method = "all")
+CI <- compete_dd("path/to/invtable.csv", dbh_thr = 0.1, ttree, "coordinates", 1, method = "all")
 
 # Calculate the Hegyi-Index for one tree inside a forest plot, giving the ID of the target tree
 ID_tree <- 5
-CI <- compete_calc("path/to/invtable.csv", dbh_thr = 0.1, ID_tree, "ID", 1, method = "Hegyi")
-#}
+CI <- compete_dd("path/to/invtable.csv", dbh_thr = 0.1, ID_tree, "ID", 1, method = "Hegyi")
+}
 }
 \seealso{
 \code{\link[=competition_pc]{competition_pc()}} to quantify competition directly from point clouds, or \code{\link[=compete_dh]{compete_dh()}} if you do not have DBH data
