@@ -11,7 +11,7 @@ compete_dd(
   target_tree,
   type = c("ID", "coordinates"),
   tolerance = 1,
-  method = c("all", "Hegyi", "CI11", "CI12", "CI13")
+  method = c("all", "Hegyi", "CI_dd2", "CI_dd3", "CI_hd1", "CI_hd2", "CI_hd3")
 )
 }
 \arguments{
@@ -27,7 +27,7 @@ compete_dd(
 
 \item{tolerance}{numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy}
 
-\item{method}{character string assigning the method for quantifying competition "Hegyi", "CI10", CI11", "CI12", "CI13" or "all"}
+\item{method}{character string assigning the method for quantifying competition "Hegyi", "CI_dd2", "CI_dd3", "CI_hd1", "CI_hd2", "CI_hd3" or "all"}
 }
 \value{
 numeric. Competition Index value
@@ -38,20 +38,22 @@ numeric. Competition Index value
 \details{
 Using an inventory table to easily quantify distance-dependant tree competition for a single tree within a plot.
 The input data can either be taken directly from field measurements or derived beforehand from LiDAR point clouds.
-It is possible to choose between certain Competition indices, like the Hegyi index (method = "Hegyi") according to Hegyi (1974).
+It is possible to choose between certain Competition indices, as e.g. the Hegyi index (method = "Hegyi") according to Hegyi (1974).
 }
 \section{Methods}{
 
 \itemize{
 \item Hegyi Index introduced by Hegyi (1974)
 \eqn{\sum_{i=1}^{n} d_{i} / (d * dist_{i})}
-\item CI10 according to Rouvinen & Kuuluvainen (1997)
+\item CI_dd2 according to Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} arctan(d_{i} / dist_{i})}
-\item CI11 according to Rouvinen & Kuuluvainen (1997)
+\item CI_dd3 according to Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} (d_{i} / d) * arctan(d_{i} / dist_{i})}
-\item CI12 according to Rouvinen & Kuuluvainen (1997)
+\item CI_dh1 according to Braathe (1980)
+\eqn{\sum_{i=1}^{n} h_{i} / (h * dist_{i})}
+\item CI_hd2 according to Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
-\item CI13 according to Rouvinen & Kuuluvainen (1997)
+\item CI_hd3 according to Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
 }
 }
@@ -59,9 +61,10 @@ It is possible to choose between certain Competition indices, like the Hegyi ind
 \section{Literature}{
 
 \itemize{
+\item Braathe, P., 1980. Height increment of young single trees in relation to height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130, 43–48.
+\item Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 \item Hegyi, F., 1974. A simulation model for managing jackpine stands. In: Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models for tree and stand simulation, Royal College of Forestry, Stockholm.
 \item Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
-\item Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 }
 }
 

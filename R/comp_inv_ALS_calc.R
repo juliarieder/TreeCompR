@@ -1,6 +1,6 @@
 #' Quantify Competition using inventory data from ALS
 #' @description
-#' 'compete_dh()' returns a specific distance-dependent competition index (or group of indexes) for a target tree within a forest plot
+#' 'compete_dh()' returns a specific distance-height-dependent competition index (or group of indexes) for a target tree within a forest plot
 #'
 #' @details
 #' Using an inventory table to easily quantify distance-dependent tree competition for row of trees within a plot.
@@ -8,12 +8,14 @@
 #' It calculates two Competition indices, based on tree heights and distance to competitors.
 #'
 #' @section Methods:
-#'  * CI12 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_dh1 according to Braathe (1980)
+#'    \eqn{\sum_{i=1}^{n} h_{i} / (h * dist_{i})}
+#'  * CI_dh2 according to Rouvinen & Kuuluvainen (1997)
 #'    \eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
-#'  * CI13 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_dh3 according to Rouvinen & Kuuluvainen (1997)
 #'    \eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
 #'
-#'  Both indices are also described and compared with others in Contreras et al. (2011).
+#'
 #'
 #' Tree Segmentation:
 #'
@@ -25,6 +27,7 @@
 #'
 #' Literature:
 #'
+#'  * Braathe, P., 1980. Height increment of young single trees in relation to height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130, 43–48.
 #'  * Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
 #'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 #'
@@ -32,7 +35,7 @@
 #' @param tree_path character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!
 #' @param radius numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors
 #'
-#' @return dataframe with ID_target, CI12, CI13
+#' @return dataframe with ID_target, CI_hd1, CI_hd2, CI_hd3
 #' @export
 #'
 #' @examples
@@ -62,12 +65,14 @@ compete_dh <- function(seg_path, tree_path, radius) {
   trees_competition <- dplyr::left_join(trees_competition, matching_rows, by = "ID_target") %>% mutate(euc_dist_comp = sqrt((X_segt - X_seg)^2 + (Y_segt - Y_seg)^2)) %>%
     dplyr::filter(euc_dist_comp <= radius)
   #calculate part of the Competition indices for each competitor
-  trees_competition <- trees_competition %>% dplyr::mutate(CI12_part = atan(H / euc_dist_comp), CI13_part = (H / H_target) * atan(H / euc_dist_comp))
+  trees_competition <- trees_competition %>% dplyr::mutate(CI_hd1_part = (H/ (H_target * euc_dist_comp)),
+                                                           CI_hd2_part = atan(H / euc_dist_comp),
+                                                           CI_hd3_part = (H / H_target) * atan(H / euc_dist_comp))
   #filter out the target tree itself
   trees_competition <- trees_competition %>% dplyr::filter(euc_dist_comp > 0)
-  #calculate competition index CI12 and CI13 for each target tree
-  trees_competition <- trees_competition %>% dplyr::group_by(ID_target) %>% dplyr::summarize(sum(CI12_part), sum(CI13_part))
-  colnames(trees_competition) <- c("ID_target", "CI12_ALS", "CI13_ALS")
+  #calculate competition indices (height-distance dependent) for each target tree
+  trees_competition <- trees_competition %>% dplyr::group_by(ID_target) %>% dplyr::summarize(sum(CI_hd1_part), sum(CI_hd2_part), sum(CI_hd3_part))
+  colnames(trees_competition) <- c("ID_target", "CI_hd1", "CI_hd2", "CI_hd3")
 
   return(trees_competition)
 }

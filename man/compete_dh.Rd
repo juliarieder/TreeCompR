@@ -14,10 +14,10 @@ compete_dh(seg_path, tree_path, radius)
 \item{radius}{numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors}
 }
 \value{
-dataframe with ID_target, CI12, CI13
+dataframe with ID_target, CI_hd1, CI_hd2, CI_hd3
 }
 \description{
-'compete_dh()' returns a specific distance-dependent competition index (or group of indexes) for a target tree within a forest plot
+'compete_dh()' returns a specific distance-height-dependent competition index (or group of indexes) for a target tree within a forest plot
 }
 \details{
 Using an inventory table to easily quantify distance-dependent tree competition for row of trees within a plot.
@@ -27,13 +27,13 @@ It calculates two Competition indices, based on tree heights and distance to com
 \section{Methods}{
 
 \itemize{
-\item CI12 according to Rouvinen & Kuuluvainen (1997)
+\item CI_dh1 according to Braathe (1980)
+\eqn{\sum_{i=1}^{n} h_{i} / (h * dist_{i})}
+\item CI_dh2 according to Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
-\item CI13 according to Rouvinen & Kuuluvainen (1997)
+\item CI_dh3 according to Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
 }
-
-Both indices are also described and compared with others in Contreras et al. (2011).
 
 Tree Segmentation:
 
@@ -47,6 +47,7 @@ Be careful with low resolution/low density point clouds, as oversegmentation of 
 
 Literature:
 \itemize{
+\item Braathe, P., 1980. Height increment of young single trees in relation to height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130, 43–48.
 \item Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
 \item Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 }

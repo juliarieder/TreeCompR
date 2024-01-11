@@ -6,26 +6,29 @@
 #' @details
 #' Using an inventory table to easily quantify distance-dependant tree competition for a single tree within a plot.
 #' The input data can either be taken directly from field measurements or derived beforehand from LiDAR point clouds.
-#' It is possible to choose between certain Competition indices, like the Hegyi index (method = "Hegyi") according to Hegyi (1974).
+#' It is possible to choose between certain Competition indices, as e.g. the Hegyi index (method = "Hegyi") according to Hegyi (1974).
 #'
 #' @section Methods:
 #'  * Hegyi Index introduced by Hegyi (1974)
 #'    \eqn{\sum_{i=1}^{n} d_{i} / (d * dist_{i})}
-#'  * CI10 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_dd2 according to Rouvinen & Kuuluvainen (1997)
 #'    \eqn{\sum_{i=1}^{n} arctan(d_{i} / dist_{i})}
-#'  * CI11 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_dd3 according to Rouvinen & Kuuluvainen (1997)
 #'    \eqn{\sum_{i=1}^{n} (d_{i} / d) * arctan(d_{i} / dist_{i})}
-#'  * CI12 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_dh1 according to Braathe (1980)
+#'    \eqn{\sum_{i=1}^{n} h_{i} / (h * dist_{i})}
+#'  * CI_hd2 according to Rouvinen & Kuuluvainen (1997)
 #'    \eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
-#'  * CI13 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_hd3 according to Rouvinen & Kuuluvainen (1997)
 #'    \eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
 #'
 #'
 #' @section Literature:
 #'
+#'  * Braathe, P., 1980. Height increment of young single trees in relation to height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130, 43–48.
+#'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 #'  * Hegyi, F., 1974. A simulation model for managing jackpine stands. In: Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models for tree and stand simulation, Royal College of Forestry, Stockholm.
 #'  * Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
-#'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 #'
 #' @param path character string path to .csv file with inventory data with structure (ID, X, Y, DBH, H), DBH and H in m. Coordinates have to be in metric system! Each row indicates one tree within the plot.
 #' @param radius numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors
@@ -34,7 +37,7 @@
 #' @param type character string specifying the type of input of target_tree "ID" or "coordinates".
 #' @param tolerance numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy
 #'
-#' @param method character string assigning the method for quantifying competition "Hegyi", "CI10", CI11", "CI12", "CI13" or "all"
+#' @param method character string assigning the method for quantifying competition "Hegyi", "CI_dd2", "CI_dd3", "CI_hd1", "CI_hd2", "CI_hd3" or "all"
 #'
 #' @return numeric. Competition Index value
 #'
@@ -53,7 +56,7 @@
 #' ID_tree <- 5
 #' CI <- compete_dd("path/to/invtable.csv", dbh_thr = 0.1, ID_tree, "ID", 1, method = "Hegyi")
 #' }
-compete_dd <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("ID", "coordinates"), tolerance = 1, method = c("all", "Hegyi","CI11", "CI12", "CI13")) {
+compete_dd <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("ID", "coordinates"), tolerance = 1, method = c("all", "Hegyi", "CI_dd2", "CI_dd3", "CI_hd1", "CI_hd2", "CI_hd3")) {
 
     trees <- data.table::fread(path)
     trees <- data.frame(trees[, 1:5])
@@ -106,16 +109,21 @@ compete_dd <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("
       CIs <- trees %>%
         dplyr::mutate(euc_dist_comp = sqrt((X_target - X)^2 + (Y_target - Y)^2)) %>%
         dplyr::filter(euc_dist_comp <= radius) %>%
-        dplyr::mutate(CI_h_part = DBH / (dbh_target * euc_dist_comp)) %>%
-        dplyr::mutate(CI12_part = atan(H / euc_dist_comp), CI13_part = (H / H_target) * atan(H / euc_dist_comp)) %>%
-        dplyr::mutate(CI11_part = (DBH / dbh_target) * atan(DBH / euc_dist_comp)) %>%
+        dplyr::mutate(CI_h_part = DBH / (dbh_target * euc_dist_comp),
+                      CI_dd2_part = atan(DBH / euc_dist_comp),
+                      CI_dd3_part = (DBH / dbh_target) * atan(DBH / euc_dist_comp),
+                      CI_hd1_part = (H / (H_target * euc_dist_comp)),
+                      CI_hd2_part = atan(H / euc_dist_comp),
+                      CI_hd3_part = (H / H_target) * atan(H / euc_dist_comp)) %>%
         dplyr::filter(status == "competitor")
 
       CIs <- CIs %>% dplyr::group_by(target_ID) %>% dplyr::summarise(
         CI_Hegyi = sum(CI_h_part),
-        CI11 = sum(CI11_part),
-        CI12 = sum(CI12_part),
-        CI13 = sum(CI13_part))
+        CI_dd2 = sum(CI_dd2_part),
+        CI_dd3 = sum(CI_dd3_part),
+        CI_hd1 = sum(CI_hd1_part),
+        CI_hd2 = sum(CI_hd2_part),
+        CI_hd3 = sum(CI_hd3_part))
     }
 
 
@@ -124,16 +132,22 @@ compete_dd <- function(path, radius = 10, dbh_thr = 0.1, target_tree, type = c("
     } else if (method == "Hegyi") {
       CI_Hegyi <- CIs %>% dplyr::select(target_ID, CI_Hegyi)
       return(CI_Hegyi)
-    } else if (method == "CI11") {
-      CI_11 <- CIs %>% dplyr::select(target_ID, CI11)
-      return(CI_11)
-    } else if (method == "CI12") {
-      CI_12 <- CIs %>% dplyr::select(target_ID, CI12)
-      return(CI_12)
-    } else if (method == "CI13") {
-      CI_13 <- CIs %>% dplyr::select(target_ID, CI13)
-      return(CI_13)
+    } else if (method == "CI_dd2") {
+      CI_dd2 <- CIs %>% dplyr::select(target_ID, CI_dd2)
+      return(CI_dd2)
+    } else if (method == "CI_dd3") {
+      CI_dd3 <- CIs %>% dplyr::select(target_ID, CI_dd3)
+      return(CI_dd3)
+    } else if (method == "CI_hd1") {
+      CI_hd1 <- CIs %>% dplyr::select(target_ID, CI_hd1)
+      return(CI_hd1)
+    } else if (method == "CI_hd2") {
+      CI_hd2 <- CIs %>% dplyr::select(target_ID, CI_hd2)
+      return(CI_hd2)
+    } else if (method == "CI_hd3") {
+      CI_hd3 <- CIs %>% dplyr::select(target_ID, CI_hd3)
+      return(CI_hd3)
     } else {
-      stop("Invalid method. Supported methods: 'all', 'Hegyi', 'CI11', 'CI12', 'CI13'.")
+      stop("Invalid method. Supported methods: 'all', 'Hegyi', 'CI_dd2', 'CI_dd3', 'CI_hd1', 'CI_hd2', 'CI_hd3'.")
     }
-  }
+}

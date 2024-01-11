@@ -59,7 +59,7 @@ test_that("Hegyi index works with target tree ID", {
 
 test_that("CI12 index works with target tree ID", {
   expect_equal(length(
-    compete_dd(path = test_path("testdata", "inventory.csv"),  radius = 10, dbh_thr = 0.1, target_tree = 14, type = "ID", method = "CI12")),
+    compete_dd(path = test_path("testdata", "inventory.csv"),  radius = 10, dbh_thr = 0.1, target_tree = 14, type = "ID", method = "CI_hd2")),
     2)
 })
 
@@ -72,25 +72,25 @@ test_that("Hegyi index works with coordinates", {
 test_that("all indices at once work with coordinates", {
   expect_equal(length(
     compete_dd(path = test_path("testdata", "inventory.csv"),  radius = 10, dbh_thr = 0.1, target_tree = c(0.2581, -0.4883), type = "coordinates", tolerance = 1, method = "all")),
-    5)
+    7)
 })
 
 test_that("all indices at once work with target ID", {
   expect_equal(length(
     compete_dd(path = test_path("testdata", "inventory.csv"),  radius = 10, dbh_thr = 0.1, target_tree = 14, type = "ID", method = "all")),
-    5)
+    7)
 })
 
 test_that("all indices at once for ALS inventory", {
   expect_equal(ncol(
     compete_dh(seg_path = test_path("testdata", "inventory_ALS.csv"), tree_path = test_path("testdata", "targettrees_ALS.csv"), radius = 10)),
-    3)
+    4)
 })
 
 
 test_that("all indices at once for list of target trees from inventory table", {
   expect_equal(ncol(
     compete_inv(seg_path = test_path("testdata", "inventory.csv"), tree_path = test_path("testdata", "targettrees_inventory.csv"), radius = 10, method = "all")),
-    6)
+    7)
 })
 
