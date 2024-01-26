@@ -2,24 +2,27 @@
 % Please edit documentation in R/comp_inv_ALS_calc.R
 \name{compete_dh}
 \alias{compete_dh}
-\title{Quantify Competition using inventory data from ALS}
+\title{Quantify distance-height-dependent Competition using inventory data (from ALS)}
 \usage{
 compete_dh(
-  seg_path,
-  tree_path,
+  plot_path,
+  ttrees_path,
   radius,
-  method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4")
+  method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4"),
+  tolerance = 1
 )
 }
 \arguments{
-\item{seg_path}{character path to inventory table (.csv or .txt) with structure: ID, X, Y, H (in m). Coordinates have to be in metric system!}
+\item{plot_path}{character path to inventory table (.csv or .txt) of plot, with structure: ID, X, Y, H (in m). Coordinates have to be in metric system (in m)!}
 
-\item{tree_path}{character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!}
+\item{ttrees_path}{character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!}
 
 \item{radius}{numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors}
+
+\item{tolerance}{numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy}
 }
 \value{
-dataframe with ID_target, CI_hd1, CI_hd2, CI_hd3
+dataframe with ID_target, and one or more Indices depending on chosen method
 }
 \description{
 'compete_dh()' returns a specific distance-height-dependent competition index (or group of indexes) for a list of target trees within a forest plot

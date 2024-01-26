@@ -77,8 +77,8 @@ test_that("all indices at once work with coordinates", {
 
 test_that("all indices at once work with target ID", {
   expect_equal(length(
-    compete_dd(path = test_path("testdata", "inventory.csv"),  radius = 10, dbh_thr = 0.1, target_tree = 14, type = "ID", method = "all")),
-    7)
+    compete_dd(seg_path = test_path("testdata", "inventory.csv"), tree_path = test_path("testdata", "targettrees_inventory.csv"), method = "all")),
+    4)
 })
 
 test_that("all indices at once for ALS inventory", {
@@ -91,6 +91,6 @@ test_that("all indices at once for ALS inventory", {
 test_that("all indices at once for list of target trees from inventory table", {
   expect_equal(ncol(
     compete_inv(seg_path = test_path("testdata", "inventory.csv"), tree_path = test_path("testdata", "targettrees_inventory.csv"), radius = 10, method = "all")),
-    7)
+    4)
 })
 

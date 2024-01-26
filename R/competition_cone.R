@@ -3,18 +3,20 @@
 #' @param forest_path character path to file of neighborhood point cloud (including the target tree and neighbors, not height normalized, can include ground points) Coordinates have to be in metric system!
 #' @param tree_path character path to file of target tree point cloud. Coordinates have to be in metric system!
 #' @param comp_method character string with competition method "cone" or "cylinder"
-#' @param cyl_r (Optional) only important when using comp_method "cylinder"; numeric value of cylinder radius in m. Default is 4 m.
+#' @param cyl_r (Optional) only needed when using comp_method "cylinder"; numeric value of cylinder radius in m. Default is 5 m.
 #'
-#' @return vector of counted points and voxels of neighborhood point cloud that reach into the cone spanned over the target tree
+#' @return data frame with tree ID and of log of counted voxels of neighborhood point cloud that reach into the cone/cylinder spanned over/around target tree
 #'
 #' @details
 #' * Cone Method: search cone with opening angle 60°, spanned in 50 % of target tree's height, counting the points and voxels of neighboring trees that reach within
-#' * Cylinder Method: search cylinder with specific radius (target tree in center), counting the points and voxels of neighboring trees that reach within
+#' * Cylinder Method: search cylinder with specific radius (target tree in center), counting the voxels (0.1 m res.) of neighboring trees that reach within
 #'
 #' Check the Literature:
 #' * Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. & Ammer, C. (2013). Crown modeling by terrestrial laser scanning
 #' as an approach to assess the effect of aboveground intra- and interspecific competition on tree growth. Forest Ecology and Management,
 #' 310: 275-288. https://doi.org/10.1016/j.foreco.2013.08.014
+#' *Pretzsch, H., Biber, P. & Ďurský, J. (2002). The single tree-based stand simulator SILVA: construction, application and evaluation.
+#' For. Ecol. Manage. 162, 3–21. https://doi.org/10.1016/S0378-1127(02)00047-6
 #' * Seidel, D., Hoffmann, N., Ehbrecht, M., Juchheim, J. & Ammer, C. (2015). How neighborhood affects tree diameter increment – New insights from
 #' terrestrial laser scanning and some methodical considerations. Forest Ecology and Management, 336: 119-128. http://dx.doi.org/10.1016/j.foreco.2014.10.020
 #'
@@ -28,7 +30,7 @@
 #' #Quantify competition for a single tree within a plot using cylinder method with radius 4 m
 #' CI_cyl <- competition_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt", "cylinder", cyl_r = 4)
 #' }
-competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cylinder"), cyl_r = 4){
+competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cylinder"), cyl_r = 5){
   tree <- read_tree(tree_path)
   filename <- file_path_sans_ext(basename(tree_path))
   pos <- position(tree)

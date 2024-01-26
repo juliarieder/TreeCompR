@@ -24,12 +24,14 @@
 #'  * Hegyi, F., 1974. A simulation model for managing jackpine stands. In: Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models for tree and stand simulation, Royal College of Forestry, Stockholm.
 #'  * Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
 #'
-#' @param seg_path character path to inventory table (.csv or .txt) with structure: ID, X, Y, H (in m). Coordinates have to be in metric system!
-#' @param tree_path character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!
+#' @param plot_path character path to inventory table (.csv or .txt) of the plot, with structure: ID, X, Y, DBH (in m). Coordinates have to be in metric system (in m)!
+#' @param ttrees_path character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!
 #' @param radius numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors
 #' @param method character string assigning the method for quantifying competition "CI_Hegyi", "CI_RK1", "CI_RK2" or "all"
+#' @param tolerance numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy
+#' @param dbh_thr numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m; trees with DBH smaller 0.1 m are no competitors)
 #'
-#' @return dataframe with ID_target, and one or more indices per tree, which depends on the chosen method
+#' @return dataframe with ID_target, and one or more indices per tree, depending on chosen method
 #'
 #'
 #' @seealso [competition_pc()] to quantify competition directly from point clouds, or [compete_dh()] if you do not have DBH data
@@ -38,19 +40,15 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Calculate some distance-dependent CIs for one tree inside forest plot
-#' # input coordinates target tree
-#' ttree <- c(15, 9)
-#' CI <- compete_dd("path/to/invtable.csv", dbh_thr = 0.1, ttree, "coordinates", 1, method = "all")
-#'
-#' # Calculate the Hegyi-Index for one tree inside a forest plot, giving the ID of the target tree
-#' CI <- compete_inv("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10, method = "all")
+#' # Calculate the Hegyi-Index for a list of target trees inside a forest plot, giving the ID, X, Y of the target trees
+#' CI <- compete_inv("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi", dbh_thr = 0.1, tolerance = 1)
 #' }
-compete_dd <- function(seg_path, tree_path, radius, method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2")) {
-    segtrees <- fread(seg_path, header = T)
-    colnames(segtrees) <- c("ID", "X_seg", "Y_seg", "DBH", "H")
+compete_dd <- function(plot_path, ttrees_path, radius, method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"), dbh_thr = 0.1, tolerance = 1) {
+    segtrees <- fread(plot_path, header = T)
+    colnames(segtrees) <- c("ID", "X_seg", "Y_seg", "DBH")
+    segtrees <- segtrees %>% dplyr::filter(DBH >= dbh_thr)
     segtrees_sf <- sf::st_as_sf(segtrees, coords = c("X_seg", "Y_seg"))
-    ttrees <- fread(tree_path, header = T)
+    ttrees <- fread(ttrees_path, header = T)
     colnames(ttrees) <- c("ID_target", "X", "Y")
     ttrees_sf <- sf::st_as_sf(ttrees, coords = c("X", "Y"))
     buffer <- sf::st_buffer(ttrees_sf, dist = (radius + 5),
@@ -59,14 +57,18 @@ compete_dd <- function(seg_path, tree_path, radius, method = c("all", "CI_Hegyi"
     sf::st_agr(buffer) = "constant"
     trees_competition <- sf::st_intersection(segtrees_sf, buffer)
     trees_competition1 <- sf::st_drop_geometry(trees_competition)
-    trees_competition <- dplyr::left_join(trees_competition1, segtrees, by = c("ID", "DBH", "H"))
+    trees_competition <- dplyr::left_join(trees_competition1, segtrees, by = c("ID", "DBH"))
     trees_competition <- dplyr::left_join(trees_competition, ttrees, by = "ID_target")
     #calculate euclidean distance between competitor and target tree
-    trees_competition <- trees_competition %>% mutate(euc_dist = sqrt((X - X_seg)^2 + (Y - Y_seg)^2)) %>%
+    trees_competition <- trees_competition %>% dplyr::mutate(euc_dist = sqrt((X - X_seg)^2 + (Y - Y_seg)^2)) %>%
       dplyr::mutate(status = ifelse(euc_dist == min(euc_dist), "target_tree", ifelse(euc_dist > min(euc_dist), "competitor", NA)))
-    matching_rows <- base::subset(trees_competition, status == "target_tree")
-    matching_rows <- matching_rows %>% dplyr::rename(ID_t = ID, dbh_target = DBH, H_target = H, X_segt = X_seg, Y_segt = Y_seg) %>% dplyr::select(ID_t, ID_target, dbh_target, H_target, X_segt, Y_segt)
-    trees_competition <- dplyr::left_join(trees_competition, matching_rows, by = "ID_target") %>% mutate(euc_dist_comp = sqrt((X_segt - X_seg)^2 + (Y_segt - Y_seg)^2)) %>%
+    if (min(trees_competition$euc_dist) > tolerance) {
+      stop("There was no tree found within the tolerance threshold. Check the coordinates again or, if the accuracy of GPS signal was low, set a new tolerance value.")
+    } else {
+      matching_rows <- subset(trees_competition, status == "target_tree")
+    }
+    matching_rows <- matching_rows %>% dplyr::rename(ID_t = ID, dbh_target = DBH, X_segt = X_seg, Y_segt = Y_seg) %>% dplyr::select(ID_t, ID_target, dbh_target, X_segt, Y_segt)
+    trees_competition <- dplyr::left_join(trees_competition, matching_rows, by = "ID_target") %>% dplyr::mutate(euc_dist_comp = sqrt((X_segt - X_seg)^2 + (Y_segt - Y_seg)^2)) %>%
       dplyr::filter(euc_dist_comp <= radius)
     #calculate part of the Competition indices for each competitor
     trees_competition <- trees_competition %>%
@@ -88,17 +90,17 @@ compete_dd <- function(seg_path, tree_path, radius, method = c("all", "CI_Hegyi"
       return(CIs)
     } else if (method == "CI_Hegyi") {
       CI_Hegyi <- CIs %>% dplyr::select(ID_target, CI_Hegyi)
-      cat("Distance-DBH-based Competition was quantified using", method, ". Search radius =", radius, ".\n")
+      cat("Distance-DBH-based Competition was quantified using", method,". Search radius =", radius,".\n")
       print(CI_Hegyi)
       return(CI_Hegyi)
     } else if (method == "CI_RK1") {
       CI_RK1 <- CIs %>% dplyr::select(ID_target, CI_RK1)
-      cat("Distance-DBH-based Competition was quantified using", method, ". Search radius =", radius, ".\n")
+      cat("Distance-DBH-based Competition was quantified using", method,". Search radius =", radius,".\n")
       print(CI_RK1)
       return(CI_RK1)
     } else if (method == "CI_RK2") {
       CI_RK2 <- CIs %>% dplyr::select(ID_target, CI_RK2)
-      cat("Distance-DBH-based Competition was quantified using", method, ". Search radius =", radius, ".\n")
+      cat("Distance-DBH-based Competition was quantified using", method,". Search radius =", radius,".\n")
       print(CI_RK2)
       return(CI_RK2)
     } else {

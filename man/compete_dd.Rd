@@ -5,23 +5,29 @@
 \title{Calculate Tree Competition Indices From Inventory Data}
 \usage{
 compete_dd(
-  seg_path,
-  tree_path,
+  plot_path,
+  ttrees_path,
   radius,
-  method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2")
+  method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"),
+  dbh_thr = 0.1,
+  tolerance = 1
 )
 }
 \arguments{
-\item{seg_path}{character path to inventory table (.csv or .txt) with structure: ID, X, Y, H (in m). Coordinates have to be in metric system!}
+\item{plot_path}{character path to inventory table (.csv or .txt) of the plot, with structure: ID, X, Y, DBH (in m). Coordinates have to be in metric system (in m)!}
 
-\item{tree_path}{character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!}
+\item{ttrees_path}{character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!}
 
 \item{radius}{numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors}
 
 \item{method}{character string assigning the method for quantifying competition "CI_Hegyi", "CI_RK1", "CI_RK2" or "all"}
+
+\item{dbh_thr}{numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m; trees with DBH smaller 0.1 m are no competitors)}
+
+\item{tolerance}{numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy}
 }
 \value{
-dataframe with ID_target, and one or more indices per tree, which depends on the chosen method
+dataframe with ID_target, and one or more indices per tree, depending on chosen method
 }
 \description{
 'compete_dd()' returns a specific distance-DBH-dependent competition index (or group of indexes) for a list of target trees within a forest plot
@@ -55,13 +61,8 @@ It is possible to choose between certain Competition indices, as e.g. the Hegyi 
 
 \examples{
 \dontrun{
-# Calculate some distance-dependent CIs for one tree inside forest plot
-# input coordinates target tree
-ttree <- c(15, 9)
-CI <- compete_dd("path/to/invtable.csv", dbh_thr = 0.1, ttree, "coordinates", 1, method = "all")
-
-# Calculate the Hegyi-Index for one tree inside a forest plot, giving the ID of the target tree
-CI <- compete_inv("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10, method = "all")
+# Calculate the Hegyi-Index for a list of target trees inside a forest plot, giving the ID, X, Y of the target trees
+CI <- compete_inv("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi", dbh_thr = 0.1, tolerance = 1)
 }
 }
 \seealso{
