@@ -1,7 +1,7 @@
-#' Calculate Tree Competition Indices From Inventory Data
+#' Calculate Tree Competition Indices From Inventory Data (distance-DBH-dependent)
 #'
 #' @description
-#' 'compete_dd()' returns a specific distance-DBH-dependent competition index (or group of indexes) for a list of target trees within a forest plot
+#' 'compete_dd()' returns a specific distance-DBH-dependent competition index (or group of indices) for a list of target trees within a forest plot
 #'
 #' @details
 #' Using an inventory table to easily quantify distance-dependant tree competition for a single tree within a plot.

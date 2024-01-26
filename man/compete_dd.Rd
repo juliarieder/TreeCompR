@@ -2,7 +2,7 @@
 % Please edit documentation in R/competition_inventory.R
 \name{compete_dd}
 \alias{compete_dd}
-\title{Calculate Tree Competition Indices From Inventory Data}
+\title{Calculate Tree Competition Indices From Inventory Data (distance-DBH-dependent)}
 \usage{
 compete_dd(
   plot_path,
@@ -30,7 +30,7 @@ compete_dd(
 dataframe with ID_target, and one or more indices per tree, depending on chosen method
 }
 \description{
-'compete_dd()' returns a specific distance-DBH-dependent competition index (or group of indexes) for a list of target trees within a forest plot
+'compete_dd()' returns a specific distance-DBH-dependent competition index (or group of indices) for a list of target trees within a forest plot
 }
 \details{
 Using an inventory table to easily quantify distance-dependant tree competition for a single tree within a plot.

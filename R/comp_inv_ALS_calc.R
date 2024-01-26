@@ -1,6 +1,6 @@
 #' Quantify distance-height-dependent Competition using inventory data (from ALS)
 #' @description
-#' 'compete_dh()' returns a specific distance-height-dependent competition index (or group of indexes) for a list of target trees within a forest plot
+#' 'compete_dh()' returns a specific distance-height-dependent competition index (or group of indices) for a list of target trees within a forest plot
 #'
 #' @details
 #' Using an inventory table to easily quantify distance-dependent tree competition for a list of trees within a plot.
