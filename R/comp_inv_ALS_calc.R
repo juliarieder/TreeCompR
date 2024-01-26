@@ -1,18 +1,18 @@
 #' Quantify Competition using inventory data from ALS
 #' @description
-#' 'compete_dh()' returns a specific distance-height-dependent competition index (or group of indexes) for a target tree within a forest plot
+#' 'compete_dh()' returns a specific distance-height-dependent competition index (or group of indexes) for a list of target trees within a forest plot
 #'
 #' @details
-#' Using an inventory table to easily quantify distance-dependent tree competition for row of trees within a plot.
+#' Using an inventory table to easily quantify distance-dependent tree competition for a list of trees within a plot.
 #' The input data can either be taken directly from field measurements or derived beforehand from LiDAR point clouds.
-#' It calculates two Competition indices, based on tree heights and distance to competitors.
+#' The function calculates 3 Competition indices, based on tree heights and distance to competitors.
 #'
 #' @section Methods:
-#'  * CI_dh1 according to Braathe (1980)
+#'  * CI_Braathe according to Braathe (1980)
 #'    \eqn{\sum_{i=1}^{n} h_{i} / (h * dist_{i})}
-#'  * CI_dh2 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_RK3 according to Rouvinen & Kuuluvainen (1997)
 #'    \eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
-#'  * CI_dh3 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_RK4 according to Rouvinen & Kuuluvainen (1997)
 #'    \eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
 #'
 #'
@@ -42,7 +42,7 @@
 #' \dontrun{
 #' CI <- compete_ALS("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10)
 #' }
-compete_dh <- function(seg_path, tree_path, radius) {
+compete_dh <- function(seg_path, tree_path, radius, method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4")) {
   segtrees <- fread(seg_path, header = T)
   colnames(segtrees) <- c("ID", "X_seg", "Y_seg", "H")
   segtrees_sf <- sf::st_as_sf(segtrees, coords = c("X_seg", "Y_seg"))
@@ -71,11 +71,31 @@ compete_dh <- function(seg_path, tree_path, radius) {
   #filter out the target tree itself
   trees_competition <- trees_competition %>% dplyr::filter(euc_dist_comp > 0)
   #calculate competition indices (height-distance dependent) for each target tree
-  trees_competition <- trees_competition %>% dplyr::group_by(ID_target) %>% dplyr::summarize(sum(CI_hd1_part), sum(CI_hd2_part), sum(CI_hd3_part))
-  colnames(trees_competition) <- c("ID_target", "CI_hd1", "CI_hd2", "CI_hd3")
+  CIs <- trees_competition %>% dplyr::group_by(ID_target) %>% dplyr::summarize(sum(CI_hd1_part), sum(CI_hd2_part), sum(CI_hd3_part))
+  colnames(CIs) <- c("ID_target", "CI_Braathe", "CI_RK3", "CI_RK4")
 
-  return(trees_competition)
-}
+  if (method == "all") {
+    cat("Distance-height-based competition was quantified with methods by Braathe and Rouvinen and Kuuluvainen. Search radius =", radius, ".\n")
+    print(CIs)
+    return(CIs)
+  } else if (method == "CI_Braathe") {
+    CI_Braathe <- CIs %>% dplyr::select(ID_target, CI_Braathe)
+    cat("Distance-height-based Competition was quantified using", method, ". Search radius =", radius, ".\n")
+    print(CI_Braathe)
+    return(CI_Braathe)
+  } else if (method == "CI_RK1") {
+    CI_RK3 <- CIs %>% dplyr::select(ID_target, CI_RK3)
+    cat("Distance-height-based Competition was quantified using", method, ". Search radius =", radius, ".\n")
+    print(CI_RK3)
+    return(CI_RK3)
+  } else if (method == "CI_RK2") {
+    CI_RK4 <- CIs %>% dplyr::select(ID_target, CI_RK4)
+    cat("Distance-height-based Competition was quantified using", method, ". Search radius =", radius, ".\n")
+    print(CI_RK4)
+    return(CI_RK4)
+  } else {
+    stop("Invalid method. Supported methods: 'all', 'CI_Braathe', 'CI_RK3', 'CI_RK4'.")
+}}
 
 
 

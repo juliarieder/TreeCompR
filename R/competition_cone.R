@@ -52,6 +52,8 @@ competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cyli
         dplyr::filter(dist <= r_cone)
       voxel <- nrow(voxel)
       result <- data.table::data.table(target = filename, CI_cone = log(voxel))
+      cat("Competition was quantified using the cone method with cone opening in 50 % of target tree's height with 60° opening angle. \n")
+      print(result)
 
     } else if (comp_method == "cylinder"){
 
@@ -60,8 +62,12 @@ competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cyli
       voxel <- voxel %>% dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>% dplyr::filter(dist <= cyl_r)
       voxel <- nrow(voxel)
       result <- data.table::data.table(target = filename, CI_cyl = log(voxel))
+      cat("Competition was quantified using the cylinder method with radius", cyl_r, "m. \n")
+      print(result)
     } else {
       stop("Invalid method. Use 'cone' or 'cylinder'.")
     }
       return(result)
+
+
   }}

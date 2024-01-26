@@ -2,7 +2,6 @@
 
 export(compete_dd)
 export(compete_dh)
-export(compete_inv)
 export(competition_pc)
 export(height)
 export(position)

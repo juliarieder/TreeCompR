@@ -4,7 +4,12 @@
 \alias{compete_dh}
 \title{Quantify Competition using inventory data from ALS}
 \usage{
-compete_dh(seg_path, tree_path, radius)
+compete_dh(
+  seg_path,
+  tree_path,
+  radius,
+  method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4")
+)
 }
 \arguments{
 \item{seg_path}{character path to inventory table (.csv or .txt) with structure: ID, X, Y, H (in m). Coordinates have to be in metric system!}
@@ -17,21 +22,21 @@ compete_dh(seg_path, tree_path, radius)
 dataframe with ID_target, CI_hd1, CI_hd2, CI_hd3
 }
 \description{
-'compete_dh()' returns a specific distance-height-dependent competition index (or group of indexes) for a target tree within a forest plot
+'compete_dh()' returns a specific distance-height-dependent competition index (or group of indexes) for a list of target trees within a forest plot
 }
 \details{
-Using an inventory table to easily quantify distance-dependent tree competition for row of trees within a plot.
+Using an inventory table to easily quantify distance-dependent tree competition for a list of trees within a plot.
 The input data can either be taken directly from field measurements or derived beforehand from LiDAR point clouds.
-It calculates two Competition indices, based on tree heights and distance to competitors.
+The function calculates 3 Competition indices, based on tree heights and distance to competitors.
 }
 \section{Methods}{
 
 \itemize{
-\item CI_dh1 according to Braathe (1980)
+\item CI_Braathe according to Braathe (1980)
 \eqn{\sum_{i=1}^{n} h_{i} / (h * dist_{i})}
-\item CI_dh2 according to Rouvinen & Kuuluvainen (1997)
+\item CI_RK3 according to Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
-\item CI_dh3 according to Rouvinen & Kuuluvainen (1997)
+\item CI_RK4 according to Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
 }
 
