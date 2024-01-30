@@ -10,7 +10,8 @@ compete_dd(
   radius,
   method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"),
   dbh_thr = 0.1,
-  tolerance = 1
+  tolerance = 1,
+  dbh_max = 1
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ compete_dd(
 \item{dbh_thr}{numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m; trees with DBH smaller 0.1 m are no competitors)}
 
 \item{tolerance}{numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy}
+
+\item{dbh_max}{numeric, DBH threshold (max) in m, that is realistic for the trees. (default: 1 m). It causes a warning message, if one or more tree within your plot shows higher DBH values.}
 }
 \value{
 dataframe with ID_target, and one or more indices per tree, depending on chosen method

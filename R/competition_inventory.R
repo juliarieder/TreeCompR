@@ -30,6 +30,7 @@
 #' @param method character string assigning the method for quantifying competition "CI_Hegyi", "CI_RK1", "CI_RK2" or "all"
 #' @param tolerance numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy
 #' @param dbh_thr numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m; trees with DBH smaller 0.1 m are no competitors)
+#' @param dbh_max numeric, DBH threshold (max) in m, that is realistic for the trees. (default: 1 m). It causes a warning message, if one or more tree within your plot shows higher DBH values.
 #'
 #' @return dataframe with ID_target, and one or more indices per tree, depending on chosen method
 #'
@@ -43,10 +44,18 @@
 #' # Calculate the Hegyi-Index for a list of target trees inside a forest plot, giving the ID, X, Y of the target trees
 #' CI <- compete_inv("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi", dbh_thr = 0.1, tolerance = 1)
 #' }
-compete_dd <- function(plot_path, ttrees_path, radius, method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"), dbh_thr = 0.1, tolerance = 1) {
+compete_dd <- function(plot_path, ttrees_path, radius, method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"), dbh_thr = 0.1, tolerance = 1, dbh_max = 1.0) {
     segtrees <- fread(plot_path, header = T)
     colnames(segtrees) <- c("ID", "X_seg", "Y_seg", "DBH")
     segtrees <- segtrees %>% dplyr::filter(DBH >= dbh_thr)
+    # Identify rows with DBH higher than dbh_max
+    high_dbh_rows <- segtrees[segtrees$DBH > dbh_max]
+
+    if (nrow(high_dbh_rows) > 0) {
+      cat("Warning: The following trees have a diameter above", dbh_max,"m\n")
+      colnames(high_dbh_rows) <- c("ID", "X", "Y", "DBH")
+      print((high_dbh_rows[, c("ID", "X", "Y", "DBH")]))
+    }
     segtrees_sf <- sf::st_as_sf(segtrees, coords = c("X_seg", "Y_seg"))
     ttrees <- fread(ttrees_path, header = T)
     colnames(ttrees) <- c("ID_target", "X", "Y")
