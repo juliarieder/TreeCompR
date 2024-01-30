@@ -14,9 +14,11 @@
 #' pos <- position(tree)
 #' }
 position <- function(tree){
-  lowest <- tree[order(tree$Z, decreasing = FALSE), ][1:100, ]
-  return(c(stats::median(lowest$X), stats::median(lowest$Y), stats::median(lowest$Z)))
-}
+    tree_v <- VoxR::vox(tree, res = 0.1)
+    lowest <- tree_v[order(tree_v$z, decreasing = FALSE), ][1:100, ]
+    return(c(stats::median(lowest$x), stats::median(lowest$y), stats::median(lowest$z)))
+  }
+
 
 #' Height of the Tree Point Cloud
 #'
