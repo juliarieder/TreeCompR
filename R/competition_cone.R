@@ -3,12 +3,13 @@
 #' @param forest_path character path to file of neighborhood point cloud (including the target tree and neighbors, not height normalized, can include ground points) Coordinates have to be in metric system!
 #' @param tree_path character path to file of target tree point cloud. Coordinates have to be in metric system!
 #' @param comp_method character string with competition method "cone" or "cylinder"
-#' @param cyl_r (Optional) only needed when using comp_method "cylinder"; numeric value of cylinder radius in m. Default is 5 m.
+#' @param cyl_r (optional) only needed when using comp_method "cylinder"; numeric value of cylinder radius in m. Default is 5 m.
+#' @param h_cone (optional) only when using comp_method "cone"; numeric value 0.5 or 0.6 --> cone opens in 50 or 60 % of target tree's height
 #'
 #' @return data frame with tree ID and of log of counted voxels of neighborhood point cloud that reach into the cone/cylinder spanned over/around target tree
 #'
 #' @details
-#' * Cone Method: search cone with opening angle 60°, spanned in 50 % of target tree's height, counting the points and voxels of neighboring trees that reach within
+#' * Cone Method: search cone with opening angle 60°, spanned in 50 % (or 60 %) of target tree's height, counting the voxels (0.1 m res.) of neighboring trees that reach within
 #' * Cylinder Method: search cylinder with specific radius (target tree in center), counting the voxels (0.1 m res.) of neighboring trees that reach within
 #'
 #' Check the Literature:
@@ -30,12 +31,12 @@
 #' #Quantify competition for a single tree within a plot using cylinder method with radius 4 m
 #' CI_cyl <- competition_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt", "cylinder", cyl_r = 4)
 #' }
-competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cylinder"), cyl_r = 5){
+competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cylinder"), cyl_r = 5, h_cone = 0.5){
   tree <- read_tree(tree_path)
   filename <- file_path_sans_ext(basename(tree_path))
   pos <- position(tree)
   h <- height(tree)
-  cone_h <- 0.5 * h
+  cone_h <- h_cone * h
   hood <- read_tree(forest_path)
   neighbor <- dplyr::anti_join(hood, tree, by = c("X", "Y", "Z"))
 
