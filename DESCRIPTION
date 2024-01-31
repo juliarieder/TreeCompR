@@ -18,9 +18,9 @@ Imports:
     VoxR,
     magrittr,
     rlang,
-    lidR,
     sf
 Suggests: 
+    lidR,
     knitr (>= 1.43),
     rmarkdown (>= 2.24),
     testthat (>= 3.0.0)

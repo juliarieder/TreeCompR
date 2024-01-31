@@ -8,17 +8,20 @@ competition_pc(
   forest_path,
   tree_path,
   comp_method = c("cone", "cylinder"),
-  cyl_r = 5
+  cyl_r = 5,
+  h_cone = 0.5
 )
 }
 \arguments{
-\item{forest_path}{character path to file of neighborhood point cloud (including the target tree and neighbors, not height normalized, can include ground points) Coordinates have to be in metric system!}
+\item{forest_path}{character path to file of neighborhood point cloud (including the target tree and neighbors, not height normalized, can include ground points) Coordinates have to be in metric system in m!}
 
-\item{tree_path}{character path to file of target tree point cloud. Coordinates have to be in metric system!}
+\item{tree_path}{character path to file of target tree point cloud. Coordinates have to be in metric system in m and same number of decimal places as plot point cloud}
 
 \item{comp_method}{character string with competition method "cone" or "cylinder"}
 
-\item{cyl_r}{(Optional) only needed when using comp_method "cylinder"; numeric value of cylinder radius in m. Default is 5 m.}
+\item{cyl_r}{(optional) only needed when using comp_method "cylinder"; numeric value of cylinder radius in m. Default is 5 m.}
+
+\item{h_cone}{(optional) only when using comp_method "cone"; numeric value 0.5 or 0.6 --> cone opens in 50 or 60 \% of target tree's height}
 }
 \value{
 data frame with tree ID and of log of counted voxels of neighborhood point cloud that reach into the cone/cylinder spanned over/around target tree
@@ -28,7 +31,7 @@ Counting the points or voxels of neighboring trees that reach into search cone o
 }
 \details{
 \itemize{
-\item Cone Method: search cone with opening angle 60°, spanned in 50 \% of target tree's height, counting the points and voxels of neighboring trees that reach within
+\item Cone Method: search cone with opening angle 60°, spanned in 50 \% (or 60 \%) of target tree's height, counting the voxels (0.1 m res.) of neighboring trees that reach within
 \item Cylinder Method: search cylinder with specific radius (target tree in center), counting the voxels (0.1 m res.) of neighboring trees that reach within
 }
 
@@ -46,7 +49,7 @@ terrestrial laser scanning and some methodical considerations. Forest Ecology an
 \examples{
 \dontrun{
 #Quantify crown competition for a single tree within a plot using cone method
-CI_cone <- competition_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt", "cone")
+CI_cone <- competition_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt", "cone", h_cone = 0.5)
 
 #Quantify competition for a single tree within a plot using cylinder method with radius 4 m
 CI_cyl <- competition_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt", "cylinder", cyl_r = 4)
