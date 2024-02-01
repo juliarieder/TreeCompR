@@ -14,6 +14,7 @@
 #' tree <- read_tree(path = "path/to/tree_point_cloud.las")
 #' }
 read_tree <- function(path) {
+  . <- NULL
   extension <- utils::tail(base::strsplit(path, split = ".", fixed = TRUE)[[1]], 1)
   if (extension == "txt") {
     tree <- data.table::fread(path) %>%

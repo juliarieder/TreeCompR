@@ -63,8 +63,8 @@ It is possible to choose between certain Competition indices, as e.g. the Hegyi 
 
 \examples{
 \dontrun{
-# Calculate the Hegyi-Index for a list of target trees inside a forest plot, giving the ID, X, Y of the target trees
-CI <- compete_inv("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi", dbh_thr = 0.1, tolerance = 1)
+# CI_Hegyi for trees inside forest plot
+CI <- compete_dd("path/to/plot.csv", "path/to/ttrees.csv", radius = 10, method = "CI_Hegyi")
 }
 }
 \seealso{

@@ -36,7 +36,7 @@ exerted by neighboring trees on the target tree. For this purpose, the
 target tree for which the competition is to be determined should be
 segmented beforehand. Since it is crucial whether a part of the point
 cloud is classified as “competing” or as part of the target tree itself,
-a manual segmentation (e.g. in CloudCompare) is most accurate.
+a manual segmentation (e.g.in CloudCompare) is most accurate.
 
 <img src="man/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="900">
 

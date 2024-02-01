@@ -19,6 +19,8 @@ compete_dh(
 
 \item{radius}{numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors}
 
+\item{method}{character string assigning the method for quantifying competition "CI_Braathe", "CI_RK3", "CI_RK4" or "all"}
+
 \item{tolerance}{numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy}
 }
 \value{

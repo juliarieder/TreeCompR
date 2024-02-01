@@ -34,6 +34,7 @@
 #' @param plot_path character path to inventory table (.csv or .txt) of plot, with structure: ID, X, Y, H (in m). Coordinates have to be in metric system (in m)!
 #' @param ttrees_path character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!
 #' @param radius numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors
+#' @param method character string assigning the method for quantifying competition "CI_Braathe", "CI_RK3", "CI_RK4" or "all"
 #' @param tolerance numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy
 #'
 #'
@@ -45,6 +46,9 @@
 #' CI <- compete_ALS("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10)
 #' }
 compete_dh <- function(plot_path, ttrees_path, radius, method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4"), tolerance = 1) {
+
+  X <- Y <- ID <- H <- ID_t <- ID_target <- euc_dist_comp <- CI_hd1_part <- CI_hd2_part <- CI_hd3_part <- dist <- euc_dist <- X_seg <- Y_seg <- X_segt <- Y_segt <- status <- H_target <- NULL
+
   segtrees <- fread(plot_path, header = T)
   colnames(segtrees) <- c("ID", "X_seg", "Y_seg", "H")
   segtrees_sf <- sf::st_as_sf(segtrees, coords = c("X_seg", "Y_seg"))
@@ -89,12 +93,12 @@ compete_dh <- function(plot_path, ttrees_path, radius, method = c("all", "CI_Bra
     cat("Distance-height-based Competition was quantified using", method,". Search radius =", radius,".\n")
     print(CI_Braathe)
     return(CI_Braathe)
-  } else if (method == "CI_RK1") {
+  } else if (method == "CI_RK3") {
     CI_RK3 <- CIs %>% dplyr::select(ID_target, CI_RK3)
     cat("Distance-height-based Competition was quantified using", method,". Search radius =", radius,".\n")
     print(CI_RK3)
     return(CI_RK3)
-  } else if (method == "CI_RK2") {
+  } else if (method == "CI_RK4") {
     CI_RK4 <- CIs %>% dplyr::select(ID_target, CI_RK4)
     cat("Distance-height-based Competition was quantified using", method,". Search radius =", radius,".\n")
     print(CI_RK4)

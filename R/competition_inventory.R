@@ -40,10 +40,13 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Calculate the Hegyi-Index for a list of target trees inside a forest plot, giving the ID, X, Y of the target trees
-#' CI <- compete_inv("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi", dbh_thr = 0.1, tolerance = 1)
+#' # CI_Hegyi for trees inside forest plot
+#' CI <- compete_dd("path/to/plot.csv", "path/to/ttrees.csv", radius = 10, method = "CI_Hegyi")
 #' }
 compete_dd <- function(plot_path, ttrees_path, radius, method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"), dbh_thr = 0.1, tolerance = 1, dbh_max = 1.0) {
+
+    X <- Y <- X_seg <- Y_seg <- CI_h_part <- CI_RK1_part <- CI_RK2_part <- euc_dist_comp <- DBH <- euc_dist <- ID_target <- ID_t <- DBH_target <- status <- ID <- dbh_target <- X_segt <- Y_segt <- NULL
+
     segtrees <- fread(plot_path, header = T)
     colnames(segtrees) <- c("ID", "X_seg", "Y_seg", "DBH")
     segtrees <- segtrees %>% dplyr::filter(DBH >= dbh_thr)

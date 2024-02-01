@@ -4,7 +4,6 @@
 ## usethis namespace: start
 #' @import dplyr
 #' @importFrom data.table fread
-#' @importFrom lidR readTLSLAS
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @importFrom sf st_as_sf
