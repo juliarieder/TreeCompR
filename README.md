@@ -4,15 +4,14 @@
 # TreeCompR <img src="man/figures/logo.png" align="right" height="139" alt="" />
 
 
-R Package for calculating distance-dependent individual Tree Competition
-on Plot level
+R Package for calculating distance-dependent tree competition based on inventory data or competition based on 3D point clouds
 
 
 This R package is designed for the quantitative analysis of individual
 tree competition within forest ecosystems. It accepts inputs such as
 LiDAR point clouds (as .txt or las/laz files) of forest plots and
 individual target trees, or inventory tables (including tree ID, X, Y,
-DBH, H). Through the use of various competition indices, it enables the
+DBH/H). Through the use of various competition indices, it enables the
 assessment and measurement of competition between trees, providing
 valuable insights for forest ecology, inventories, and forest management
 strategies. This package facilitates a systematic approach to
@@ -42,7 +41,7 @@ a manual segmentation (e.g.in CloudCompare) is most accurate.
 
 ## Example
 
-This is how to quantify the competition for one target tree using the
+This is how to quantify the competition for a target tree using the
 cone method:
 
 ``` r
