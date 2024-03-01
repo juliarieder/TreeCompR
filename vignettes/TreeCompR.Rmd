@@ -17,7 +17,7 @@ library(TreeCompR)
 
 ## Quantify Competition with Cone Method
 
-If you have a certain number of target trees, you might want the function to run for all of your trees. For faster processing, the neighborhood point clouds can be trimmed to a smaller extent beforehand. Make sure that the target tree does not take an edge position, otherwise the competition may be underestimated.For an easier connection of target tree and neighborhood files, use identifying file names, e.g. names that include the Tree ID. You can create a lookup-table with each row representing one target tree. The lookup-table should include two columns (forest_path, tree_path) connecting the target tree files (path to that file) with the fitting neighborhood files (path to that file). Depending on the method you want to use within the function `competition_pc()`, use `dplyr::mutate()` to add a column, specifying the method (e.g. "cone"). You can then run the function for all target trees within the lookup-table using `purrr:pmap()`.
+If you have a certain number of target trees, you might want the function to run for all of your trees. For faster processing, the neighborhood point clouds can be trimmed to a smaller extent beforehand. Make sure that the target tree does not take an edge position, otherwise the competition may be underestimated.For an easier connection of target tree and neighborhood files, use identifying file names, e.g. names that include the Tree ID. You can create a lookup-table with each row representing one target tree. The lookup-table should include two columns (forest_path, tree_path) connecting the target tree files (path to that file) with the fitting neighborhood files (path to that file). Depending on the method you want to use within the function `compete_pc()`, use `dplyr::mutate()` to add a column, specifying the method (e.g. "cone"). You can then run the function for all target trees within the lookup-table using `purrr:pmap()`.
 
 ```{r example, eval=FALSE}
 library(purrr)
@@ -25,7 +25,7 @@ library(dplyr)
 
 lookup <- lookup %>% dplyr::mutate(comp_method = "cone")
 
-lookup_results <- lookup %>% purrr:pmap(competition_pc)
+lookup_results <- lookup %>% purrr:pmap(compete_pc)
 
 lookup_results <- as.data.frame(do.call(rbind, lookup_results))
 colnames(lookup_results) <- c('Tree_ID', 'CI_cone')

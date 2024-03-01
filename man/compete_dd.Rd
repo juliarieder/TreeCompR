@@ -68,5 +68,5 @@ CI <- compete_dd("path/to/plot.csv", "path/to/ttrees.csv", radius = 10, method =
 }
 }
 \seealso{
-\code{\link[=competition_pc]{competition_pc()}} to quantify competition directly from point clouds, or \code{\link[=compete_dh]{compete_dh()}} if you do not have DBH data
+\code{\link[=compete_pc]{compete_pc()}} to quantify competition directly from point clouds, or \code{\link[=compete_dh]{compete_dh()}} if you do not have DBH data
 }

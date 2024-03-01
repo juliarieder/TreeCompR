@@ -34,7 +34,7 @@
 #' @return dataframe with ID_target, and one or more indices per tree, depending on chosen method
 #'
 #'
-#' @seealso [competition_pc()] to quantify competition directly from point clouds, or [compete_dh()] if you do not have DBH data
+#' @seealso [compete_pc()] to quantify competition directly from point clouds, or [compete_dh()] if you do not have DBH data
 #' @importFrom rlang .data
 #' @export
 #'

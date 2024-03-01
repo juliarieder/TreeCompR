@@ -49,29 +49,29 @@ test_that("reading a tree point cloud in laz format works", {
 
 test_that("quantify competition (cone) for .txt file point clouds works", {
   expect_equal(length(
-    competition_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cone")),
+    compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cone")),
     2)
 })
 
 test_that("quantify competition (cone) for .txt file point clouds works", {
   expect_equal(length(
-    competition_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cone")),
+    compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cone")),
     2)
 })
 
 test_that("quantify competition (cone) for .las file tree and .txt file forest point clouds works", {
   expect_equal(length(
-    competition_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.las"), comp_method = "cone")),
+    compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.las"), comp_method = "cone")),
     2)
 })
 
 test_that("wrong method - warning message", {
-  expect_error(competition_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cyl", cyl_r = 4), "Invalid method. Use 'cone' or 'cylinder'.")
+  expect_error(compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cyl", cyl_r = 4), "Invalid method. Use 'cone' or 'cylinder'.")
 })
 
 test_that("quantify competition (cylinder) for .txt file point clouds works with customized radius", {
   expect_equal(length(
-    competition_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cylinder", cyl_r = 3)),
+    compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cylinder", cyl_r = 3)),
     2)
 })
 

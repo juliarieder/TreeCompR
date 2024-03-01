@@ -49,15 +49,15 @@
 #' \dontrun{
 #' # Quantify crown competition for a single tree within a plot using cone
 #' # method
-#' CI_cone <- competition_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
+#' CI_cone <- compete_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
 #'                           "cone", h_cone = 0.5)
 #'
 #' # Quantify competition for a single tree within a plot using cylinder
 #' # method with radius 4 m
-#' CI_cyl <- competition_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
+#' CI_cyl <- compete_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
 #' "cylinder", cyl_r = 4)
 #' }
-competition_pc <- function(forest_path, tree_path, comp_method = c("cone", "cylinder"), cyl_r = 5, h_cone = 0.5){
+compete_pc <- function(forest_path, tree_path, comp_method = c("cone", "cylinder"), cyl_r = 5, h_cone = 0.5){
 
   X <- Y <- Z <- ID <- H <- dist <- r_cone <- NULL
 
