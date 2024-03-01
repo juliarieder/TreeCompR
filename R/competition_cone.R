@@ -11,7 +11,8 @@
 #'   be in metric system in m and same number of decimal places as the
 #'   neighborhood point cloud
 #' @param comp_method character string with competition method. Allowed values
-#'   are "cone" or "cylinder"
+#'   are "cone", "cylinder" or "both" for both methods. See details for
+#'   computation.
 #' @param cyl_r (optional) only needed when using comp_method "cylinder";
 #'   numeric value of cylinder radius in m. Default is 5 m.
 #' @param h_cone (optional) only when using comp_method "cone"; numeric value
@@ -23,12 +24,15 @@
 #'   tree.
 #'
 #' @details
-#' * Cone Method: search cone with opening angle 60 degree, spanned in 50 %
-#'   (or 60 %) of target tree's height, counting the voxels (0.1 m res.)
-#'   of neighboring trees that reach within
-#' * Cylinder Method: search cylinder with specific radius
-#'   (target tree in center), counting the voxels (0.1 m res.) of neighboring
-#'    trees that reach within
+#' * Cone Method: Based on a search cone with an opening angle of 60 degrees,
+#'   by default opening from a basal point situated at 50 % (or 60 %) of the
+#'   height of the target tree. The competition index is number of voxels (
+#'   0.1 m res.) of neighboring trees situated within the cone spanned around
+#'   the target tree.
+#' * Cylinder Method: Based on a  search cylinder with a pre-defined radius
+#'   cyl_r around the target tree (5 m by default). The competition index is the
+#'   number of the voxels (0.1 m res.) of neighboring trees situated within the
+#'   cylinder around the target tree.
 #'
 #' Check the Literature:
 #' * Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. & Ammer,
@@ -61,49 +65,81 @@
 #' }
 compete_pc <- function(forest_path, tree_path,
                        comp_method = c("cone", "cylinder"),
-                       cyl_r = 5, h_cone = 0.5, ...){
+                       cyl_r = 5, h_cone = 0.5, no_tree_value = NA_real_,
+                       ...){
+  # stop execution if wrong method is specified
+  if (!comp_method %in%  c("cone", "cylinder", "both"))
+    stop("Invalid method. Use 'cone', 'cylinder' or 'both'.")
 
+  # avoid errors with overriding global values
   X <- Y <- Z <- ID <- H <- dist <- r_cone <- NULL
 
+  # read data for central tree
   tree <- read_tree(tree_path, ...)
+  # get file name without extension
   filename <- file_path_sans_ext(basename(tree_path))
+  # get base position of central tree
   pos <- position(tree)
+  #  get height of central tree
   h <- height(tree)
-  cone_h <- h_cone * h
+
+  # read data for neighborhood
   hood <- read_tree(forest_path, ...)
+  # remove points in the neighborhood that belong to the central tree
   neighbor <- dplyr::anti_join(hood, tree, by = c("X", "Y", "Z"))
 
+  # prepare data.frame for results
+  results <- data.frame(target = filename, height_target = h)
 
+  # check if the tree is part of this neighborhood
   if (nrow(hood) == nrow(neighbor)) {
     stop("Tree is not within this plot! Do the input point clouds have the same number of decimal places?", call. = FALSE)
   } else {
+    # voxelize neighborhood data
+    voxel <- neighbor %>% VoxR::vox(res = 0.1)
+    # get correct column names
+    colnames(voxel) <- c("X", "Y", "Z", "npts")
 
-    if (comp_method == "cone") {
-
-      voxel <- neighbor %>% VoxR::vox(res = 0.1)
-      colnames(voxel) <- c("X", "Y", "Z", "npts")
-      voxel <- voxel %>% dplyr::mutate(r_cone = abs(0.577 * (Z-cone_h))) %>%
-        dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>%
+    # compute competition indices for the cone method
+    if (comp_method == "cone" | comp_method == "both") {
+      # compute base height of the cone
+      cone_h <- h_cone * h
+      # filter voxels that are inside the cone
+      voxel1 <- voxel %>%
+        # remove voxels below critical height
         dplyr::filter(Z >= cone_h) %>%
+        # compute cone radius (assuming an opening angle of pi / 3)
+        dplyr::mutate(r_cone = abs(tan(pi / 6) * (Z-cone_h))) %>%
+        # compute distance from tree position
+        dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>%
+        # remove voxels outside of the cone
         dplyr::filter(dist <= r_cone)
-      voxel <- nrow(voxel)
-      result <- data.table::data.table(target = filename, CI_cone = ifelse(voxel != 0, log(voxel), 0))
+      # get number of voxels inside the cone
+      nvoxel_cone <- nrow(voxel1)
+      # compute results
+      results$CI_cone <- nvoxel_cone
+      results$h_cone = h_cone
+      # print informational message
       cat("Competition was quantified using the cone method with cone opening in", h_cone, "* target tree's height with 60 degree opening angle. \n")
-      print(result)
 
-    } else if (comp_method == "cylinder"){
-
-      voxel <- neighbor %>% VoxR::vox(res = 0.1)
-      colnames(voxel) <- c("X", "Y", "Z", "npts")
-      voxel <- voxel %>% dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>% dplyr::filter(dist <= cyl_r)
-      voxel <- nrow(voxel)
-      result <- data.table::data.table(target = filename, CI_cyl = ifelse(voxel != 0, log(voxel), 0))
-      cat("Competition was quantified using the cylinder method with radius", cyl_r, "m. \n")
-      print(result)
-    } else {
-      stop("Invalid method. Use 'cone' or 'cylinder'.")
     }
-      return(result)
-
-
-  }}
+    if (comp_method == "cylinder" | comp_method == "both"){
+      # filter voxels that are inside the cylinder
+      voxel2 <- voxel %>%
+        # compute distance from central position
+        dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>%
+        # remove voxels outside the cylinder
+        dplyr::filter(dist <= cyl_r)
+      # get number of voxels inside the cylinder
+      nvoxel_cyl <- nrow(voxel2)
+      # compute results
+      results$CI_cyl <- nvoxel_cyl
+      results$cyl_r <- cyl_r
+      # print informational message
+      cat("Competition was quantified using the cylinder method with radius", cyl_r, "m. \n")
+    }
+  }
+  # print and return results
+  print(results)
+  return(results)
+}

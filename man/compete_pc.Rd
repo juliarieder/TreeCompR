@@ -10,6 +10,7 @@ compete_pc(
   comp_method = c("cone", "cylinder"),
   cyl_r = 5,
   h_cone = 0.5,
+  no_tree_value = NA_real_,
   ...
 )
 }
@@ -26,7 +27,8 @@ be in metric system in m and same number of decimal places as the
 neighborhood point cloud}
 
 \item{comp_method}{character string with competition method. Allowed values
-are "cone" or "cylinder"}
+are "cone", "cylinder" or "both" for both methods. See details for
+computation.}
 
 \item{cyl_r}{(optional) only needed when using comp_method "cylinder";
 numeric value of cylinder radius in m. Default is 5 m.}
@@ -47,12 +49,15 @@ into search cone or cylinder for the target tree
 }
 \details{
 \itemize{
-\item Cone Method: search cone with opening angle 60 degree, spanned in 50 \%
-(or 60 \%) of target tree's height, counting the voxels (0.1 m res.)
-of neighboring trees that reach within
-\item Cylinder Method: search cylinder with specific radius
-(target tree in center), counting the voxels (0.1 m res.) of neighboring
-trees that reach within
+\item Cone Method: Based on a search cone with an opening angle of 60 degrees,
+by default opening from a basal point situated at 50 \% (or 60 \%) of the
+height of the target tree. The competition index is number of voxels (
+0.1 m res.) of neighboring trees situated within the cone spanned around
+the target tree.
+\item Cylinder Method: Based on a  search cylinder with a pre-defined radius
+cyl_r around the target tree (5 m by default). The competition index is the
+number of the voxels (0.1 m res.) of neighboring trees situated within the
+cylinder around the target tree.
 }
 
 Check the Literature:
