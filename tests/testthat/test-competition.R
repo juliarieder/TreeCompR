@@ -38,9 +38,8 @@ test_that("reading a neighborhood point cloud in txt format works", {
   })
 
   # test if loaded object has the correct class
-  expect_match(
-    class(test_tree),
-    "data.frame"
+  expect_true(
+    inherits(test_tree, "data.frame")
   )
 
   # test if loaded object has the correct dimensions
@@ -65,7 +64,7 @@ test_that("reading a neighborhood point cloud in txt format works", {
 
 test_that("reading a tree point cloud in las format works", {
   # try if loading works without error
-  expect_message({ # message when lidR package is
+  expect_no_error({
     test_tree <-  read_tree(path = test_path("testdata", "tree.las"))
   })
 
@@ -97,7 +96,7 @@ test_that("reading a tree point cloud in las format works", {
 
 test_that("reading a tree point cloud in laz format works", {
   # try if loading works without error
-  expect_no_message({
+  expect_no_error({
     test_tree <-  read_tree(path = test_path("testdata", "tree.laz"))
   })
 
@@ -124,6 +123,42 @@ test_that("reading a tree point cloud in laz format works", {
     colSums(test_tree),
     c(X = 205070.26, Y = -132578.89, Z = 1995800.38)
   )
+})
+
+test_that("tabular point clouds with different types, structures and extensions can be read", {
+  # simple csv with named XYZ columns is read without message
+  expect_no_message({
+    tinytree1 <- read_tree(test_path("testdata", "tinytree1.csv"))
+  })
+
+  # csv with different field and decimal separator can be read
+  expect_equal(
+    tinytree1,
+    read_tree(test_path("testdata", "tinytree2.csv"),
+                                    dec = ",", sep = ";")
+    )
+
+  # csv with different field and decimal separator and a first column of class
+  # character can be read
+  expect_equal(
+    tinytree1,
+    read_tree(test_path("testdata", "tinytree3.csv"),
+                                    dec = ",", sep = ";")
+    )
+
+  # tabstop delimited txt with d a first column of class character and wrongly
+  # labeled columns can be read (resulting in a message)
+  expect_message({
+    tinytree4 <- read_tree(test_path("testdata", "tinytree4.txt"),
+                                    sep = "\t")
+    })
+  expect_equal(tinytree1, tinytree4)
+
+  # standard csv with different order (x, z, y) is read correctly
+  expect_equal(
+    tinytree1,
+    read_tree(test_path("testdata", "tinytree5.csv"))
+    )
 })
 
 test_that("quantify competition (cone) for .txt file point clouds works", {
