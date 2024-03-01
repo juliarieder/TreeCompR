@@ -47,17 +47,18 @@ read_tree <- function(path) {
       }
     } else{ # else, use the first three numeric columns
       # get numeric columns
-      tree <- subset(tree, , apply(tree, 2, is.numeric))
+      nums <- which(apply(tree, 2, is.numeric))
       # warn if there are not enough numeric columns
-      if (ncol(tree) < 2){
+      if (length(nums) < 3){
         error("Tree contains less than 3 numeric coordinate vectors.\nPlease check raw data.")
       } else {
         # get first three numeric columns
-        tree <- tree[,1:3]
+        tree <- tree[,nums[1:3]]
         # message about used coordinate vectors
         message(paste0("No named coordinates. Columns ",
                        paste(names(tree), collapse = ", "),
-                       " used as X, Y, Z coordinates, respectively."))
+                       " (no. ", paste(nums[1:3], collapse = ", "),
+                       " in raw data)\n   used as X, Y, Z coordinates, respectively."))
         # adjust names
         names(tree) <- c("X", "Y", "Z")
       }
