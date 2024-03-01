@@ -14,7 +14,7 @@ test_that("reading a tree point cloud in txt format works", {
   expect_equal(
     dim(test_tree),
     c(255874, 3)
-    )
+  )
 
   # test if loaded object has the correct column names
   expect_equal(
@@ -26,7 +26,7 @@ test_that("reading a tree point cloud in txt format works", {
   expect_equal(
     colSums(test_tree),
     c(X = 205070.26, Y = -132578.89, Z = 1995800.38)
-    )
+  )
 })
 
 
@@ -135,111 +135,168 @@ test_that("tabular point clouds with different types, structures and extensions 
   expect_equal(
     tinytree1,
     read_tree(test_path("testdata", "tinytree2.csv"),
-                                    dec = ",", sep = ";")
-    )
+              dec = ",", sep = ";")
+  )
 
   # csv with different field and decimal separator and a first column of class
   # character can be read
   expect_equal(
     tinytree1,
     read_tree(test_path("testdata", "tinytree3.csv"),
-                                    dec = ",", sep = ";")
-    )
+              dec = ",", sep = ";")
+  )
 
   # tabstop delimited txt with d a first column of class character and wrongly
   # labeled columns can be read (resulting in a message)
   expect_message({
     tinytree4 <- read_tree(test_path("testdata", "tinytree4.txt"),
-                                    sep = "\t")
-    })
+                           sep = "\t")
+  })
   expect_equal(tinytree1, tinytree4)
 
   # standard csv with different order (x, z, y) is read correctly
   expect_equal(
     tinytree1,
     read_tree(test_path("testdata", "tinytree5.csv"))
-    )
+  )
 })
 
-test_that("quantify competition (cone) for .txt file point clouds works", {
-  expect_equal(length(
-    compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cone")),
-    2)
+test_that("compete_pc works for .txt file point clouds", {
+  # test basic functionality for cone method
+  expect_equal(
+    length(
+      compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
+                 tree_path = test_path("testdata", "tree.txt"),
+                 comp_method = "cone")
+    ),
+    4)
 
+  # test basic functionality for cylinder method
+  expect_equal(
+    length(
+      compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
+                 tree_path = test_path("testdata", "tree.txt"),
+                 comp_method = "cylinder")
+    ),
+    4)
+
+  # test basic functionality for output of both methods
+  expect_equal(
+    length(
+      compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
+                 tree_path = test_path("testdata", "tree.txt"),
+                 comp_method = "both")
+    ),
+    6)
 })
 
-test_that("quantify competition (cone) for .txt file point clouds works", {
-  expect_equal(length(
-    compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cone")),
-    2)
-})
 
-test_that("quantify competition (cone) for .las file tree and .txt file forest point clouds works", {
-  expect_equal(length(
-    compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.las"), comp_method = "cone")),
-    2)
+test_that("compete_pc works for .las file tree and .txt file forest point clouds", {
+  expect_equal(
+    length(
+      compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
+                 tree_path = test_path("testdata", "tree.las"), comp_method = "cone"
+      )),
+    4)
 })
 
 test_that("wrong method - warning message", {
-  expect_error(compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cyl", cyl_r = 4), "Invalid method. Use 'cone' or 'cylinder'.")
+  expect_error(
+    compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
+               tree_path = test_path("testdata", "tree.txt"),
+               comp_method = "cyl", cyl_r = 4),
+    "Invalid method. Use 'cone', 'cylinder' or 'both.")
 })
 
 test_that("quantify competition (cylinder) for .txt file point clouds works with customized radius", {
-  expect_equal(length(
-    compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),  tree_path = test_path("testdata", "tree.txt"), comp_method = "cylinder", cyl_r = 3)),
-    2)
+  expect_equal(
+    length(
+      compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
+                 tree_path = test_path("testdata", "tree.txt"), comp_method = "cylinder", cyl_r = 3)
+    ),
+    4)
 })
 
-
 test_that("Hegyi index works", {
-  expect_equal(length(
-    compete_dd(plot_path = test_path("testdata", "inventory.csv"), ttrees_path = test_path("testdata", "targettrees_inventory.csv"), radius = 10, method = "CI_Hegyi",dbh_thr = 0.1)),
+  expect_equal(
+    length(
+      compete_dd(plot_path = test_path("testdata", "inventory.csv"),
+                 ttrees_path = test_path("testdata", "targettrees_inventory.csv"),
+                 radius = 10, method = "CI_Hegyi",dbh_thr = 0.1)
+    ),
     2)
 })
 
 test_that("CI_RK1 index works", {
-  expect_equal(length(
-    compete_dd(plot_path = test_path("testdata", "inventory.csv"), ttrees_path = test_path("testdata", "targettrees_inventory.csv"), radius = 10, method = "CI_RK1",dbh_thr = 0.1)),
+  expect_equal(
+    length(
+      compete_dd(plot_path = test_path("testdata", "inventory.csv"),
+                 ttrees_path = test_path("testdata", "targettrees_inventory.csv"),
+                 radius = 10, method = "CI_RK1",dbh_thr = 0.1)),
     2)
 })
 
 test_that("CI_RK2 index works", {
-  expect_equal(length(
-    compete_dd(plot_path = test_path("testdata", "inventory.csv"), ttrees_path = test_path("testdata", "targettrees_inventory.csv"), radius = 10, method = "CI_RK2",dbh_thr = 0.1)),
+  expect_equal(
+    length(
+      compete_dd(plot_path = test_path("testdata", "inventory.csv"),
+                 ttrees_path = test_path("testdata", "targettrees_inventory.csv"),
+                 radius = 10, method = "CI_RK2",dbh_thr = 0.1)
+    ),
     2)
 })
 
 
 test_that("all indices at once work with compete_dd()", {
-  expect_equal(length(
-    compete_dd(plot_path = test_path("testdata", "inventory.csv"), ttrees_path = test_path("testdata", "targettrees_inventory.csv"), radius = 10, method = "all",dbh_thr = 0.1)),
+  expect_equal(
+    length(
+      compete_dd(plot_path = test_path("testdata", "inventory.csv"),
+                 ttrees_path = test_path("testdata", "targettrees_inventory.csv"),
+                 radius = 10, method = "all",dbh_thr = 0.1)
+    ),
     4)
 })
 
 
 
 test_that("all indices at once for ALS inventory", {
-  expect_equal(ncol(
-    compete_dh(plot_path = test_path("testdata", "inventory_ALS.csv"), ttrees_path = test_path("testdata", "targettrees_ALS.csv"), radius = 10, method = "all")),
+  expect_equal(
+    ncol(
+      compete_dh(plot_path = test_path("testdata", "inventory_ALS.csv"),
+                 ttrees_path = test_path("testdata", "targettrees_ALS.csv"),
+                 radius = 10, method = "all")
+    ),
     4)
 })
 
 
 test_that("Braathe index works", {
-  expect_equal(ncol(
-    compete_dh(plot_path = test_path("testdata", "inventory_ALS.csv"), ttrees_path = test_path("testdata", "targettrees_ALS.csv"), radius = 10, method = "CI_Braathe")),
+  expect_equal(
+    ncol(
+      compete_dh(plot_path = test_path("testdata", "inventory_ALS.csv"),
+                 ttrees_path = test_path("testdata", "targettrees_ALS.csv"),
+                 radius = 10, method = "CI_Braathe")
+    ),
     2)
 })
 
 test_that("RK3 index works", {
-  expect_equal(ncol(
-    compete_dh(plot_path = test_path("testdata", "inventory_ALS.csv"), ttrees_path = test_path("testdata", "targettrees_ALS.csv"), radius = 10, method = "CI_RK3")),
+  expect_equal(
+    ncol(
+      compete_dh(plot_path = test_path("testdata", "inventory_ALS.csv"),
+                 ttrees_path = test_path("testdata", "targettrees_ALS.csv"),
+                 radius = 10, method = "CI_RK3")
+    ),
     2)
 })
 
 test_that("RK4 index works", {
-  expect_equal(ncol(
-    compete_dh(plot_path = test_path("testdata", "inventory_ALS.csv"), ttrees_path = test_path("testdata", "targettrees_ALS.csv"), radius = 10, method = "CI_RK4")),
+  expect_equal(
+    ncol(
+      compete_dh(plot_path = test_path("testdata", "inventory_ALS.csv"),
+                 ttrees_path = test_path("testdata", "targettrees_ALS.csv"),
+                 radius = 10, method = "CI_RK4")
+    ),
     2)
 })
 
