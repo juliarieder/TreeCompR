@@ -1,9 +1,13 @@
 #' Read a single tree point cloud
 #'
 #' @param path character path to point cloud of individual tree or a whole plot
+#'   in txt or las/laz format.
 #'
-#' @return data frame with X,Y,Z of the tree or forest point cloud in txt or las/laz format
+#' @details Internal function for reading point cloud data. Currently, the
+#'   supported formats are txt and las/laz. For other formats, please load the
+#'   point cloud data separately and enter the coordinates as a data.frame.
 #'
+#' @return data frame with X,Y,Z of the tree or forest point cloud
 #' @export
 #'
 #' @examples

@@ -7,13 +7,19 @@
 read_tree(path)
 }
 \arguments{
-\item{path}{character path to point cloud of individual tree or a whole plot}
+\item{path}{character path to point cloud of individual tree or a whole plot
+in txt or las/laz format.}
 }
 \value{
-data frame with X,Y,Z of the tree or forest point cloud in txt or las/laz format
+data frame with X,Y,Z of the tree or forest point cloud
 }
 \description{
 Read a single tree point cloud
+}
+\details{
+Internal function for reading point cloud data. Currently, the
+supported formats are txt and las/laz. For other formats, please load the
+point cloud data separately and enter the coordinates as a data.frame.
 }
 \examples{
 \dontrun{
