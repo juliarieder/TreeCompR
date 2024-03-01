@@ -1,7 +1,32 @@
 test_that("reading a tree point cloud in txt format works", {
-  expect_equal(length(
-    read_tree(path = test_path("testdata", "tree.txt"))),
-    3)
+  # try if loading works without error
+  expect_no_error({
+    test_tree <-  read_tree(path = test_path("testdata", "tree.txt"))
+  })
+
+  # test if loaded object has the correct class
+  expect_match(
+    class(test_tree),
+    "data.frame"
+  )
+
+  # test if loaded object has the correct dimensions
+  expect_equal(
+    dim(test_tree),
+    c(255874, 3)
+    )
+
+  # test if loaded object has the correct column names
+  expect_equal(
+    names(test_tree),
+    c("X", "Y", "Z")
+  )
+
+  # test if the loaded object has the correct values
+  expect_equal(
+    colSums(test_tree),
+    c(X = 205070.26, Y = -132578.89, Z = 1995800.38)
+    )
 })
 
 test_that("reading a forest point cloud in txt format works", {
