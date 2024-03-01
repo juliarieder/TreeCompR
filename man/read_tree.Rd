@@ -4,11 +4,13 @@
 \alias{read_tree}
 \title{Read a single tree point cloud}
 \usage{
-read_tree(path)
+read_tree(path, ...)
 }
 \arguments{
 \item{path}{character path to point cloud of individual tree or a whole plot
-in txt or las/laz format.}
+in las/laz format or file format readable with \code{\link[data.table:fread]{data.table::fread()}}}
+
+\item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
 data frame with X,Y and Z coordinates of the tree or forest point
@@ -19,14 +21,17 @@ Read a single tree point cloud
 }
 \details{
 Internal function for reading point cloud data. Currently, the
-supported formats are txt and las/laz. For other formats, please load the
-point cloud data separately and enter the coordinates as a data.frame.
+supported formats are las/laz and formats readable with
+\code{\link[data.table:fread]{data.table::fread()}}. For other formats, please load the point cloud data
+separately and enter the coordinates in downstream functions as a
+data.frame.
 
-If provided with a txt file, the function takes the columns named "X", "Y",
-and "Z" or "x", "y", and "z". If no columns with these names are available,
-it takes the first three numeric columns and returns a warning. If the
-dataset does not contain three numeric columns or one of the columns
-labeled X, Y, and Z is not numeric, the function fails with an error.
+If provided with tabular data, the function by default takes the columns
+named "X", "Y", and "Z" or "x", "y", and "z" to be the coordinate vectors.
+If no columns with matching names are available, it takes the first three
+numeric columns and returns a message. If the dataset does not contain
+three numeric columns or one of the columns labeled X, Y, and Z
+is not numeric, the function fails with an error.
 }
 \examples{
 \dontrun{

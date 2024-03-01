@@ -9,16 +9,18 @@ compete_pc(
   tree_path,
   comp_method = c("cone", "cylinder"),
   cyl_r = 5,
-  h_cone = 0.5
+  h_cone = 0.5,
+  ...
 )
 }
 \arguments{
-\item{forest_path}{character path to file of neighborhood point cloud in txt
-or las/laz format which is passed on to \code{\link[=read_tree]{read_tree()}}. The neighborhood has
-to include the target tree and its neighbors, not height normalized, and
-can include ground points). Coordinates have to be in metric system in m!}
+\item{forest_path}{character path to file of neighborhood point cloud in
+tabular or las/laz format which is passed on to \code{\link[=read_tree]{read_tree()}}. The
+neighborhood has to include the target tree and its neighbors, not height
+normalized, and can include ground points). Coordinates have to be in
+metric system in m!}
 
-\item{tree_path}{character path to file of target tree point cloud  in txt
+\item{tree_path}{character path to file of target tree point cloud in tabular
 or las/laz format which is passed on to \code{\link[=read_tree]{read_tree()}}. Coordinates have to
 be in metric system in m and same number of decimal places as the
 neighborhood point cloud}
@@ -31,6 +33,8 @@ numeric value of cylinder radius in m. Default is 5 m.}
 
 \item{h_cone}{(optional) only when using comp_method "cone"; numeric value
 0.5 or 0.6 --> cone opens in 50 or 60 \% of target tree's height}
+
+\item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
 data frame with tree ID and of log of counted voxels of neighborhood

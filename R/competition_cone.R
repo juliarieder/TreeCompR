@@ -1,11 +1,12 @@
 #' Quantify Tree Competition from Point Clouds (Cone or cylinder method)
 #' @description Counting the points or voxels of neighboring trees that reach
 #'   into search cone or cylinder for the target tree
-#' @param forest_path character path to file of neighborhood point cloud in txt
-#'   or las/laz format which is passed on to [read_tree()]. The neighborhood has
-#'   to include the target tree and its neighbors, not height normalized, and
-#'   can include ground points). Coordinates have to be in metric system in m!
-#' @param tree_path character path to file of target tree point cloud  in txt
+#' @param forest_path character path to file of neighborhood point cloud in
+#'   tabular or las/laz format which is passed on to [read_tree()]. The
+#'   neighborhood has to include the target tree and its neighbors, not height
+#'   normalized, and can include ground points). Coordinates have to be in
+#'   metric system in m!
+#' @param tree_path character path to file of target tree point cloud in tabular
 #'   or las/laz format which is passed on to [read_tree()]. Coordinates have to
 #'   be in metric system in m and same number of decimal places as the
 #'   neighborhood point cloud
@@ -15,7 +16,8 @@
 #'   numeric value of cylinder radius in m. Default is 5 m.
 #' @param h_cone (optional) only when using comp_method "cone"; numeric value
 #'   0.5 or 0.6 --> cone opens in 50 or 60 % of target tree's height
-#'
+#' @param ... additional arguments passed on to [data.table::fread()]
+
 #' @return data frame with tree ID and of log of counted voxels of neighborhood
 #'   point cloud that reach into the cone/cylinder spanned over/around target
 #'   tree.
@@ -57,16 +59,18 @@
 #' CI_cyl <- compete_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
 #' "cylinder", cyl_r = 4)
 #' }
-compete_pc <- function(forest_path, tree_path, comp_method = c("cone", "cylinder"), cyl_r = 5, h_cone = 0.5){
+compete_pc <- function(forest_path, tree_path,
+                       comp_method = c("cone", "cylinder"),
+                       cyl_r = 5, h_cone = 0.5, ...){
 
   X <- Y <- Z <- ID <- H <- dist <- r_cone <- NULL
 
-  tree <- read_tree(tree_path)
+  tree <- read_tree(tree_path, ...)
   filename <- file_path_sans_ext(basename(tree_path))
   pos <- position(tree)
   h <- height(tree)
   cone_h <- h_cone * h
-  hood <- read_tree(forest_path)
+  hood <- read_tree(forest_path, ...)
   neighbor <- dplyr::anti_join(hood, tree, by = c("X", "Y", "Z"))
 
 
