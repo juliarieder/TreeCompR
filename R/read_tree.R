@@ -61,12 +61,12 @@ read_tree <- function(path, ...) {
       # use these columns
       tree <- tree[, c("X", "Y", "Z")]
       # test if any of the columns has the wrong class
-      if (!all(apply(tree, 2, is.numeric))){
+      if (!all(sapply(tree, is.numeric))){
         stop("One or more of the coordinate vectors X, Y, Z is not numeric.\nPlease check raw data.")
       }
     } else{ # else, use the first three numeric columns
       # get numeric columns
-      nums <- which(apply(tree, 2, is.numeric))
+      nums <- which(sapply(tree, is.numeric))
       # warn if there are not enough numeric columns
       if (length(nums) < 3){
         stop("Tree contains less than 3 numeric coordinate vectors.\nPlease check raw data.")
