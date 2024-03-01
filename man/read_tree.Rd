@@ -11,7 +11,8 @@ read_tree(path)
 in txt or las/laz format.}
 }
 \value{
-data frame with X,Y,Z of the tree or forest point cloud
+data frame with X,Y and Z coordinates of the tree or forest point
+cloud
 }
 \description{
 Read a single tree point cloud
@@ -20,6 +21,12 @@ Read a single tree point cloud
 Internal function for reading point cloud data. Currently, the
 supported formats are txt and las/laz. For other formats, please load the
 point cloud data separately and enter the coordinates as a data.frame.
+
+If provided with a txt file, the function takes the columns named "X", "Y",
+and "Z" or "x", "y", and "z". If no columns with these names are available,
+it takes the first three numeric columns and returns a warning. If the
+dataset does not contain three numeric columns or one of the columns
+labeled X, Y, and Z is not numeric, the function fails with an error.
 }
 \examples{
 \dontrun{

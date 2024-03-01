@@ -1,6 +1,6 @@
 test_that("reading a tree point cloud in txt format works", {
   # try if loading works without error
-  expect_no_error({
+  expect_message({ # message expected due to unnamed dataset
     test_tree <-  read_tree(path = test_path("testdata", "tree.txt"))
   })
 
