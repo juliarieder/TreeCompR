@@ -2,6 +2,7 @@
 % Please edit documentation in R/compete_pointcloud.R
 \name{compete_pc}
 \alias{compete_pc}
+\alias{print.compete_pc}
 \title{Quantify Tree Competition from Point Clouds (Cone or cylinder method)}
 \usage{
 compete_pc(

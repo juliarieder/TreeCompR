@@ -164,6 +164,38 @@ compete_pc <- function(forest_source, tree_source,
           cyl_r, "m. \n")
     }
   }
+  # set class of results
+  class(results) <- c("compete_pc", class(results))
   # return results
   return(results)
+}
+
+# Define printing method for compete_pc objects:
+#' @rdname compete_pc
+#' @format NULL
+#' @usage NULL
+#' @export
+print.compete_pc <- function(output){
+  cat(" ------------------------------------------------------------------\n",
+      "Pointcloud based competition index for",
+      paste0("'", output$target, "'"), "\n",
+      "------------------------------------------------------------------\n",
+      "Target tree height:", output$height_target, "m\n",
+      "------------------------------------------------------------------\n"
+  )
+  if ("CI_cone" %in% names(output)){
+    cat(" Cone-based competition index using a cone base height of",
+        round(output$h_cone * output$height_target, 2), "and\n",
+        "an opening angle of 60°:\n",
+        "CI_cone = ", output$CI_cone, "\n",
+        "------------------------------------------------------------------\n"
+    )
+  }
+  if ("CI_cyl" %in% names(output)){
+    cat(" Cylinder-based competition index using a cylinder radius of",
+        round(output$cyl_r, 1), "\naround the target tree:\n",
+        "CI_cyl = ", output$CI_cyl, "\n",
+        "------------------------------------------------------------------\n"
+    )
+  }
 }
