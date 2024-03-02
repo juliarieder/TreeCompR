@@ -21,6 +21,15 @@
 #'   search cone is located. For example, values of 0.5 or 0.6 specify that the
 #'   cone opens in 50 or 60 % of target tree's height, respectively. Default is
 #'   0.6 as proposed by Seidel et al. (2015).
+#' @param Z_min integer of length 1 describing the minimum number of points
+#'   needed in the lowermost 0.1 m Z layer to consider it part of the target
+#'   tree. Default is 100. Used to calculate the stem base position of the
+#'   target tree. For details see [tree_pos()].
+#' @param h_XY numeric of length 1 describing the height range in m over the
+#'   stem base over which the X and Y positions are used to calculate the X and
+#'   Y coordinates of the stem base of the target tree. Default is 0.3 m. Used
+#'   to calculate the stem base position of the target tree. For details see
+#'   [tree_height()].
 #' @param ... additional arguments passed on to [data.table::fread()]
 
 #' @return data frame with tree ID and of log of counted voxels of neighborhood
@@ -81,7 +90,7 @@
 #' }
 compete_pc <- function(forest_source, tree_source,
                        comp_method = c("cone", "cylinder"),
-                       cyl_r = 5, h_cone = 0.6, no_tree_value = NA_real_,
+                       cyl_r = 5, h_cone = 0.6, Z_min = 100, h_XY = 0.3,
                        ...){
   # stop execution if wrong method is specified
   if (!comp_method %in%  c("cone", "cylinder", "both"))
@@ -94,10 +103,10 @@ compete_pc <- function(forest_source, tree_source,
   tree <- read_tree(tree_source, ...)
   # get file name without extension
   filename <- file_path_sans_ext(basename(tree_source))
-  # get base position of central tree
-  pos <- position(tree)
-  #  get height of central tree
-  h <- height(tree)
+  # get base position and height of central tree
+  pos <- tree_pos(tree, Z_min = Z_min, h_XY = h_XY, include_height = TRUE)
+  #  extract height of central tree
+  h <- pos["height"]
 
   # read data for neighborhood
   hood <- read_tree(forest_source, ...)
@@ -123,27 +132,28 @@ compete_pc <- function(forest_source, tree_source,
       # filter voxels that are inside the cone
       voxel1 <- voxel %>%
         # remove voxels below critical height
-        dplyr::filter(Z >= cone_h) %>%
+        dplyr::filter(Z - pos["Z"] >= cone_h) %>%
         # compute cone radius (assuming an opening angle of pi / 3)
-        dplyr::mutate(r_cone = abs(tan(pi / 6) * (Z-cone_h))) %>%
+        dplyr::mutate(r_cone = abs(tan(pi / 6) * (Z - pos["Z"] - cone_h))) %>%
         # compute distance from tree position
-        dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>%
+        dplyr::mutate(dist = sqrt((X - pos["X"]) ^ 2 + (Y - pos["Y"]) ^ 2)) %>%
         # remove voxels outside of the cone
         dplyr::filter(dist <= r_cone)
       # get number of voxels inside the cone
       nvoxel_cone <- nrow(voxel1)
       # compute results
       results$CI_cone <- nvoxel_cone
-      results$h_cone = h_cone
+      results$h_cone  <- h_cone
       # print informational message
-      cat("Competition was quantified using the cone method with cone opening in", h_cone, "* target tree's height with 60 degree opening angle. \n")
+      cat("Competition was quantified using the cone method with cone opening in",
+          h_cone, "* target tree's height with 60 degree opening angle. \n")
 
     }
     if (comp_method == "cylinder" | comp_method == "both"){
       # filter voxels that are inside the cylinder
       voxel2 <- voxel %>%
         # compute distance from central position
-        dplyr::mutate(dist = sqrt((X-pos[1])^2 + (Y-pos[2])^2)) %>%
+        dplyr::mutate(dist = sqrt((X - pos["X"]) ^ 2 + (Y - pos["Y"]) ^ 2)) %>%
         # remove voxels outside the cylinder
         dplyr::filter(dist <= cyl_r)
       # get number of voxels inside the cylinder
@@ -152,10 +162,10 @@ compete_pc <- function(forest_source, tree_source,
       results$CI_cyl <- nvoxel_cyl
       results$cyl_r <- cyl_r
       # print informational message
-      cat("Competition was quantified using the cylinder method with radius", cyl_r, "m. \n")
+      cat("Competition was quantified using the cylinder method with radius",
+          cyl_r, "m. \n")
     }
   }
-  # print and return results
-  print(results)
+  # return results
   return(results)
 }
