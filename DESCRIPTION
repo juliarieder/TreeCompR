@@ -18,6 +18,7 @@ Imports:
     VoxR,
     magrittr,
     rlang,
+    Rfast,
     sf
 Suggests: 
     lidR,

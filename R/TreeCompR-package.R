@@ -6,6 +6,7 @@
 #' @importFrom data.table fread
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
+#' @importFrom Rfast Round Table
 #' @importFrom sf st_as_sf
 #' @importFrom sf st_buffer
 #' @importFrom sf st_drop_geometry
