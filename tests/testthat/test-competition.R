@@ -27,6 +27,18 @@ test_that("reading a tree point cloud in txt format works", {
     colSums(test_tree),
     c(X = 205070.26, Y = -132578.89, Z = 1995800.38)
   )
+
+  # test if position works
+  expect_equal(
+    tree_pos(test_tree),
+    c(X = 0.1, Y = -0.5, Z = -0.1)
+  )
+
+  # test if height and position works
+  expect_equal(
+    tree_pos(test_tree, include_height = TRUE),
+    c(X = 0.1, Y = -0.5, Z = -0.1, height = 22.8)
+  )
 })
 
 
@@ -123,6 +135,8 @@ test_that("reading a tree point cloud in laz format works", {
     colSums(test_tree),
     c(X = 205070.26, Y = -132578.89, Z = 1995800.38)
   )
+
+
 })
 
 test_that("tabular point clouds with different types, structures and extensions can be read", {
