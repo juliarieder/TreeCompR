@@ -100,7 +100,7 @@ compete_pc <- function(forest_source, tree_source,
   # read data for central tree
   tree <- read_tree(tree_source, ...)
   # get file name without extension
-  filename <- file_path_sans_ext(basename(tree_source))
+  filename <- tools::file_path_sans_ext(basename(tree_source))
   # get base position and height of central tree
   pos <- tree_pos(tree, Z_min = Z_min, h_XY = h_XY, include_height = TRUE)
   #  extract height of central tree
@@ -142,10 +142,6 @@ compete_pc <- function(forest_source, tree_source,
       # compute results
       results$CI_cone <- nvoxel_cone
       results$h_cone  <- h_cone
-      # print informational message
-      cat("Competition was quantified using the cone method with cone opening in",
-          h_cone, "* target tree's height with 60 degree opening angle. \n")
-
     }
     if (comp_method == "cylinder" | comp_method == "both"){
       # filter voxels that are inside the cylinder
@@ -159,11 +155,10 @@ compete_pc <- function(forest_source, tree_source,
       # compute results
       results$CI_cyl <- nvoxel_cyl
       results$cyl_r <- cyl_r
-      # print informational message
-      cat("Competition was quantified using the cylinder method with radius",
-          cyl_r, "m. \n")
     }
   }
+  # remove row.names of results for proper printing
+  row.names(results) <- NULL
   # set class of results
   class(results) <- c("compete_pc", class(results))
   # return results
@@ -176,26 +171,34 @@ compete_pc <- function(forest_source, tree_source,
 #' @usage NULL
 #' @export
 print.compete_pc <- function(output){
-  cat(" ------------------------------------------------------------------\n",
-      "Pointcloud based competition index for",
-      paste0("'", output$target, "'"), "\n",
-      "------------------------------------------------------------------\n",
-      "Target tree height:", output$height_target, "m\n",
-      "------------------------------------------------------------------\n"
-  )
-  if ("CI_cone" %in% names(output)){
-    cat(" Cone-based competition index using a cone base height of",
-        round(output$h_cone * output$height_target, 2), "and\n",
-        "an opening angle of 60°:\n",
-        "CI_cone = ", output$CI_cone, "\n",
+  # if people put together more than one object of class compete_pc, treat as
+  # normal data.frame (just to avoid wrongly formatted output, workaround that
+  # can be improved later)
+  if(nrow(output) > 1)
+    print(as.data.frame(output))
+  # else print formatted output
+  else{
+    cat(" ------------------------------------------------------------------\n",
+        "Pointcloud based competition index for",
+        paste0("'", output$target, "'"), "\n",
+        "------------------------------------------------------------------\n",
+        "Target tree height:", output$height_target, "m\n",
         "------------------------------------------------------------------\n"
     )
-  }
-  if ("CI_cyl" %in% names(output)){
-    cat(" Cylinder-based competition index using a cylinder radius of",
-        round(output$cyl_r, 1), "\naround the target tree:\n",
-        "CI_cyl = ", output$CI_cyl, "\n",
-        "------------------------------------------------------------------\n"
-    )
+    if ("CI_cone" %in% names(output)){
+      cat(" Cone-based competition index using a cone base height of",
+          round(output$h_cone * output$height_target, 2), "and\n",
+          "an opening angle of 60°:\n",
+          "CI_cone = ", output$CI_cone, "\n",
+          "------------------------------------------------------------------\n"
+      )
+    }
+    if ("CI_cyl" %in% names(output)){
+      cat(" Cylinder-based competition index using a cylinder radius of",
+          round(output$cyl_r, 1), "\n around the target tree:\n",
+          "CI_cyl = ", output$CI_cyl, "\n",
+          "------------------------------------------------------------------\n"
+      )
+    }
   }
 }
