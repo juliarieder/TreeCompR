@@ -27,11 +27,11 @@
 #'
 #' @section Methods:
 #'  * CI_Braathe according to Braathe (1980)
-#'    \eqn{\sum_{i=1}^{n} h_{i} / (h * dist_{i})}
+#'    \eqn{\sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
 #'  * CI_RK3 according to Rouvinen & Kuuluvainen (1997)
-#'    \eqn{\sum_{i=1}^{n} arctan(h_{i} / dist_{i})}
+#'    \eqn{\sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i})}
 #'  * CI_RK4 according to Rouvinen & Kuuluvainen (1997)
-#'    \eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
+#'    \eqn{\sum_{i=1}^{n} (h_{i} / h) \cdot \mathrm{arctan}(h_{i} / dist_{i})}
 #'
 #' @section Tree Segmentation:
 #' Various approaches can be used to segment airborne laser scanning point
