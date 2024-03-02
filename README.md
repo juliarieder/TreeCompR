@@ -51,8 +51,14 @@ cone method:
 ``` r
 library(TreeCompR)
 ## insert path to point cloud of the forest plot and to the target tree point cloud
-CI_cone <- compete_pc("tests/testthat/testdata/neighborhood.txt", "tests/testthat/testdata/tree.txt", "cone")
-#> Competition was quantified using the cone method with cone opening in 0.5 * target tree's height with 60 degree opening angle. 
-#>    target  CI_cone
-#> 1:   tree 10.45115
+compete_pc("tests/testthat/testdata/neighborhood.txt", "tests/testthat/testdata/tree.txt", "cone")
+#>  ------------------------------------------------------------------
+#>  Pointcloud based competition index for 'tree' 
+#>  ------------------------------------------------------------------
+#>  Target tree height: 22.8 m
+#>  ------------------------------------------------------------------
+#>  Cone-based competition index using a cone base height of 13.68 and
+#>  an opening angle of 60°:
+#>  CI_cone =  22810 
+#>  ------------------------------------------------------------------
 ```

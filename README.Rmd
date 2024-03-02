@@ -44,7 +44,8 @@ This is how to quantify the competition for one target tree using the cone metho
 ```{r example, message=FALSE, warning=FALSE}
 library(TreeCompR)
 ## insert path to point cloud of the forest plot and to the target tree point cloud
-CI_cone <- compete_pc("tests/testthat/testdata/neighborhood.txt", "tests/testthat/testdata/tree.txt", "cone")
+compete_pc("tests/testthat/testdata/neighborhood.txt", "tests/testthat/testdata/tree.txt", "cone")
+
 ```
 
 
