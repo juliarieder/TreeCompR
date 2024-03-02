@@ -57,9 +57,7 @@
 #'   sensitive to the choice of the cylinder radius, so be careful when
 #'   comparing competition indices computed with different values of `cyl_r`.
 #'
-#'
-#'
-#' Check the Literature:
+#' @section Literature:
 #' * Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. & Ammer,
 #'   C. (2013). Crown modeling by terrestrial laser scanning
 #'   as an approach to assess the effect of aboveground intra- and interspecific

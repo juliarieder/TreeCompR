@@ -10,8 +10,8 @@ compete_pc(
   comp_method = c("cone", "cylinder"),
   cyl_r = 5,
   h_cone = 0.6,
-  Z_min,
-  h_XY,
+  Z_min = 100,
+  h_XY = 0.3,
   ...
 )
 }
@@ -88,8 +88,10 @@ number of the voxels (0.1 m res.) of neighboring trees situated within the
 cylinder around the target tree (cf. Seidel et al., 2015). The index is
 sensitive to the choice of the cylinder radius, so be careful when
 comparing competition indices computed with different values of \code{cyl_r}.
+}
+}
+\section{Literature}{
 
-Check the Literature:
 \itemize{
 \item Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. & Ammer,
 C. (2013). Crown modeling by terrestrial laser scanning
@@ -106,7 +108,7 @@ Ecology and Management, 336: 119-128.
 http://dx.doi.org/10.1016/j.foreco.2014.10.020
 }
 }
-}
+
 \examples{
 \dontrun{
 # Quantify crown competition for a single tree within a plot using cone

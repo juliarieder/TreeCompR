@@ -2,7 +2,7 @@
 % Please edit documentation in R/compete_inv_distheight.R
 \name{compete_dh}
 \alias{compete_dh}
-\title{Quantify distance-height-dependent Competition using inventory data (from ALS)}
+\title{Quantify distance-height-dependent Competition using ALS inventory data}
 \usage{
 compete_dh(
   plot_path,
@@ -13,26 +13,39 @@ compete_dh(
 )
 }
 \arguments{
-\item{plot_path}{character path to inventory table (.csv or .txt) of plot, with structure: ID, X, Y, H (in m). Coordinates have to be in metric system (in m)!}
+\item{plot_path}{character path to inventory table (.csv or .txt) of plot,
+with structure: ID, X, Y, H (in m). Coordinates have to be in metric system
+(in m)!}
 
-\item{ttrees_path}{character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!}
+\item{ttrees_path}{character path to table/list (.csv or .txt) of target
+trees within plot with ID_target, X, Y (does not have to be the same ID as
+in inventory table). Coordinates have to be in metric system!}
 
-\item{radius}{numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors}
+\item{radius}{numeric, Search radius (in m) around target tree, wherein all
+neighboring trees are classified as competitors}
 
-\item{method}{character string assigning the method for quantifying competition "CI_Braathe", "CI_RK3", "CI_RK4" or "all"}
+\item{method}{character string assigning the method for quantifying
+competition "CI_Braathe", "CI_RK3", "CI_RK4" or "all"}
 
-\item{tolerance}{numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy}
+\item{tolerance}{numeric. Tolerance for the match with the tree coordinates.
+If a field measurement value is used for target_tree, take a higher
+tolerance value (default=1 m), depending on the measurement accuracy}
 }
 \value{
-dataframe with ID_target, and one or more Indices depending on chosen method
+dataframe with ID_target, and one or more Indices depending on
+chosen method
 }
 \description{
-'compete_dh()' returns a specific distance-height-dependent competition index (or group of indices) for a list of target trees within a forest plot
+'compete_dh()' returns a specific distance-height-dependent competition index
+(or group of indices) for a list of target trees within a forest plot
 }
 \details{
-Using an inventory table to easily quantify distance-dependent tree competition for a list of trees within a plot.
-The input data can either be taken directly from field measurements or derived beforehand from LiDAR point clouds.
-The function calculates 3 Competition indices, based on tree heights and distance to competitors.
+Using an inventory table to easily quantify distance-dependent tree
+competition for a list of trees within a plot.
+The input data can either be taken directly from field measurements or
+derived beforehand from LiDAR point clouds.
+The function calculates 3 Competition indices, based on tree heights and
+distance to competitors.
 }
 \section{Methods}{
 
@@ -44,27 +57,41 @@ The function calculates 3 Competition indices, based on tree heights and distanc
 \item CI_RK4 according to Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} (h_{i} / h) * arctan(h_{i} / dist_{i})}
 }
+}
 
-Tree Segmentation:
+\section{Tree Segmentation}{
 
-Various approaches can be used to segment airborne laser scanning point clouds into single trees and to obtain inventory data based it. Existing R packages for this are for example:
+Various approaches can be used to segment airborne laser scanning point
+clouds into single trees and to obtain inventory data based it. Existing R
+packages for this are for example:
 \itemize{
-\item lidR package with different options to segment the point cloud or a Canopy Height Model (CHM)
+\item lidR package with different options to segment the point cloud or a Canopy
+Height Model (CHM)
 \item itcLiDARallo within the package itcSegment
 }
 
-Be careful with low resolution/low density point clouds, as oversegmentation of trees is usually an issue!
+Be careful with low resolution/low density point clouds, as oversegmentation
+of trees is usually an issue!
+}
 
-Literature:
+\section{Literature}{
+
 \itemize{
-\item Braathe, P., 1980. Height increment of young single trees in relation to height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130, 43–48.
-\item Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
-\item Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
+\item Braathe, P., 1980. Height increment of young single trees in relation to
+height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130,
+43–48.
+\item Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree
+crowns in relation to local competition in a natural mature Scot pine
+forest. Can. J. For. Res. 27, 890–902.
+\item Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree
+competition indices as predictors of basal area increment in western
+Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 }
 }
 
 \examples{
 \dontrun{
-CI <- compete_ALS("path/to/invtable.csv", "path/to/target_trees.csv", radius = 10)
+CI <- compete_ALS("path/to/invtable.csv",
+  "path/to/target_trees.csv", radius = 10)
 }
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/compete_inv_distdbh.R
 \name{compete_dd}
 \alias{compete_dd}
-\title{Calculate Tree Competition Indices From Inventory Data (distance-DBH-dependent)}
+\title{Calculate Tree Competition Indices Using Distance and DBH Inventory Data}
 \usage{
 compete_dd(
   plot_path,
@@ -15,30 +15,47 @@ compete_dd(
 )
 }
 \arguments{
-\item{plot_path}{character path to inventory table (.csv or .txt) of the plot, with structure: ID, X, Y, DBH (in m). Coordinates have to be in metric system (in m)!}
+\item{plot_path}{character path to inventory table (.csv or .txt) of the
+plot, with structure: ID, X, Y, DBH (in m). Coordinates have to be in
+metric system (in m)!}
 
-\item{ttrees_path}{character path to table/list (.csv or .txt) of target trees within plot with ID_target, X, Y (does not have to be the same ID as in inventory table). Coordinates have to be in metric system!}
+\item{ttrees_path}{character path to table/list (.csv or .txt) of target
+trees within plot with ID_target, X, Y (does not have to be the same ID as
+in inventory table). Coordinates have to be in metric system!}
 
-\item{radius}{numeric, Search radius (in m) around target tree, wherein all neighboring trees are classified as competitors}
+\item{radius}{numeric, Search radius (in m) around target tree, wherein all
+neighboring trees are classified as competitors}
 
-\item{method}{character string assigning the method for quantifying competition "CI_Hegyi", "CI_RK1", "CI_RK2" or "all"}
+\item{method}{character string assigning the method for quantifying
+competition "CI_Hegyi", "CI_RK1", "CI_RK2" or "all"}
 
-\item{dbh_thr}{numeric, DBH threshold for classifying the tree as a competitor (default is 0.1 m; trees with DBH smaller 0.1 m are no competitors)}
+\item{dbh_thr}{numeric, DBH threshold for classifying the tree as a
+competitor (default is 0.1 m; trees with DBH smaller 0.1 m are no
+competitors)}
 
-\item{tolerance}{numeric. Tolerance for the match with the tree coordinates. If a field measurement value is used for target_tree, take a higher tolerance value (default=1 m), depending on the measurement accuracy}
+\item{tolerance}{numeric. Tolerance for the match with the tree coordinates.
+If a field measurement value is used for target_tree, take a higher tolerance
+value (default=1 m), depending on the measurement accuracy}
 
-\item{dbh_max}{numeric, DBH threshold (max) in m, that is realistic for the trees. (default: 1 m). It causes a warning message, if one or more tree within your plot shows higher DBH values.}
+\item{dbh_max}{numeric, DBH threshold (max) in m, that is realistic for the
+trees. (default: 1 m). It causes a warning message, if one or more tree
+within your plot shows higher DBH values.}
 }
 \value{
-dataframe with ID_target, and one or more indices per tree, depending on chosen method
+dataframe with ID_target, and one or more indices per tree,
+depending on chosen method
 }
 \description{
-'compete_dd()' returns a specific distance-DBH-dependent competition index (or group of indices) for a list of target trees within a forest plot
+'compete_dd()' returns a specific distance-DBH-dependent competition index
+(or group of indices) for a list of target trees within a forest plot
 }
 \details{
-Using an inventory table to easily quantify distance-dependant tree competition for a single tree within a plot.
-The input data can either be taken directly from field measurements or derived beforehand from LiDAR point clouds.
-It is possible to choose between certain Competition indices, as e.g. the Hegyi index (method = "Hegyi") according to Hegyi (1974).
+Using an inventory table to easily quantify distance-dependent tree
+competition for a single tree within a plot.
+The input data can either be taken directly from field measurements or
+derived beforehand from LiDAR point clouds.
+It is possible to choose between certain Competition indices, as e.g.
+the Hegyi index (method = "Hegyi") according to Hegyi (1974).
 }
 \section{Methods}{
 
@@ -55,18 +72,26 @@ It is possible to choose between certain Competition indices, as e.g. the Hegyi 
 \section{Literature}{
 
 \itemize{
-\item Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree competition indices as predictors of basal area increment in western Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
-\item Hegyi, F., 1974. A simulation model for managing jackpine stands. In: Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models for tree and stand simulation, Royal College of Forestry, Stockholm.
-\item Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree crowns in relation to local competition in a natural mature Scot pine forest. Can. J. For. Res. 27, 890–902.
+\item Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree
+competition indices as predictors of basal area increment in western Montana
+forests. Forest Ecology and Management, 262(11): 1939-1949.
+\item Hegyi, F., 1974. A simulation model for managing jackpine stands. In:
+Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models for
+tree and stand simulation, Royal College of Forestry, Stockholm.
+\item Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree
+crowns in relation to local competition in a natural mature Scot pine
+forest. Can. J. For. Res. 27, 890–902.
 }
 }
 
 \examples{
 \dontrun{
 # CI_Hegyi for trees inside forest plot
-CI <- compete_dd("path/to/plot.csv", "path/to/ttrees.csv", radius = 10, method = "CI_Hegyi")
+CI <- compete_dd("path/to/plot.csv", "path/to/ttrees.csv",
+ radius = 10, method = "CI_Hegyi")
 }
 }
 \seealso{
-\code{\link[=compete_pc]{compete_pc()}} to quantify competition directly from point clouds, or \code{\link[=compete_dh]{compete_dh()}} if you do not have DBH data
+\code{\link[=compete_pc]{compete_pc()}} to quantify competition directly from point clouds,
+or \code{\link[=compete_dh]{compete_dh()}} if you do not have DBH data
 }
