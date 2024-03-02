@@ -4,34 +4,40 @@
 \alias{read_tree}
 \title{Read a single tree point cloud}
 \usage{
-read_tree(path, ...)
+read_tree(tree_source, ...)
 }
 \arguments{
-\item{path}{character path to point cloud of individual tree or a whole plot
-in las/laz format or file format readable with \code{\link[data.table:fread]{data.table::fread()}}}
+\item{tree_source}{object that inherits from class data.frame, or character
+path to point cloud of individual tree or a whole plot either in las/laz
+format or any file format readable with \code{\link[data.table:fread]{data.table::fread()}}. If provided
+with a point cloud object in a data.frame, the structure and column names
+are validated and homogenized; else, the function tries to read the point
+cloud in the specified path}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
-data frame with X,Y and Z coordinates of the tree or forest point
+data.frame with X,Y and Z coordinates of the tree or forest point
 cloud
 }
 \description{
-Read a single tree point cloud
+Read point cloud sourced from a file path or an object that
+inherits from class data.frame.
 }
 \details{
-Internal function for reading point cloud data. Currently, the
-supported formats are las/laz and formats readable with
+Function for reading and validating point cloud data. Currently, the
+supported formats are las/laz and any formats readable with
 \code{\link[data.table:fread]{data.table::fread()}}. For other formats, please load the point cloud data
-separately and enter the coordinates in downstream functions as a
-data.frame.
+separately and enter the coordinates as a data.frame.
 
-If provided with tabular data, the function by default takes the columns
-named "X", "Y", and "Z" or "x", "y", and "z" to be the coordinate vectors.
+If provided with tabular data (either as a data.frame or via a path to an
+\code{\link[data.table:fread]{data.table::fread()}} readable source), the function by default takes the
+columns named "X", "Y", and "Z" or "x", "y", and "z" to be the coordinate
+vectors.
 If no columns with matching names are available, it takes the first three
 numeric columns and returns a message. If the dataset does not contain
-three numeric columns or one of the columns labeled X, Y, and Z
-is not numeric, the function fails with an error.
+three numeric columns or one of the columns labeled X, Y, and Z is not
+numeric, the function fails with an error.
 }
 \examples{
 \dontrun{

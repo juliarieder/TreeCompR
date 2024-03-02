@@ -1,7 +1,7 @@
 test_that("reading a tree point cloud in txt format works", {
   # try if loading works without error
   expect_message({ # message expected due to unnamed dataset
-    test_tree <-  read_tree(path = test_path("testdata", "tree.txt"))
+    test_tree <-  read_tree(tree_source = test_path("testdata", "tree.txt"))
   })
 
   # test if loaded object has the correct class
@@ -34,7 +34,7 @@ test_that("reading a tree point cloud in txt format works", {
 test_that("reading a neighborhood point cloud in txt format works", {
   # try if loading works without error
   expect_message({ # message expected due to unnamed dataset
-    test_tree <-  read_tree(path = test_path("testdata", "neighborhood.txt"))
+    test_tree <-  read_tree(tree_source = test_path("testdata", "neighborhood.txt"))
   })
 
   # test if loaded object has the correct class
@@ -65,7 +65,7 @@ test_that("reading a neighborhood point cloud in txt format works", {
 test_that("reading a tree point cloud in las format works", {
   # try if loading works without error
   expect_no_error({
-    test_tree <-  read_tree(path = test_path("testdata", "tree.las"))
+    test_tree <-  read_tree(tree_source = test_path("testdata", "tree.las"))
   })
 
   # test if loaded object has the correct class
@@ -97,7 +97,7 @@ test_that("reading a tree point cloud in las format works", {
 test_that("reading a tree point cloud in laz format works", {
   # try if loading works without error
   expect_no_error({
-    test_tree <-  read_tree(path = test_path("testdata", "tree.laz"))
+    test_tree <-  read_tree(tree_source = test_path("testdata", "tree.laz"))
   })
 
   # test if loaded object has the correct class
@@ -158,6 +158,15 @@ test_that("tabular point clouds with different types, structures and extensions 
   expect_equal(
     tinytree1,
     read_tree(test_path("testdata", "tinytree5.csv"))
+  )
+
+  # trees can be loaded and validated if provided as data.frames
+  expect_equal(
+    tinytree1,
+    read.table(
+      test_path("testdata", "tinytree4.txt"),
+      header = TRUE) %>%
+      read_tree()
   )
 })
 
