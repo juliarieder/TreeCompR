@@ -5,36 +5,39 @@
 \title{Quantify Tree Competition from Point Clouds (Cone or cylinder method)}
 \usage{
 compete_pc(
-  forest_path,
-  tree_path,
+  forest_source,
+  tree_source,
   comp_method = c("cone", "cylinder"),
   cyl_r = 5,
-  h_cone = 0.5,
+  h_cone = 0.6,
   no_tree_value = NA_real_,
   ...
 )
 }
 \arguments{
-\item{forest_path}{character path to file of neighborhood point cloud in
-tabular or las/laz format which is passed on to \code{\link[=read_tree]{read_tree()}}. The
-neighborhood has to include the target tree and its neighbors, not height
-normalized, and can include ground points). Coordinates have to be in
-metric system in m!}
+\item{forest_source}{data.frame with neighborhood point cloud or path to file
+of neighborhood point cloud in tabular or las/laz format which is passed on
+to \code{\link[=read_tree]{read_tree()}}. The neighborhood has to include the target tree and its
+neighbors, not height normalized, and can include ground points).
+Coordinates have to be in metric system in m!}
 
-\item{tree_path}{character path to file of target tree point cloud in tabular
-or las/laz format which is passed on to \code{\link[=read_tree]{read_tree()}}. Coordinates have to
-be in metric system in m and same number of decimal places as the
-neighborhood point cloud}
+\item{tree_source}{data.frame with target tree point cloud or path to file of
+target tree point cloud in tabular or las/laz format which is passed on to
+\code{\link[=read_tree]{read_tree()}}. Coordinates have to be in metric system in m and same number
+of decimal places as the neighborhood point cloud}
 
 \item{comp_method}{character string with competition method. Allowed values
-are "cone", "cylinder" or "both" for both methods. See details for
-computation.}
+are "cone" for the cone method, "cylinder" for the cylinder method or
+"both" for both methods. See details for computation}
 
 \item{cyl_r}{(optional) only needed when using comp_method "cylinder";
 numeric value of cylinder radius in m. Default is 5 m.}
 
 \item{h_cone}{(optional) only when using comp_method "cone"; numeric value
-0.5 or 0.6 --> cone opens in 50 or 60 \% of target tree's height}
+describing the fraction of the height of the tree where the tip of the
+search cone is located. For example, values of 0.5 or 0.6 specify that the
+cone opens in 50 or 60 \% of target tree's height, respectively. Default is
+0.6 as proposed by Seidel et al. (2015).}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
@@ -44,21 +47,35 @@ point cloud that reach into the cone/cylinder spanned over/around target
 tree.
 }
 \description{
-Counting the points or voxels of neighboring trees that reach
-into search cone or cylinder for the target tree
+Counts the voxels of neighboring trees that intersect a
+search cone or search cylinder around the target tree according to Seidel
+et al. (2015) and Metz et al. (2013).
 }
 \details{
-\itemize{
-\item Cone Method: Based on a search cone with an opening angle of 60 degrees,
-by default opening from a basal point situated at 50 \% (or 60 \%) of the
-height of the target tree. The competition index is number of voxels (
-0.1 m res.) of neighboring trees situated within the cone spanned around
+\code{compete_pc()} computes competition indices based on voxel counts of
+neighbor trees that intersect a search cone or search cylinder around
 the target tree.
-\item Cylinder Method: Based on a  search cylinder with a pre-defined radius
-cyl_r around the target tree (5 m by default). The competition index is the
-number of the voxels (0.1 m res.) of neighboring trees situated within the
-cylinder around the target tree.
+\subsection{Cone Method}{
+
+Based on a search cone with an opening angle of 60 degrees,
+by default opening from a basal point situated at 60 \% of the
+height of the target tree. The competition index is defined as the number
+of voxels (0.1 m res.) of neighboring trees situated within the cone
+spanned around the target tree (cf. Metz et al 2013; Seidel et al., 2015).
+The standard value of \code{h_cone = 0.6} can be adjusted, for instance if no
+neighbor trees at all intersect the cone of the target tree. However, be
+careful with adjusting this parameter, as competition indices computed with
+different \code{h_cone} cannot easily be compared among each other.
 }
+
+\subsection{Cylinder Method}{
+
+Based on a  search cylinder with a pre-defined radius \code{cyl_r} around the
+target tree (5 m by default). The competition index is defined as the
+number of the voxels (0.1 m res.) of neighboring trees situated within the
+cylinder around the target tree (cf. Seidel et al., 2015). The index is
+sensitive to the choice of the cylinder radius, so be careful when
+comparing competition indices computed with different values of \code{cyl_r}.
 
 Check the Literature:
 \itemize{
@@ -75,6 +92,7 @@ How neighborhood affects tree diameter increment - New insights from
 terrestrial laser scanning and some methodical considerations. Forest
 Ecology and Management, 336: 119-128.
 http://dx.doi.org/10.1016/j.foreco.2014.10.020
+}
 }
 }
 \examples{

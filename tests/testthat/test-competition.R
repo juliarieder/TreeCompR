@@ -174,8 +174,8 @@ test_that("compete_pc works for .txt file point clouds", {
   # test basic functionality for cone method
   expect_equal(
     length(
-      compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
-                 tree_path = test_path("testdata", "tree.txt"),
+      compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
+                 tree_source = test_path("testdata", "tree.txt"),
                  comp_method = "cone")
     ),
     4)
@@ -183,8 +183,8 @@ test_that("compete_pc works for .txt file point clouds", {
   # test basic functionality for cylinder method
   expect_equal(
     length(
-      compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
-                 tree_path = test_path("testdata", "tree.txt"),
+      compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
+                 tree_source = test_path("testdata", "tree.txt"),
                  comp_method = "cylinder")
     ),
     4)
@@ -192,8 +192,8 @@ test_that("compete_pc works for .txt file point clouds", {
   # test basic functionality for output of both methods
   expect_equal(
     length(
-      compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
-                 tree_path = test_path("testdata", "tree.txt"),
+      compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
+                 tree_source = test_path("testdata", "tree.txt"),
                  comp_method = "both")
     ),
     6)
@@ -203,16 +203,16 @@ test_that("compete_pc works for .txt file point clouds", {
 test_that("compete_pc works for .las file tree and .txt file forest point clouds", {
   expect_equal(
     length(
-      compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
-                 tree_path = test_path("testdata", "tree.las"), comp_method = "cone"
+      compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
+                 tree_source = test_path("testdata", "tree.las"), comp_method = "cone"
       )),
     4)
 })
 
 test_that("wrong method - warning message", {
   expect_error(
-    compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
-               tree_path = test_path("testdata", "tree.txt"),
+    compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
+               tree_source = test_path("testdata", "tree.txt"),
                comp_method = "cyl", cyl_r = 4),
     "Invalid method. Use 'cone', 'cylinder' or 'both.")
 })
@@ -220,8 +220,8 @@ test_that("wrong method - warning message", {
 test_that("quantify competition (cylinder) for .txt file point clouds works with customized radius", {
   expect_equal(
     length(
-      compete_pc(forest_path = test_path("testdata", "neighborhood.txt"),
-                 tree_path = test_path("testdata", "tree.txt"), comp_method = "cylinder", cyl_r = 3)
+      compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
+                 tree_source = test_path("testdata", "tree.txt"), comp_method = "cylinder", cyl_r = 3)
     ),
     4)
 })

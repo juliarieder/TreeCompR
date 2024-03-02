@@ -1,51 +1,67 @@
-#' Quantify Tree Competition from Point Clouds (Cone or cylinder method)
-#' @description Counting the points or voxels of neighboring trees that reach
-#'   into search cone or cylinder for the target tree
-#' @param forest_path character path to file of neighborhood point cloud in
-#'   tabular or las/laz format which is passed on to [read_tree()]. The
-#'   neighborhood has to include the target tree and its neighbors, not height
-#'   normalized, and can include ground points). Coordinates have to be in
-#'   metric system in m!
-#' @param tree_path character path to file of target tree point cloud in tabular
-#'   or las/laz format which is passed on to [read_tree()]. Coordinates have to
-#'   be in metric system in m and same number of decimal places as the
-#'   neighborhood point cloud
+#' @title Quantify Tree Competition from Point Clouds (Cone or cylinder method)
+#' @description Counts the voxels of neighboring trees that intersect a
+#'   search cone or search cylinder around the target tree according to Seidel
+#'   et al. (2015) and Metz et al. (2013).
+#' @param forest_source data.frame with neighborhood point cloud or path to file
+#'   of neighborhood point cloud in tabular or las/laz format which is passed on
+#'   to [read_tree()]. The neighborhood has to include the target tree and its
+#'   neighbors, not height normalized, and can include ground points).
+#'   Coordinates have to be in metric system in m!
+#' @param tree_source data.frame with target tree point cloud or path to file of
+#'   target tree point cloud in tabular or las/laz format which is passed on to
+#'   [read_tree()]. Coordinates have to be in metric system in m and same number
+#'   of decimal places as the neighborhood point cloud
 #' @param comp_method character string with competition method. Allowed values
-#'   are "cone", "cylinder" or "both" for both methods. See details for
-#'   computation.
+#'   are "cone" for the cone method, "cylinder" for the cylinder method or
+#'   "both" for both methods. See details for computation
 #' @param cyl_r (optional) only needed when using comp_method "cylinder";
 #'   numeric value of cylinder radius in m. Default is 5 m.
 #' @param h_cone (optional) only when using comp_method "cone"; numeric value
-#'   0.5 or 0.6 --> cone opens in 50 or 60 % of target tree's height
+#'   describing the fraction of the height of the tree where the tip of the
+#'   search cone is located. For example, values of 0.5 or 0.6 specify that the
+#'   cone opens in 50 or 60 % of target tree's height, respectively. Default is
+#'   0.6 as proposed by Seidel et al. (2015).
 #' @param ... additional arguments passed on to [data.table::fread()]
 
 #' @return data frame with tree ID and of log of counted voxels of neighborhood
 #'   point cloud that reach into the cone/cylinder spanned over/around target
 #'   tree.
 #'
-#' @details
-#' * Cone Method: Based on a search cone with an opening angle of 60 degrees,
-#'   by default opening from a basal point situated at 50 % (or 60 %) of the
-#'   height of the target tree. The competition index is number of voxels (
-#'   0.1 m res.) of neighboring trees situated within the cone spanned around
+#' @details `compete_pc()` computes competition indices based on voxel counts of
+#'   neighbor trees that intersect a search cone or search cylinder around
 #'   the target tree.
-#' * Cylinder Method: Based on a  search cylinder with a pre-defined radius
-#'   cyl_r around the target tree (5 m by default). The competition index is the
+#'   ## Cone Method
+#'   Based on a search cone with an opening angle of 60 degrees,
+#'   by default opening from a basal point situated at 60 % of the
+#'   height of the target tree. The competition index is defined as the number
+#'   of voxels (0.1 m res.) of neighboring trees situated within the cone
+#'   spanned around the target tree (cf. Metz et al 2013; Seidel et al., 2015).
+#'   The standard value of `h_cone = 0.6` can be adjusted, for instance if no
+#'   neighbor trees at all intersect the cone of the target tree. However, be
+#'   careful with adjusting this parameter, as competition indices computed with
+#'   different `h_cone` cannot easily be compared among each other.
+#'   ## Cylinder Method
+#'   Based on a  search cylinder with a pre-defined radius `cyl_r` around the
+#'   target tree (5 m by default). The competition index is defined as the
 #'   number of the voxels (0.1 m res.) of neighboring trees situated within the
-#'   cylinder around the target tree.
+#'   cylinder around the target tree (cf. Seidel et al., 2015). The index is
+#'   sensitive to the choice of the cylinder radius, so be careful when
+#'   comparing competition indices computed with different values of `cyl_r`.
+#'
+#'
 #'
 #' Check the Literature:
 #' * Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. & Ammer,
 #'   C. (2013). Crown modeling by terrestrial laser scanning
-#' as an approach to assess the effect of aboveground intra- and interspecific
-#'    competition on tree growth. Forest Ecology and Management,310:275-288.
-#'    https://doi.org/10.1016/j.foreco.2013.08.014
+#'   as an approach to assess the effect of aboveground intra- and interspecific
+#'   competition on tree growth. Forest Ecology and Management,310:275-288.
+#'   https://doi.org/10.1016/j.foreco.2013.08.014
 #' * Pretzsch, H., Biber, P. & Dursky, J. (2002). The single tree-based stand
 #'   simulator SILVA: construction, application and evaluation. For. Ecol.
 #'   Manage. 162, 3-21. https://doi.org/10.1016/S0378-1127(02)00047-6
 #' * Seidel, D., Hoffmann, N., Ehbrecht, M., Juchheim, J. & Ammer, C. (2015).
 #'   How neighborhood affects tree diameter increment - New insights from
-#' terrestrial laser scanning and some methodical considerations. Forest
+#'   terrestrial laser scanning and some methodical considerations. Forest
 #'   Ecology and Management, 336: 119-128.
 #'   http://dx.doi.org/10.1016/j.foreco.2014.10.020
 #'
@@ -63,9 +79,9 @@
 #' CI_cyl <- compete_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
 #' "cylinder", cyl_r = 4)
 #' }
-compete_pc <- function(forest_path, tree_path,
+compete_pc <- function(forest_source, tree_source,
                        comp_method = c("cone", "cylinder"),
-                       cyl_r = 5, h_cone = 0.5, no_tree_value = NA_real_,
+                       cyl_r = 5, h_cone = 0.6, no_tree_value = NA_real_,
                        ...){
   # stop execution if wrong method is specified
   if (!comp_method %in%  c("cone", "cylinder", "both"))
@@ -75,16 +91,16 @@ compete_pc <- function(forest_path, tree_path,
   X <- Y <- Z <- ID <- H <- dist <- r_cone <- NULL
 
   # read data for central tree
-  tree <- read_tree(tree_path, ...)
+  tree <- read_tree(tree_source, ...)
   # get file name without extension
-  filename <- file_path_sans_ext(basename(tree_path))
+  filename <- file_path_sans_ext(basename(tree_source))
   # get base position of central tree
   pos <- position(tree)
   #  get height of central tree
   h <- height(tree)
 
   # read data for neighborhood
-  hood <- read_tree(forest_path, ...)
+  hood <- read_tree(forest_source, ...)
   # remove points in the neighborhood that belong to the central tree
   neighbor <- dplyr::anti_join(hood, tree, by = c("X", "Y", "Z"))
 
