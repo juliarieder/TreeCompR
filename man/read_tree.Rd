@@ -4,7 +4,7 @@
 \alias{read_tree}
 \title{Read a single tree point cloud}
 \usage{
-read_tree(tree_source, ...)
+read_tree(tree_source, verbose = TRUE, ...)
 }
 \arguments{
 \item{tree_source}{object that inherits from class data.frame, or character
@@ -13,6 +13,9 @@ format or any file format readable with \code{\link[data.table:fread]{data.table
 with a point cloud object in a data.frame, the structure and column names
 are validated and homogenized; else, the function tries to read the point
 cloud in the specified path}
+
+\item{verbose}{logical of length 1. Should information about progress be
+printed? Defaults to TRUE.}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }

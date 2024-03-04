@@ -19,6 +19,8 @@
 #'   as the center of the search cone/cylinder. Allowed values are "crown_pos"
 #'   for the metroid of the crown projected area and "base_pos" for the stem
 #'   base position as computed by [tree_pos()]. Default value is "crown_pos".
+#' @param tree_name (optional) ID for the tree. If no argument is put, defaults
+#'   to the name of the argument provided as `tree_source`.
 #' @param cyl_r (optional) only needed when using comp_method "cylinder";
 #'   numeric value of cylinder radius in m. Default is 5 m.
 #' @param h_cone (optional) only when using comp_method "cone"; numeric value
@@ -35,8 +37,11 @@
 #'   y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 #'   to calculate the stem base position of the target tree. For details see
 #'   [tree_pos()].
+#' @param print_progress character of length 1. Allowed values are "full" (print
+#'   all progress), "some" (only print name of tree object) and "none (do not
+#'   print any progress). Defaults to "full".
 #' @param ... additional arguments passed on to [data.table::fread()]
-
+#'
 #' @return data frame with tree ID and of log of counted voxels of neighborhood
 #'   point cloud that reach into the cone/cylinder spanned over/around target
 #'   tree.
@@ -94,24 +99,33 @@
 compete_pc <- function(forest_source, tree_source,
                        comp_method = c("cone", "cylinder", "both"),
                        center_position = c("crown_pos", "base_pos"),
+                       tree_name = NULL,
                        cyl_r = 5, h_cone = 0.6, z_min = 100, h_xy = 0.3,
+                       print_progress = c("full", "some", "none"),
                        ...){
   # match arguments against the allowed values
   comp_method <- match.arg(comp_method)
   center_position <- match.arg(center_position)
+  print_progress <- match.arg(print_progress)
 
   # avoid errors with undefined global values in CMD check
   x <- y <- z <- ID <- h <- dist <- r_cone <- NULL
 
-  # catch name of tree and neighborhood object before evaluation
-  tree_name <- eval(substitute(tree_source))
-  # if a path, get file name without extension
-  if (inherits(tree_source, "character")){
-    tree_name <- tools::file_path_sans_ext(basename(tree_name))
+  # if no tree_name is specified, get name from function call
+  if(is.null(tree_name)){
+    # catch name of tree object before evaluation
+    tree_name <- eval(substitute(tree_source))
+    # if a path, get file name without extension
+    if (inherits(tree_source, "character")){
+      tree_name <- tools::file_path_sans_ext(basename(tree_name))
+    }
   }
+  # print progress
+  if (print_progress != "none") cat("----- Processing competition indices for:",
+                                    tree_name, "-----\n")
 
   # read data for central tree
-  tree <- read_tree(tree_source, ...)
+  tree <- read_tree(tree_source, verbose = print_progress == "full", ...)
   # get position and height of central tree
   position <- tree_pos(tree, z_min = z_min, h_xy = h_xy)
   # get basis position of the cone/cylinder of the analysis according
@@ -120,7 +134,7 @@ compete_pc <- function(forest_source, tree_source,
   h <- position[["height"]]
 
   # read data for neighborhood
-  hood <- read_tree(forest_source, ...)
+  hood <- read_tree(forest_source, verbose = print_progress == "full", ...)
   # remove points in the neighborhood that belong to the central tree
   neighbor <- dplyr::anti_join(hood, tree, by = c("x", "y", "z"))
 
@@ -176,6 +190,18 @@ compete_pc <- function(forest_source, tree_source,
   row.names(results) <- NULL
   # set class of results
   class(results) <- c("compete_pc", class(results))
+
+  # print progress
+  if (print_progress == "full") print(results)
+  if (print_progress == "some"){
+    if(comp_method == "cone" | comp_method == "both"){
+      cat("Cone-based CI =", results$CI_cone, "     ")
+    }
+    if(comp_method == "cylinder" | comp_method == "both"){
+      cat("Cylinder-based CI =", results$CI_cyl, "     ")
+    }
+    cat("\n\n")
+  }
   # return results
   return(results)
 }

@@ -183,7 +183,7 @@ test_that("tabular point clouds with different types, structures and extensions 
     read.table(
       test_path("testdata", "tinytree4.txt"),
       header = TRUE) %>%
-      read_tree()
+      read_tree(verbose = FALSE)
   )
 })
 
@@ -193,7 +193,8 @@ test_that("compete_pc works for .txt file point clouds", {
     length(
       compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
                  tree_source = test_path("testdata", "tree.txt"),
-                 comp_method = "cone")
+                 comp_method = "cone",
+                 print_progress = "none")
     ),
     5)
 
@@ -202,7 +203,8 @@ test_that("compete_pc works for .txt file point clouds", {
     length(
       compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
                  tree_source = test_path("testdata", "tree.txt"),
-                 comp_method = "cylinder")
+                 comp_method = "cylinder",
+                 print_progress = "none")
     ),
     5)
 
@@ -211,7 +213,8 @@ test_that("compete_pc works for .txt file point clouds", {
     length(
       compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
                  tree_source = test_path("testdata", "tree.txt"),
-                 comp_method = "both")
+                 comp_method = "both",
+                 print_progress = "none")
     ),
     7)
 })
@@ -221,8 +224,10 @@ test_that("compete_pc works for .las file tree and .txt file forest point clouds
   expect_equal(
     length(
       compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
-                 tree_source = test_path("testdata", "tree.las"), comp_method = "cone"
-      )),
+                 tree_source = test_path("testdata", "tree.las"),
+                 comp_method = "cone",
+                 print_progress = "none")
+      ),
     5)
 })
 
@@ -230,7 +235,8 @@ test_that("Wrong method in compete_pc fails with an error message", {
   expect_error(
     compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
                tree_source = test_path("testdata", "tree.txt"),
-               comp_method = "clyinder", cyl_r = 4)
+               comp_method = "clyinder", cyl_r = 4,
+               print_progress = "none")
     )
 })
 
@@ -238,7 +244,9 @@ test_that("compe_pc works for .txt file point clouds with customized radius", {
   expect_equal(
     length(
       compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
-                 tree_source = test_path("testdata", "tree.txt"), comp_method = "cylinder", cyl_r = 3)
+                 tree_source = test_path("testdata", "tree.txt"),
+                 comp_method = "cylinder", cyl_r = 3,
+                 print_progress = "none")
     ),
     5)
 })

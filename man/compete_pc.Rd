@@ -10,10 +10,12 @@ compete_pc(
   tree_source,
   comp_method = c("cone", "cylinder", "both"),
   center_position = c("crown_pos", "base_pos"),
+  tree_name = NULL,
   cyl_r = 5,
   h_cone = 0.6,
   z_min = 100,
   h_xy = 0.3,
+  print_progress = c("full", "some", "none"),
   ...
 )
 }
@@ -39,6 +41,9 @@ as the center of the search cone/cylinder. Allowed values are "crown_pos"
 for the metroid of the crown projected area and "base_pos" for the stem
 base position as computed by \code{\link[=tree_pos]{tree_pos()}}. Default value is "crown_pos".}
 
+\item{tree_name}{(optional) ID for the tree. If no argument is put, defaults
+to the name of the argument provided as \code{tree_source}.}
+
 \item{cyl_r}{(optional) only needed when using comp_method "cylinder";
 numeric value of cylinder radius in m. Default is 5 m.}
 
@@ -58,6 +63,10 @@ stem base over which the x and y positions are used to calculate the x and
 y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 to calculate the stem base position of the target tree. For details see
 \code{\link[=tree_pos]{tree_pos()}}.}
+
+\item{print_progress}{character of length 1. Allowed values are "full" (print
+all progress), "some" (only print name of tree object) and "none (do not
+print any progress). Defaults to "full".}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }

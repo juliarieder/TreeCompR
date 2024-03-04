@@ -9,6 +9,8 @@
 #'   with a point cloud object in a data.frame, the structure and column names
 #'   are validated and homogenized; else, the function tries to read the point
 #'   cloud in the specified path
+#' @param verbose logical of length 1. Should information about progress be
+#'   printed? Defaults to TRUE.
 #' @param ... additional arguments passed on to [data.table::fread()]
 #'
 #' @details Function for reading and validating point cloud data. Currently, the
@@ -36,11 +38,11 @@
 #' # Read the tree point cloud in las or laz format
 #' tree <- read_tree(path = "path/to/tree_point_cloud.las")
 #' }
-read_tree <- function(tree_source, ...) {
+read_tree <- function(tree_source, verbose = TRUE, ...) {
   . <- NULL
   # check class of source tree
   if (inherits(tree_source, "data.frame")){
-    tree <- .validate_tree(tree_source)
+    tree <- .validate_tree(tree_source, verbose = verbose)
   } else if (!(is.character(tree_source) && length(tree_source) == 1)){
     stop("Format of tree_source not recognized.\n",
          " Please provide a data.frame or a path to a source file.\n")
@@ -60,7 +62,7 @@ read_tree <- function(tree_source, ...) {
         # If installed, proceed with the code for *.las files
         las <- lidR::readTLSLAS(path)
         tree <- data.frame(x = las$X, y = las$Y, z = las$Z) %>%
-          .validate_tree()
+          .validate_tree(verbose = verbose)
       } else {
         # If not, return an error message about the missing package
         stop("Please install the 'lidR' package",
@@ -77,7 +79,7 @@ read_tree <- function(tree_source, ...) {
              "Please use point cloud with extension las/laz",
              "\n or a format readable by data.table::fread().")
       } else{ # else validate and return
-        tree <- .validate_tree(tree)
+        tree <- .validate_tree(tree, verbose = verbose)
       }
     }
   }
@@ -87,7 +89,7 @@ read_tree <- function(tree_source, ...) {
 
 #' @keywords internal
 #' internal function for the validation of point cloud data
-.validate_tree <- function(tree){
+.validate_tree <- function(tree, verbose = TRUE){
   # check if tree is already formatted correctly and return if true
   if (inherits(tree, "tree_pc")){
     return(tree)
@@ -114,11 +116,13 @@ read_tree <- function(tree_source, ...) {
         # get first three numeric columns
         tree <- tree[,nums[1:3]]
         # message about used coordinate vectors
-        message(
+        if(verbose){
+          message(
           "No named coordinates. Columns ",
           paste(names(tree), collapse = ", "),
           " (no. ", paste(nums[1:3], collapse = ", "),
           " in raw data)\n   used as x, y, z coordinates, respectively.")
+        }
         # adjust names
         names(tree) <- c("x", "y", "z")
       }
