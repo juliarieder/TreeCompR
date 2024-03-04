@@ -17,8 +17,8 @@ cloud in the specified path}
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
-data.frame with X,Y and Z coordinates of the tree or forest point
-cloud
+object of class c("tree_pc", "data.frame") with x, y and z
+coordinates of the tree or forest point cloud
 }
 \description{
 Read point cloud sourced from a file path or an object that
@@ -36,7 +36,7 @@ columns named "X", "Y", and "Z" or "x", "y", and "z" to be the coordinate
 vectors.
 If no columns with matching names are available, it takes the first three
 numeric columns and returns a message. If the dataset does not contain
-three numeric columns or one of the columns labeled X, Y, and Z is not
+three numeric columns or one of the columns labeled x, y, and z is not
 numeric, the function fails with an error.
 }
 \examples{
