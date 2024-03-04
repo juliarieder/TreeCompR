@@ -50,7 +50,7 @@ target tree. For details see \code{\link[=tree_pos]{tree_pos()}}.}
 stem base over which the X and Y positions are used to calculate the X and
 Y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 to calculate the stem base position of the target tree. For details see
-\code{\link[=tree_height]{tree_height()}}.}
+\code{\link[=tree_pos]{tree_pos()}}.}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }

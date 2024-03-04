@@ -29,7 +29,7 @@
 #'   stem base over which the X and Y positions are used to calculate the X and
 #'   Y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 #'   to calculate the stem base position of the target tree. For details see
-#'   [tree_height()].
+#'   [tree_pos()].
 #' @param ... additional arguments passed on to [data.table::fread()]
 
 #' @return data frame with tree ID and of log of counted voxels of neighborhood
@@ -170,33 +170,33 @@ compete_pc <- function(forest_source, tree_source,
 #' @format NULL
 #' @usage NULL
 #' @export
-print.compete_pc <- function(output){
+print.compete_pc <- function(x, ...){
   # if people put together more than one object of class compete_pc, treat as
   # normal data.frame (just to avoid wrongly formatted output, workaround that
   # can be improved later)
-  if(nrow(output) > 1)
-    print(as.data.frame(output))
+  if(nrow(x) > 1)
+    print(as.data.frame(x))
   # else print formatted output
   else{
     cat(" ------------------------------------------------------------------\n",
         "Pointcloud based competition index for",
-        paste0("'", output$target, "'"), "\n",
+        paste0("'", x$target, "'"), "\n",
         "------------------------------------------------------------------\n",
-        "Target tree height:", output$height_target, "m\n",
+        "Target tree height:", x$height_target, "m\n",
         "------------------------------------------------------------------\n"
     )
-    if ("CI_cone" %in% names(output)){
+    if ("CI_cone" %in% names(x)){
       cat(" Cone-based competition index using a cone base height of",
-          round(output$h_cone * output$height_target, 2), "and\n",
-          "an opening angle of 60°:\n",
-          "CI_cone = ", output$CI_cone, "\n",
+          round(x$h_cone * x$height_target, 2), "and\n",
+          "an opening angle of 60 degrees:\n",
+          "CI_cone = ", x$CI_cone, "\n",
           "------------------------------------------------------------------\n"
       )
     }
-    if ("CI_cyl" %in% names(output)){
+    if ("CI_cyl" %in% names(x)){
       cat(" Cylinder-based competition index using a cylinder radius of",
-          round(output$cyl_r, 1), "\n around the target tree:\n",
-          "CI_cyl = ", output$CI_cyl, "\n",
+          round(x$cyl_r, 1), "\n around the target tree:\n",
+          "CI_cyl = ", x$CI_cyl, "\n",
           "------------------------------------------------------------------\n"
       )
     }
