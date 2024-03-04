@@ -2,9 +2,10 @@
 % Please edit documentation in R/tree_position_height.R
 \name{tree_pos}
 \alias{tree_pos}
+\alias{print.tree_pos}
 \title{Position and Height of a Tree from Point Cloud}
 \usage{
-tree_pos(tree, z_min = 100L, h_xy = 0.3, include_height = FALSE)
+tree_pos(tree, z_min = 100L, h_xy = 0.3)
 }
 \arguments{
 \item{tree}{tree_pc or data.frame (x, y, z) of the tree point cloud.
@@ -17,33 +18,43 @@ Default is 100.}
 \item{h_xy}{numeric of length 1 describing the height range in m over the
 stem base over which the x and y positions are used to calculate the x and
 y coordinates of the stem base. Default is 0.3 m.}
-
-\item{include_height}{logical - should the height of the tree be computed as
-well? Defaults to FALSE.}
 }
 \value{
-named numeric vector of length 3 with the x, y, z coordinates of the
-tree's position, or named numeric vector of length 4 with the x, y, and z
-coordinates and the tree height.
+object of class "tree_pos" containing the following components:
+\itemize{
+\item{base_pos}{numeric vector of length 3 with the x, y, z coordinates
+of the tree base position.}
+\item{crown_pos}{numeric vector of length 3 with the x, y, z coordinates
+of the position of the centroid of the tree crown.}
+\item{height}{numeric of length one containing the tree height in m.}
+\item{tree_name}{name of the object used as the "tree" argument.}
+}
 }
 \description{
-Position and Height of a Tree from Point Cloud
+Compute the stem base position, metroid of the crown projected
+area and the stem height of a tree
 }
 \details{
-Calculates the stem base position of a tree from a data.frame with
-a point cloud as created with \code{\link[=read_tree]{read_tree()}}. The z position is taken as the
-z position of the first voxel layer containing at least z_min points of the
-point cloud (the standard value is 100). This is done to avoid outlying
-values affecting the calculated stem base height and should usually be
-consistent with taking the median z value of the lowermost 100 points.
+Calculates the stem base position, metroid of the crown projected
+area and height of a tree from a data.frame with  a point cloud as created
+with \code{\link[=read_tree]{read_tree()}}.
 
+For the \emph{stem base}, the z position is taken as the z position of the first
+voxel layer containing at least z_min points of the point cloud (the
+standard value is 100). This is done to avoid outlying values affecting the
+calculated stem base height and should usually be consistent with taking
+the median z value of the lowermost group of points, but with a lower
+sensitivity to outliers.
 The x and y position of the stem base are calculated as the median of the
 voxelized x and y coordinates of all voxels in the first h_xy m over the
 stem base (on default: first 0.3 m - values that are too low should be
 avoided here as the stem shape may be irregular close to the ground).
 
-If a height is calculated, it is based on the position of the heighest
-voxel of the tree over the stem base.
+The \emph{metroid of the crown projected area} is the median x and y position of
+all x and y positions attributed to the tree.
+
+The \emph{height} is based on difference between the z value of the highest
+voxel belonging to the tree over and the z value of the stem base.
 
 The calculation is done on voxels to ensure consistency with downstream
 analyses and to reduce bias caused by inhomogeneous scanning coverage on
@@ -55,7 +66,6 @@ different sides of the stem.
 tree <- read_tree(path = "path/to/tree_point_cloud.txt")
 # Get the position of this tree (x, y, z)
 pos <- tree_pos(tree)
-# get the position and height
-pos <- tree_pos(tree, height  = TRUE)
+pos
 }
 }
