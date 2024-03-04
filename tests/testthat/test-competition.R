@@ -5,9 +5,8 @@ test_that("reading a tree point cloud in txt format works", {
   })
 
   # test if loaded object has the correct class
-  expect_match(
-    class(test_tree),
-    "data.frame"
+  expect_true(
+    inherits(test_tree, "tree_pc")
   )
 
   # test if loaded object has the correct dimensions
@@ -19,25 +18,25 @@ test_that("reading a tree point cloud in txt format works", {
   # test if loaded object has the correct column names
   expect_equal(
     names(test_tree),
-    c("X", "Y", "Z")
+    c("x", "y", "z")
   )
 
   # test if the loaded object has the correct values
   expect_equal(
     colSums(test_tree),
-    c(X = 205070.26, Y = -132578.89, Z = 1995800.38)
+    c(x = 205070.26, y = -132578.89, z = 1995800.38)
   )
 
   # test if position works
   expect_equal(
     tree_pos(test_tree),
-    c(X = 0.1, Y = -0.5, Z = -0.1)
+    c(x = 0.1, y = -0.5, z = -0.1)
   )
 
   # test if height and position works
   expect_equal(
     tree_pos(test_tree, include_height = TRUE),
-    c(X = 0.1, Y = -0.5, Z = -0.1, height = 22.8)
+    c(x = 0.1, y = -0.5, z = -0.1, height = 22.8)
   )
 })
 
@@ -51,7 +50,7 @@ test_that("reading a neighborhood point cloud in txt format works", {
 
   # test if loaded object has the correct class
   expect_true(
-    inherits(test_tree, "data.frame")
+    inherits(test_tree, "tree_pc")
   )
 
   # test if loaded object has the correct dimensions
@@ -63,13 +62,13 @@ test_that("reading a neighborhood point cloud in txt format works", {
   # test if loaded object has the correct column names
   expect_equal(
     names(test_tree),
-    c("X", "Y", "Z")
+    c("x", "y", "z")
   )
 
   # test if the loaded object has the correct values
   expect_equal(
     colSums(test_tree),
-    c(X = 9139977.58, Y = -5456060.20, Z = 14519802.21)
+    c(x = 9139977.58, y = -5456060.20, z = 14519802.21)
   )
 })
 
@@ -81,9 +80,8 @@ test_that("reading a tree point cloud in las format works", {
   })
 
   # test if loaded object has the correct class
-  expect_match(
-    class(test_tree),
-    "data.frame"
+  expect_true(
+    inherits(test_tree, "tree_pc")
   )
 
   # test if loaded object has the correct dimensions
@@ -95,13 +93,13 @@ test_that("reading a tree point cloud in las format works", {
   # test if loaded object has the correct column names
   expect_equal(
     names(test_tree),
-    c("X", "Y", "Z")
+    c("x", "y", "z")
   )
 
   # test if the loaded object has the correct values
   expect_equal(
     colSums(test_tree),
-    c(X = 205070.26, Y = -132578.89, Z = 1995800.38)
+    c(x = 205070.26, y = -132578.89, z = 1995800.38)
   )
 })
 
@@ -113,9 +111,8 @@ test_that("reading a tree point cloud in laz format works", {
   })
 
   # test if loaded object has the correct class
-  expect_match(
-    class(test_tree),
-    "data.frame"
+  expect_true(
+    inherits(test_tree, "tree_pc")
   )
 
   # test if loaded object has the correct dimensions
@@ -127,20 +124,20 @@ test_that("reading a tree point cloud in laz format works", {
   # test if loaded object has the correct column names
   expect_equal(
     names(test_tree),
-    c("X", "Y", "Z")
+    c("x", "y", "z")
   )
 
   # test if the loaded object has the correct values
   expect_equal(
     colSums(test_tree),
-    c(X = 205070.26, Y = -132578.89, Z = 1995800.38)
+    c(x = 205070.26, y = -132578.89, z = 1995800.38)
   )
 
 
 })
 
 test_that("tabular point clouds with different types, structures and extensions can be read", {
-  # simple csv with named XYZ columns is read without message
+  # simple csv with named xyz columns is read without message
   expect_no_message({
     tinytree1 <- read_tree(test_path("testdata", "tinytree1.csv"))
   })

@@ -11,8 +11,8 @@ compete_pc(
   comp_method = c("cone", "cylinder"),
   cyl_r = 5,
   h_cone = 0.6,
-  Z_min = 100,
-  h_XY = 0.3,
+  z_min = 100,
+  h_xy = 0.3,
   ...
 )
 }
@@ -41,14 +41,14 @@ search cone is located. For example, values of 0.5 or 0.6 specify that the
 cone opens in 50 or 60 \% of target tree's height, respectively. Default is
 0.6 as proposed by Seidel et al. (2015).}
 
-\item{Z_min}{integer of length 1 describing the minimum number of points
+\item{z_min}{integer of length 1 describing the minimum number of points
 needed in the lowermost 0.1 m Z layer to consider it part of the target
 tree. Default is 100. Used to calculate the stem base position of the
 target tree. For details see \code{\link[=tree_pos]{tree_pos()}}.}
 
-\item{h_XY}{numeric of length 1 describing the height range in m over the
-stem base over which the X and Y positions are used to calculate the X and
-Y coordinates of the stem base of the target tree. Default is 0.3 m. Used
+\item{h_xy}{numeric of length 1 describing the height range in m over the
+stem base over which the x and y positions are used to calculate the x and
+y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 to calculate the stem base position of the target tree. For details see
 \code{\link[=tree_pos]{tree_pos()}}.}
 

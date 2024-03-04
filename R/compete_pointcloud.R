@@ -21,13 +21,13 @@
 #'   search cone is located. For example, values of 0.5 or 0.6 specify that the
 #'   cone opens in 50 or 60 % of target tree's height, respectively. Default is
 #'   0.6 as proposed by Seidel et al. (2015).
-#' @param Z_min integer of length 1 describing the minimum number of points
+#' @param z_min integer of length 1 describing the minimum number of points
 #'   needed in the lowermost 0.1 m Z layer to consider it part of the target
 #'   tree. Default is 100. Used to calculate the stem base position of the
 #'   target tree. For details see [tree_pos()].
-#' @param h_XY numeric of length 1 describing the height range in m over the
-#'   stem base over which the X and Y positions are used to calculate the X and
-#'   Y coordinates of the stem base of the target tree. Default is 0.3 m. Used
+#' @param h_xy numeric of length 1 describing the height range in m over the
+#'   stem base over which the x and y positions are used to calculate the x and
+#'   y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 #'   to calculate the stem base position of the target tree. For details see
 #'   [tree_pos()].
 #' @param ... additional arguments passed on to [data.table::fread()]
@@ -88,28 +88,28 @@
 #' }
 compete_pc <- function(forest_source, tree_source,
                        comp_method = c("cone", "cylinder"),
-                       cyl_r = 5, h_cone = 0.6, Z_min = 100, h_XY = 0.3,
+                       cyl_r = 5, h_cone = 0.6, z_min = 100, h_xy = 0.3,
                        ...){
   # stop execution if wrong method is specified
   if (!comp_method %in%  c("cone", "cylinder", "both"))
     stop("Invalid method. Use 'cone', 'cylinder' or 'both'.")
 
   # avoid errors with overriding global values
-  X <- Y <- Z <- ID <- H <- dist <- r_cone <- NULL
+  x <- y <- z <- ID <- h <- dist <- r_cone <- NULL
 
   # read data for central tree
   tree <- read_tree(tree_source, ...)
   # get file name without extension
   filename <- tools::file_path_sans_ext(basename(tree_source))
   # get base position and height of central tree
-  pos <- tree_pos(tree, Z_min = Z_min, h_XY = h_XY, include_height = TRUE)
+  pos <- tree_pos(tree, z_min = z_min, h_xy = h_xy, include_height = TRUE)
   #  extract height of central tree
   h <- pos["height"]
 
   # read data for neighborhood
   hood <- read_tree(forest_source, ...)
   # remove points in the neighborhood that belong to the central tree
-  neighbor <- dplyr::anti_join(hood, tree, by = c("X", "Y", "Z"))
+  neighbor <- dplyr::anti_join(hood, tree, by = c("x", "y", "z"))
 
   # prepare data.frame for results
   results <- data.frame(target = filename, height_target = h)
@@ -120,9 +120,6 @@ compete_pc <- function(forest_source, tree_source,
   } else {
     # voxelize neighborhood data
     voxel <- neighbor %>% VoxR::vox(res = 0.1)
-    # get correct column names
-    colnames(voxel) <- c("X", "Y", "Z", "npts")
-
     # compute competition indices for the cone method
     if (comp_method == "cone" | comp_method == "both") {
       # compute base height of the cone
@@ -130,11 +127,11 @@ compete_pc <- function(forest_source, tree_source,
       # filter voxels that are inside the cone
       voxel1 <- voxel %>%
         # remove voxels below critical height
-        dplyr::filter(Z - pos["Z"] >= cone_h) %>%
+        dplyr::filter(z - pos["z"] >= cone_h) %>%
         # compute cone radius (assuming an opening angle of pi / 3)
-        dplyr::mutate(r_cone = abs(tan(pi / 6) * (Z - pos["Z"] - cone_h))) %>%
+        dplyr::mutate(r_cone = abs(tan(pi / 6) * (z - pos["z"] - cone_h))) %>%
         # compute distance from tree position
-        dplyr::mutate(dist = sqrt((X - pos["X"]) ^ 2 + (Y - pos["Y"]) ^ 2)) %>%
+        dplyr::mutate(dist = sqrt((x - pos["x"]) ^ 2 + (y - pos["y"]) ^ 2)) %>%
         # remove voxels outside of the cone
         dplyr::filter(dist <= r_cone)
       # get number of voxels inside the cone
@@ -147,7 +144,7 @@ compete_pc <- function(forest_source, tree_source,
       # filter voxels that are inside the cylinder
       voxel2 <- voxel %>%
         # compute distance from central position
-        dplyr::mutate(dist = sqrt((X - pos["X"]) ^ 2 + (Y - pos["Y"]) ^ 2)) %>%
+        dplyr::mutate(dist = sqrt((x - pos["x"]) ^ 2 + (y - pos["y"]) ^ 2)) %>%
         # remove voxels outside the cylinder
         dplyr::filter(dist <= cyl_r)
       # get number of voxels inside the cylinder

@@ -4,26 +4,26 @@
 \alias{tree_pos}
 \title{Position and Height of a Tree from Point Cloud}
 \usage{
-tree_pos(tree, Z_min = 100L, h_XY = 0.3, include_height = FALSE)
+tree_pos(tree, z_min = 100L, h_xy = 0.3, include_height = FALSE)
 }
 \arguments{
-\item{tree}{data.frame (X, Y, Z) of the tree point cloud. Coordinates have
-to be in metric system!}
+\item{tree}{tree_pc or data.frame (x, y, z) of the tree point cloud.
+Coordinates have to be in metric system!}
 
-\item{Z_min}{integer of length 1 describing the the minimum number of points
+\item{z_min}{integer of length 1 describing the the minimum number of points
 needed in the lowermost 0.1 m Z layer to consider it part of the tree.
 Default is 100.}
 
-\item{h_XY}{numeric of length 1 describing the height range in m over the
-stem base over which the X and Y positions are used to calculate the X and
-Y coordinates of the stem base. Default is 0.3 m.}
+\item{h_xy}{numeric of length 1 describing the height range in m over the
+stem base over which the x and y positions are used to calculate the x and
+y coordinates of the stem base. Default is 0.3 m.}
 
-\item{include_height}{logical - should the height of the tree be computed as well?
-Defaults to FALSE.}
+\item{include_height}{logical - should the height of the tree be computed as
+well? Defaults to FALSE.}
 }
 \value{
-named numeric vector of length 3 with the X,Y,Z coordinates of the
-tree's position, or named numeric vector of length 4 with the X,Y, and Z
+named numeric vector of length 3 with the x, y, z coordinates of the
+tree's position, or named numeric vector of length 4 with the x, y, and z
 coordinates and the tree height.
 }
 \description{
@@ -31,14 +31,14 @@ Position and Height of a Tree from Point Cloud
 }
 \details{
 Calculates the stem base position of a tree from a data.frame with
-a point cloud as created with \code{\link[=read_tree]{read_tree()}}. The Z position is taken as the
-Z position of the first voxel layer containing at least Z_min points of the
+a point cloud as created with \code{\link[=read_tree]{read_tree()}}. The z position is taken as the
+z position of the first voxel layer containing at least z_min points of the
 point cloud (the standard value is 100). This is done to avoid outlying
 values affecting the calculated stem base height and should usually be
-consistent with taking the median Z value of the lowermost 100 points.
+consistent with taking the median z value of the lowermost 100 points.
 
-The X and Y position of the stem base are calculated as the median of the
-voxelized X and Y coordinates of all voxels in the first h_XY m over the
+The x and y position of the stem base are calculated as the median of the
+voxelized x and y coordinates of all voxels in the first h_xy m over the
 stem base (on default: first 0.3 m - values that are too low should be
 avoided here as the stem shape may be irregular close to the ground).
 
@@ -53,7 +53,7 @@ different sides of the stem.
 \dontrun{
 # Read the tree point cloud
 tree <- read_tree(path = "path/to/tree_point_cloud.txt")
-# Get the position of this tree (X, Y, Z)
+# Get the position of this tree (x, y, z)
 pos <- tree_pos(tree)
 # get the position and height
 pos <- tree_pos(tree, height  = TRUE)
