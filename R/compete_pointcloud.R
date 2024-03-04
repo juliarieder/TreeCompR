@@ -6,14 +6,19 @@
 #'   of neighborhood point cloud in tabular or las/laz format which is passed on
 #'   to [read_tree()]. The neighborhood has to include the target tree and its
 #'   neighbors, not height normalized, and can include ground points).
-#'   Coordinates have to be in metric system in m!
+#'   Coordinates have to be in a Cartesian coordinate system in m!
 #' @param tree_source data.frame with target tree point cloud or path to file of
 #'   target tree point cloud in tabular or las/laz format which is passed on to
-#'   [read_tree()]. Coordinates have to be in metric system in m and same number
-#'   of decimal places as the neighborhood point cloud
-#' @param comp_method character string with competition method. Allowed values
-#'   are "cone" for the cone method, "cylinder" for the cylinder method or
-#'   "both" for both methods. See details for computation
+#'   [read_tree()]. Coordinates have to be in a Cartesian coordinate system in m
+#'   and with the same number of decimal places as the neighborhood point cloud.
+#' @param comp_method character string of length 1 with competition method.
+#'   Allowed values are "cone" for the cone method, "cylinder" for the cylinder
+#'   method or "both" for both methods. Default is the cone method.
+#'   See details for computation.
+#' @param center_position character string of length 1 with the position used
+#'   as the center of the search cone/cylinder. Allowed values are "crown_pos"
+#'   for the metroid of the crown projected area and "base_pos" for the stem
+#'   base position as computed by [tree_pos()]. Default value is "crown_pos".
 #' @param cyl_r (optional) only needed when using comp_method "cylinder";
 #'   numeric value of cylinder radius in m. Default is 5 m.
 #' @param h_cone (optional) only when using comp_method "cone"; numeric value
@@ -87,24 +92,32 @@
 #' "cylinder", cyl_r = 4)
 #' }
 compete_pc <- function(forest_source, tree_source,
-                       comp_method = c("cone", "cylinder"),
+                       comp_method = c("cone", "cylinder", "both"),
+                       center_position = c("crown_pos", "base_pos"),
                        cyl_r = 5, h_cone = 0.6, z_min = 100, h_xy = 0.3,
                        ...){
-  # stop execution if wrong method is specified
-  if (!comp_method %in%  c("cone", "cylinder", "both"))
-    stop("Invalid method. Use 'cone', 'cylinder' or 'both'.")
+  # match arguments against the allowed values
+  comp_method <- match.arg(comp_method)
+  center_position <- match.arg(center_position)
 
-  # avoid errors with overriding global values
+  # avoid errors with undefined global values in CMD check
   x <- y <- z <- ID <- h <- dist <- r_cone <- NULL
+
+  # catch name of tree and neighborhood object before evaluation
+  tree_name <- eval(substitute(tree_source))
+  # if a path, get file name without extension
+  if (inherits(tree_source, "character")){
+    tree_name <- tools::file_path_sans_ext(basename(tree_name))
+  }
 
   # read data for central tree
   tree <- read_tree(tree_source, ...)
-  # get file name without extension
-  filename <- tools::file_path_sans_ext(basename(tree_source))
-  # get base position and height of central tree
-  pos <- tree_pos(tree, z_min = z_min, h_xy = h_xy, include_height = TRUE)
+  # get position and height of central tree
+  position <- tree_pos(tree, z_min = z_min, h_xy = h_xy)
+  # get basis position of the cone/cylinder of the analysis according
+  pos <- position[[center_position]]
   #  extract height of central tree
-  h <- pos["height"]
+  h <- position[["height"]]
 
   # read data for neighborhood
   hood <- read_tree(forest_source, ...)
@@ -112,11 +125,16 @@ compete_pc <- function(forest_source, tree_source,
   neighbor <- dplyr::anti_join(hood, tree, by = c("x", "y", "z"))
 
   # prepare data.frame for results
-  results <- data.frame(target = filename, height_target = h)
+  results <- data.frame(
+    target = tree_name,
+    height_target = h,
+    center_position = ifelse(
+      center_position == "base_pos", "base", "crown center"))
 
   # check if the tree is part of this neighborhood
   if (nrow(hood) == nrow(neighbor)) {
-    stop("Tree is not within this plot! Do the input point clouds have the same number of decimal places?", call. = FALSE)
+    stop("Tree is not situated in this plot! Do the input point",
+         "clouds have the same number of decimal places?", call. = FALSE)
   } else {
     # voxelize neighborhood data
     voxel <- neighbor %>% VoxR::vox(res = 0.1)
@@ -186,14 +204,16 @@ print.compete_pc <- function(x, ...){
       cat(" Cone-based competition index using a cone base height of",
           round(x$h_cone * x$height_target, 2), "and\n",
           "an opening angle of 60 degrees:\n",
-          "CI_cone = ", x$CI_cone, "\n",
+          "CI_cone = ", x$CI_cone, "centered around the",
+          x$center_position,"of the tree\n",
           "------------------------------------------------------------------\n"
       )
     }
     if ("CI_cyl" %in% names(x)){
       cat(" Cylinder-based competition index using a cylinder radius of",
-          round(x$cyl_r, 1), "\n around the target tree:\n",
-          "CI_cyl = ", x$CI_cyl, "\n",
+          round(x$cyl_r, 1), ":\n",
+          "CI_cyl = ", x$CI_cyl, "centered around the",
+          x$center_position,"of the tree\n",
           "------------------------------------------------------------------\n"
       )
     }

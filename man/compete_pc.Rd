@@ -8,7 +8,8 @@
 compete_pc(
   forest_source,
   tree_source,
-  comp_method = c("cone", "cylinder"),
+  comp_method = c("cone", "cylinder", "both"),
+  center_position = c("crown_pos", "base_pos"),
   cyl_r = 5,
   h_cone = 0.6,
   z_min = 100,
@@ -21,16 +22,22 @@ compete_pc(
 of neighborhood point cloud in tabular or las/laz format which is passed on
 to \code{\link[=read_tree]{read_tree()}}. The neighborhood has to include the target tree and its
 neighbors, not height normalized, and can include ground points).
-Coordinates have to be in metric system in m!}
+Coordinates have to be in a Cartesian coordinate system in m!}
 
 \item{tree_source}{data.frame with target tree point cloud or path to file of
 target tree point cloud in tabular or las/laz format which is passed on to
-\code{\link[=read_tree]{read_tree()}}. Coordinates have to be in metric system in m and same number
-of decimal places as the neighborhood point cloud}
+\code{\link[=read_tree]{read_tree()}}. Coordinates have to be in a Cartesian coordinate system in m
+and with the same number of decimal places as the neighborhood point cloud.}
 
-\item{comp_method}{character string with competition method. Allowed values
-are "cone" for the cone method, "cylinder" for the cylinder method or
-"both" for both methods. See details for computation}
+\item{comp_method}{character string of length 1 with competition method.
+Allowed values are "cone" for the cone method, "cylinder" for the cylinder
+method or "both" for both methods. Default is the cone method.
+See details for computation.}
+
+\item{center_position}{character string of length 1 with the position used
+as the center of the search cone/cylinder. Allowed values are "crown_pos"
+for the metroid of the crown projected area and "base_pos" for the stem
+base position as computed by \code{\link[=tree_pos]{tree_pos()}}. Default value is "crown_pos".}
 
 \item{cyl_r}{(optional) only needed when using comp_method "cylinder";
 numeric value of cylinder radius in m. Default is 5 m.}

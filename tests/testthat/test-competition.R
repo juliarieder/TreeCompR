@@ -27,16 +27,22 @@ test_that("reading a tree point cloud in txt format works", {
     c(x = 205070.26, y = -132578.89, z = 1995800.38)
   )
 
-  # test if position works
+  # test if base position works
   expect_equal(
-    tree_pos(test_tree),
+    {pos <- tree_pos(test_tree)
+    pos$base_pos},
     c(x = 0.1, y = -0.5, z = -0.1)
   )
 
-  # test if height and position works
+  # test if crown position works
   expect_equal(
-    tree_pos(test_tree, include_height = TRUE),
-    c(x = 0.1, y = -0.5, z = -0.1, height = 22.8)
+    pos$crown_pos,
+    c(x = 1.8, y = -0.61, z = -0.1)
+  )
+  # test if height works
+  expect_equal(
+    tree_pos(test_tree)$height,
+    22.8
   )
 })
 
@@ -189,7 +195,7 @@ test_that("compete_pc works for .txt file point clouds", {
                  tree_source = test_path("testdata", "tree.txt"),
                  comp_method = "cone")
     ),
-    4)
+    5)
 
   # test basic functionality for cylinder method
   expect_equal(
@@ -198,7 +204,7 @@ test_that("compete_pc works for .txt file point clouds", {
                  tree_source = test_path("testdata", "tree.txt"),
                  comp_method = "cylinder")
     ),
-    4)
+    5)
 
   # test basic functionality for output of both methods
   expect_equal(
@@ -207,7 +213,7 @@ test_that("compete_pc works for .txt file point clouds", {
                  tree_source = test_path("testdata", "tree.txt"),
                  comp_method = "both")
     ),
-    6)
+    7)
 })
 
 
@@ -217,24 +223,24 @@ test_that("compete_pc works for .las file tree and .txt file forest point clouds
       compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
                  tree_source = test_path("testdata", "tree.las"), comp_method = "cone"
       )),
-    4)
+    5)
 })
 
-test_that("wrong method - warning message", {
+test_that("Wrong method in compete_pc fails with an error message", {
   expect_error(
     compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
                tree_source = test_path("testdata", "tree.txt"),
-               comp_method = "cyl", cyl_r = 4),
-    "Invalid method. Use 'cone', 'cylinder' or 'both.")
+               comp_method = "clyinder", cyl_r = 4)
+    )
 })
 
-test_that("quantify competition (cylinder) for .txt file point clouds works with customized radius", {
+test_that("compe_pc works for .txt file point clouds with customized radius", {
   expect_equal(
     length(
       compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
                  tree_source = test_path("testdata", "tree.txt"), comp_method = "cylinder", cyl_r = 3)
     ),
-    4)
+    5)
 })
 
 test_that("Hegyi index works", {
