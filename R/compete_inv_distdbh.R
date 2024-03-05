@@ -75,55 +75,80 @@ compete_dd <- function(plot_path, ttrees_path, radius,
     euc_dist_comp <- DBH <- euc_dist <- ID_target <- ID_t <- DBH_target <-
     status <- ID <- dbh_target <- X_segt <- Y_segt <- NULL
 
+  #read segmented trees (whole plot)
   segtrees <- fread(plot_path, header = T)
   colnames(segtrees) <- c("ID", "X_seg", "Y_seg", "DBH")
+  #filter out trees that are too small to be considered as competitor (dbh_thr default 0.1 m)
   segtrees <- segtrees %>% dplyr::filter(DBH >= dbh_thr)
-  # Identify rows with DBH higher than dbh_max
+  # Identify rows with DBH higher than dbh_max to check if there was a problem
+  # with automated segmentation (in case laser scanning data was used).
+  # dbh_max default 1.0 m, should be adjusted depending on tree species and age
   high_dbh_rows <- segtrees[segtrees$DBH > dbh_max]
 
+  # generate warning message, in case DBH of a tree within the plot is higher than
+  # dbh_max (segtrees also includes the target trees)
   if (nrow(high_dbh_rows) > 0) {
     cat("Warning: The following trees have a diameter above", dbh_max,"m\n")
     colnames(high_dbh_rows) <- c("ID", "X", "Y", "DBH")
     print((high_dbh_rows[, c("ID", "X", "Y", "DBH")]))
   }
+  # convert segmented trees to sf object
   segtrees_sf <- sf::st_as_sf(segtrees, coords = c("X_seg", "Y_seg"))
+  #read in the target trees
   ttrees <- fread(ttrees_path, header = T)
   colnames(ttrees) <- c("ID_target", "X", "Y")
+  #convert target trees to sf object
   ttrees_sf <- sf::st_as_sf(ttrees, coords = c("X", "Y"))
+  #create buffer around target trees;
+
+  # radius + 5, so no tree is cut off accidentally;
+  # but just radius could also work?
   buffer <- sf::st_buffer(ttrees_sf, dist = (radius + 5),
                           nQuadSegs = 30)
   sf::st_agr(segtrees_sf) = "constant"
   sf::st_agr(buffer) = "constant"
+  # filters possible competitors around target trees and
+  #creates automatically an attribute (ID of target) for each
+  #possible competitor
   trees_competition <- sf::st_intersection(segtrees_sf, buffer)
+  # drop geometry to get a dataframe with competitors for each target tree
   trees_competition1 <- sf::st_drop_geometry(trees_competition)
+  #get information on x and y back from input table
   trees_competition <- dplyr::left_join(trees_competition1,
                                         segtrees, by = c("ID", "DBH"))
   trees_competition <- dplyr::left_join(trees_competition,
                                         ttrees, by = "ID_target")
   #calculate euclidean distance between competitor and target tree
+  #nearest neighbor within segmented trees for target tree input is set
+  #as a target tree
   trees_competition <- trees_competition %>%
     dplyr::mutate(
       euc_dist = sqrt((X - X_seg)^2 + (Y - Y_seg)^2),
       status = ifelse(euc_dist == min(euc_dist), "target_tree",
                       ifelse(euc_dist > min(euc_dist), "competitor", NA)))
+  # if there is no tree within segmented trees found for a target tree x,y
+  # within a certain threshold (depending on GPS accuracy e.g.): stop/warning
   if (min(trees_competition$euc_dist) > tolerance) {
     stop("There was no tree found within the tolerance threshold. Check the coordinates again or, if the accuracy of GPS signal was low, set a new tolerance value.")
   } else {
+    #filter all target trees and make additional columns with the target tree values
     matching_rows <- subset(trees_competition, status == "target_tree")
   }
   matching_rows <- matching_rows %>%
     dplyr::rename(ID_t = ID, dbh_target = DBH, X_segt = X_seg, Y_segt = Y_seg) %>%
     dplyr::select(ID_t, ID_target, dbh_target, X_segt, Y_segt)
+  # add target tree information to each segmented tree that intersected with
+  # target tree buffer
   trees_competition <- dplyr::left_join(trees_competition,
                                         matching_rows, by = "ID_target") %>%
     dplyr::mutate(euc_dist_comp = sqrt((X_segt - X_seg)^2 + (Y_segt - Y_seg)^2)) %>%
-    dplyr::filter(euc_dist_comp <= radius)
+    dplyr::filter(euc_dist_comp <= radius) #filter all competitors within search radius
   #calculate part of the Competition indices for each competitor
   trees_competition <- trees_competition %>%
     dplyr::mutate(CI_h_part = DBH / (dbh_target * euc_dist_comp),
                   CI_RK1_part = atan(DBH / euc_dist_comp),
                   CI_RK2_part = (DBH / dbh_target) * atan(DBH / euc_dist_comp))
-  #filter out the target tree(s) itself
+  #filter out the target tree(s)
   trees_competition <- trees_competition %>% dplyr::filter(euc_dist_comp > 0)
   #calculate competition index CI12 and CI13 for each target tree
   CIs <- trees_competition %>% dplyr::group_by(ID_target) %>% dplyr::summarise(
@@ -131,7 +156,7 @@ compete_dd <- function(plot_path, ttrees_path, radius,
     CI_RK1 = sum(CI_RK1_part),
     CI_RK2 = sum(CI_RK2_part))
 
-
+ #output depending on method and searchradius
   if (method == "all") {
     cat("DBH-distance-based competition was quantified with methods by Hegyi and Rouvinen and Kuuluvainen. Search radius =", radius, ".\n")
     print(CIs)
