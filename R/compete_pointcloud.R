@@ -114,7 +114,7 @@ compete_pc <- function(forest_source, tree_source,
   # if no tree_name is specified, get name from function call
   if(is.null(tree_name)){
     # catch name of tree object before evaluation
-    tree_name <- eval(substitute(tree_source))
+    tree_name <- deparse(substitute(tree_source))
     # if a path, get file name without extension
     if (inherits(tree_source, "character")){
       tree_name <- tools::file_path_sans_ext(basename(tree_name))
@@ -237,7 +237,7 @@ print.compete_pc <- function(x, ...){
     }
     if ("CI_cyl" %in% names(x)){
       cat(" Cylinder-based competition index using a cylinder radius of",
-          round(x$cyl_r, 1), ":\n",
+          round(x$cyl_r, 1), "m:\n",
           "CI_cyl = ", x$CI_cyl, "centered around the",
           x$center_position,"of the tree\n",
           "------------------------------------------------------------------\n"
