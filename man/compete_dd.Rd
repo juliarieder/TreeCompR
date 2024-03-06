@@ -62,9 +62,9 @@ the Hegyi index (method = "Hegyi") according to Hegyi (1974).
 \itemize{
 \item CI_Hegyi Index introduced by Hegyi (1974)
 \eqn{\sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})}
-\item CI_RK1 according to Rouvinen & Kuuluvainen (1997)
+\item CI_RK1 according to CI1 Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})}
-\item CI_RK2 according to Rouvinen & Kuuluvainen (1997)
+\item CI_RK2 according to CI3 in Rouvinen & Kuuluvainen (1997)
 \eqn{\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i} / dist_{i})}
 }
 }

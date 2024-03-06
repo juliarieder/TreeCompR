@@ -35,9 +35,9 @@
 #' @section Methods:
 #'  * CI_Hegyi Index introduced by Hegyi (1974)
 #'    \eqn{\sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})}
-#'  * CI_RK1 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_RK1 according to CI1 Rouvinen & Kuuluvainen (1997)
 #'    \eqn{\sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})}
-#'  * CI_RK2 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_RK2 according to CI3 in Rouvinen & Kuuluvainen (1997)
 #'    \eqn{\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i} / dist_{i})}
 #'
 #'
@@ -87,17 +87,19 @@ compete_dd <- function(plot_source, target_source, radius,
 
   #filter out trees that are too small to be considered as competitor
   #(dbh_thr default 0.1 m)
-  #filter out trees that are too small to be considered as competitor (dbh_thr default 0.1 m)
+  #filter out trees that are too small to be considered as competitor
+  #(dbh_thr default 0.1 m)
   trees_competition <- trees_competition %>% dplyr::filter(dbh >= dbh_thr)
   # Identify rows with DBH higher than dbh_max to check if there was a problem
   # with automated segmentation (in case laser scanning data was used).
   # dbh_max default 1.0 m, should be adjusted depending on tree species and age
 
   ##### under construction!!!!!!!!!
-  high_dbh_rows <- trees_competition %>% dplyr::filter(dbh > dbh_max) #select ID, x, y, dbh?
+  #select ID, x, y, dbh?
+  high_dbh_rows <- trees_competition %>% dplyr::filter(dbh > dbh_max)
 
-  # generate warning message, in case dbh of a tree within the plot is higher than
-  # dbh_max (segtrees also includes the target trees)
+  # generate warning message, in case dbh of a tree within the plot is
+  #higher than dbh_max (segtrees also includes the target trees)
   if (nrow(high_dbh_rows) > 0) {
     cat("The following trees have a diameter above", dbh_max,"m\n")
     colnames(high_dbh_rows) <- c("ID", "x", "y", "dbh")
@@ -121,7 +123,8 @@ compete_dd <- function(plot_source, target_source, radius,
 
  #output depending on method and searchradius
   if (method == "all") {
-    cat("DBH-distance-based competition was quantified with methods by Hegyi and Rouvinen and Kuuluvainen. Search radius =", radius, ".\n")
+    cat("DBH-distance-based competition was quantified with methods
+        by Hegyi and Rouvinen and Kuuluvainen. Search radius =", radius, ".\n")
     print(CIs)
     return(CIs)
   } else if (method == "CI_Hegyi") {
@@ -143,7 +146,8 @@ compete_dd <- function(plot_source, target_source, radius,
     print(CI_RK2)
     return(CI_RK2)
   } else {
-    stop("Invalid method. Supported methods: 'all', 'CI_Hegyi', 'CI_RK1', 'CI_RK2'.")
+    stop("Invalid method. Supported methods: 'all', 'CI_Hegyi',
+         'CI_RK1', 'CI_RK2'.")
   }
 }
 
@@ -180,19 +184,25 @@ compete_dd <- function(plot_source, target_source, radius,
                                         ttrees, by = "ID_target")
   #calculate euclidean distance between target trees and plot trees to
   #match/identify target trees within the plot by nearest neighbor
-  #(not possible via ID, since they could have different IDs if you work with lidar & field data)
+  #(not possible via ID, since they could have different IDs if you
+  #work with lidar & field data)
   trees_competition <- trees_competition %>%
     dplyr::mutate(
       euc_dist = sqrt((x - x_seg)^2 + (y - y_seg)^2),
       status = ifelse(euc_dist == min(euc_dist), "target_tree",
                       ifelse(euc_dist > min(euc_dist), "competitor", NA)))
   if (min(trees_competition$euc_dist) > tolerance) {
-    stop("There was no tree found within the tolerance threshold. Check the coordinates again or, if the accuracy of GPS signal was low, set a new tolerance value.")
+    stop("There was no tree found within the tolerance threshold.
+         Check the coordinates again or, if the accuracy of GPS signal was low,
+         set a new tolerance value.")
   } else {
     matching_rows <- subset(trees_competition, status == "target_tree")
   }
   matching_rows <- matching_rows %>%
-    dplyr::rename(ID_t = ID, dbh_target = dbh, x_segt = x_seg, y_segt = y_seg) %>%
+    dplyr::rename(ID_t = ID,
+                  dbh_target = dbh,
+                  x_segt = x_seg,
+                  y_segt = y_seg) %>%
     dplyr::select(ID_t, ID_target, dbh_target, x_segt, y_segt)
   trees_competition <- dplyr::left_join(trees_competition,
                                         matching_rows, by = "ID_target") %>%

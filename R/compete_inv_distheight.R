@@ -3,12 +3,12 @@
 #' 'compete_dh()' returns a specific distance-height-dependent competition index
 #' (or group of indices) for a list of target trees within a forest plot
 #'
-#' @param plot_path character path to inventory table (.csv or .txt) of plot,
-#'  with structure: ID, X, Y, H (in m). Coordinates have to be in metric system
-#'   (in m)!
-#' @param ttrees_path character path to table/list (.csv or .txt) of target
-#'   trees within plot with ID_target, X, Y (does not have to be the same ID as
-#'   in inventory table). Coordinates have to be in metric system!
+#' @param plot_source dataframe or path to inventory table of the
+#'   plot, with structure: ID, x, y, h (in m). Cartesian coordinates have to
+#'   be in metric system (in m)!
+#' @param target_source dataframe or path to table of target trees within plot
+#' with ID_target, x, y (does not have to be the same ID as in inventory table).
+#'  Cartesian coordinates have to be in metric system!
 #' @param radius numeric, Search radius (in m) around target tree, wherein all
 #'   neighboring trees are classified as competitors
 #' @param method character string assigning the method for quantifying
@@ -28,9 +28,10 @@
 #' @section Methods:
 #'  * CI_Braathe according to Braathe (1980)
 #'    \eqn{\sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
-#'  * CI_RK3 according to Rouvinen & Kuuluvainen (1997)
-#'    \eqn{\sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i})}
-#'  * CI_RK4 according to Rouvinen & Kuuluvainen (1997)
+#'  * CI_RK3 according to CI5 in Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i}), h_{i} > h}
+#'  * CI_RK4 based on CI3 in Rouvinen & Kuuluvainen (1997) and
+#'    Contreras et al. (2011)
 #'    \eqn{\sum_{i=1}^{n} (h_{i} / h) \cdot \mathrm{arctan}(h_{i} / dist_{i})}
 #'
 #' @section Tree Segmentation:
@@ -65,63 +66,40 @@
 #' CI <- compete_ALS("path/to/invtable.csv",
 #'   "path/to/target_trees.csv", radius = 10)
 #' }
-compete_dh <- function(plot_path, ttrees_path, radius,
+compete_dh <- function(plot_source, target_source, radius,
                        method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4"),
                        tolerance = 1) {
 
-  X <- Y <- ID <- H <- ID_t <- ID_target <- euc_dist_comp <-
-    CI_hd1_part <- CI_hd2_part <- CI_hd3_part <- dist <- euc_dist <-
-    X_seg <- Y_seg <- X_segt <- Y_segt <- status <- H_target <- NULL
+  x <- y <- ID <- h <- ID_t <- ID_target <- euc_dist_comp <-
+    CI_Braathe_part <- CI_RK3_part <- CI_RK4_part <- dist <- euc_dist <-
+    x_seg <- y_seg <- x_segt <- y_segt <- status <- h_target <- NULL
 
-  segtrees <- fread(plot_path, header = T)
-  colnames(segtrees) <- c("ID", "X_seg", "Y_seg", "H")
-  segtrees_sf <- sf::st_as_sf(segtrees, coords = c("X_seg", "Y_seg"))
-  ttrees <- fread(ttrees_path, header = T)
-  colnames(ttrees) <- c("ID_target", "X", "Y")
-  ttrees_sf <- sf::st_as_sf(ttrees, coords = c("X", "Y"))
-  buffer <- sf::st_buffer(ttrees_sf, dist = (radius + 5),
-                          nQuadSegs = 30)
-  sf::st_agr(segtrees_sf) = "constant"
-  sf::st_agr(buffer) = "constant"
-  trees_competition <- sf::st_intersection(segtrees_sf, buffer)
-  trees_competition1 <- sf::st_drop_geometry(trees_competition)
-  trees_competition <- dplyr::left_join(trees_competition1,
-                                        segtrees, by = c("ID","H"))
-  trees_competition <- dplyr::left_join(trees_competition,
-                                        ttrees, by = "ID_target")
-  #calculate euclidean distance between competitor and target tree
-  trees_competition <- trees_competition %>%
-    mutate(euc_dist = sqrt((X - X_seg)^2 + (Y - Y_seg)^2)) %>%
-    dplyr::mutate(status = ifelse(euc_dist == min(euc_dist), "target_tree",
-                                  ifelse(euc_dist > min(euc_dist), "competitor", NA)))
-  if (min(trees_competition$euc_dist) > tolerance) {
-    stop("There was no tree found within the tolerance threshold. Check the coordinates again or, if the accuracy of GPS signal was low, set a new tolerance value.")
-  } else {
-    matching_rows <- subset(trees_competition, status == "target_tree")
-  }
-  matching_rows <- matching_rows %>%
-    dplyr::rename(ID_t = ID, H_target = H, X_segt = X_seg, Y_segt = Y_seg) %>%
-    dplyr::select(ID_t, ID_target, H_target, X_segt, Y_segt)
-  trees_competition <- dplyr::left_join(
-    trees_competition, matching_rows, by = "ID_target") %>%
-    dplyr::mutate(euc_dist_comp = sqrt((X_segt - X_seg)^2 +
-                                         (Y_segt - Y_seg)^2)) %>%
-    dplyr::filter(euc_dist_comp <= radius)
+  #read dataframe and .validate_inv or .validate_target still needed!
+  #structure should be like this:
+  colnames(plot_source) <- c("ID", "x_seg", "y_seg", "h")
+  colnames(target_source) <- c("ID_target", "x", "y")
+
+  # define competitors for target trees using internal function
+  trees_competition <- .define_comp(plot_source, target_source,
+                                    radius=radius, tolerance = tolerance)
+
   #calculate part of the Competition indices for each competitor
   trees_competition <- trees_competition %>%
-    dplyr::mutate(CI_hd1_part = (H/ (H_target * euc_dist_comp)),
-                  CI_hd2_part = atan(H / euc_dist_comp),
-                  CI_hd3_part = (H / H_target) * atan(H / euc_dist_comp))
+    dplyr::mutate(CI_Braathe_part = (h/ (h_target * euc_dist_comp)),
+                  CI_RK3_part = ifelse(h > h_target, atan(h / euc_dist_comp),
+                                       0), #only include trees >  target tree
+                  CI_RK4_part = (h / h_target) * atan(h / euc_dist_comp))
   #filter out the target tree itself
   trees_competition <- trees_competition %>% dplyr::filter(euc_dist_comp > 0)
-  #calculate competition indices (height-distance dependent) for each target tree
+  #calculate CIs (height-distance dependent) for each target tree
   CIs <- trees_competition %>%
     dplyr::group_by(ID_target) %>%
-    dplyr::summarize(sum(CI_hd1_part), sum(CI_hd2_part), sum(CI_hd3_part))
+    dplyr::summarize(sum(CI_Braathe_part), sum(CI_RK3_part), sum(CI_RK4_part))
   colnames(CIs) <- c("ID_target", "CI_Braathe", "CI_RK3", "CI_RK4")
 
   if (method == "all") {
-    cat("Distance-height-based competition was quantified with methods by Braathe and Rouvinen and Kuuluvainen. Search radius =", radius, ".\n")
+    cat("Distance-height-based competition was quantified with methods by
+        Braathe and Rouvinen and Kuuluvainen. Search radius =", radius, ".\n")
     print(CIs)
     return(CIs)
   } else if (method == "CI_Braathe") {
@@ -143,8 +121,68 @@ compete_dh <- function(plot_path, ttrees_path, radius,
     print(CI_RK4)
     return(CI_RK4)
   } else {
-    stop("Invalid method. Supported methods: 'all', 'CI_Braathe', 'CI_RK3', 'CI_RK4'.")
+    stop("Invalid method. Supported methods: 'all', 'CI_Braathe',
+         'CI_RK3', 'CI_RK4'.")
   }}
 
 
+#' @keywords internal
+#' internal function for defining the competitors for each target tree
+.define_comp <- function(segtrees, ttrees, radius, tolerance, verbose = TRUE){
+  # convert segmented trees to sf object
+  segtrees_sf <- sf::st_as_sf(segtrees, coords = c("x_seg", "y_seg"))
+  #convert target trees to sf object
+  ttrees_sf <- sf::st_as_sf(ttrees, coords = c("x", "y"))
+  #create buffer
+  buffer <- sf::st_buffer(ttrees_sf, dist = radius,
+                          nQuadSegs = 30)
+  #get or set relation_to_geometry attribute of an sf object
+  sf::st_agr(segtrees_sf) = "constant"
+  sf::st_agr(buffer) = "constant"
+  #make intersection to define if tree is within a radius or not
+  trees_competition <- sf::st_intersection(segtrees_sf, buffer)
+  #extract x,y again from geometry and convert matrix to dataframe
+  coords <- sf::st_coordinates(trees_competition)
+  coords <- data.frame(
+    x_seg = coords[, 1],
+    y_seg = coords[, 2]
+  )
+  #drop geometry to work with dataframe part
+  trees_competition1 <- sf::st_drop_geometry(trees_competition)
+
+  #link the x,y coordinates as columns to dataframe
+  trees_competition <- cbind(trees_competition1, coords)
+
+  #add x,y of target trees
+  trees_competition <- dplyr::left_join(trees_competition,
+                                        ttrees, by = "ID_target")
+  #calculate euclidean distance between target trees and plot trees to
+  #match/identify target trees within the plot by nearest neighbor
+  #(not possible via ID, since they could have different IDs if you work
+  #with lidar & field data)
+  trees_competition <- trees_competition %>%
+    dplyr::mutate(
+      euc_dist = sqrt((x - x_seg)^2 + (y - y_seg)^2),
+      status = ifelse(euc_dist == min(euc_dist), "target_tree",
+                      ifelse(euc_dist > min(euc_dist), "competitor", NA)))
+  #check if there is no tree within the tolerance threshold
+  if (min(trees_competition$euc_dist) > tolerance) {
+    stop("There was no tree found within the tolerance threshold.
+         Check the coordinates again or, if the accuracy of GPS signal was low,
+         set a new tolerance value.")
+  } else {
+    matching_rows <- subset(trees_competition, status == "target_tree")
+  }
+  matching_rows <- matching_rows %>%
+    dplyr::rename(ID_t = ID,
+                  dbh_target = dbh,
+                  x_segt = x_seg,
+                  y_segt = y_seg) %>%
+    dplyr::select(ID_t, ID_target, dbh_target, x_segt, y_segt)
+  trees_competition <- dplyr::left_join(trees_competition,
+                                        matching_rows, by = "ID_target") %>%
+    dplyr::mutate(euc_dist_comp = sqrt((x_segt - x_seg)^2 + (y_segt - y_seg)^2))
+
+  return(trees_competition)
+}
 

@@ -5,21 +5,21 @@
 \title{Quantify distance-height-dependent Competition using ALS inventory data}
 \usage{
 compete_dh(
-  plot_path,
-  ttrees_path,
+  plot_source,
+  target_source,
   radius,
   method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4"),
   tolerance = 1
 )
 }
 \arguments{
-\item{plot_path}{character path to inventory table (.csv or .txt) of plot,
-with structure: ID, X, Y, H (in m). Coordinates have to be in metric system
-(in m)!}
+\item{plot_source}{dataframe or path to inventory table of the
+plot, with structure: ID, x, y, h (in m). Cartesian coordinates have to
+be in metric system (in m)!}
 
-\item{ttrees_path}{character path to table/list (.csv or .txt) of target
-trees within plot with ID_target, X, Y (does not have to be the same ID as
-in inventory table). Coordinates have to be in metric system!}
+\item{target_source}{dataframe or path to table of target trees within plot
+with ID_target, x, y (does not have to be the same ID as in inventory table).
+Cartesian coordinates have to be in metric system!}
 
 \item{radius}{numeric, Search radius (in m) around target tree, wherein all
 neighboring trees are classified as competitors}
@@ -52,9 +52,10 @@ distance to competitors.
 \itemize{
 \item CI_Braathe according to Braathe (1980)
 \eqn{\sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
-\item CI_RK3 according to Rouvinen & Kuuluvainen (1997)
-\eqn{\sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i})}
-\item CI_RK4 according to Rouvinen & Kuuluvainen (1997)
+\item CI_RK3 according to CI5 in Rouvinen & Kuuluvainen (1997)
+\eqn{\sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i}), h_{i} > h}
+\item CI_RK4 based on CI3 in Rouvinen & Kuuluvainen (1997) and
+Contreras et al. (2011)
 \eqn{\sum_{i=1}^{n} (h_{i} / h) \cdot \mathrm{arctan}(h_{i} / dist_{i})}
 }
 }
