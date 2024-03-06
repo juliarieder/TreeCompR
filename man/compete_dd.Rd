@@ -5,8 +5,8 @@
 \title{Calculate Tree Competition Indices Using Distance and DBH Inventory Data}
 \usage{
 compete_dd(
-  plot_path,
-  ttrees_path,
+  plot_source,
+  target_source,
   radius,
   method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"),
   dbh_thr = 0.1,
@@ -15,13 +15,13 @@ compete_dd(
 )
 }
 \arguments{
-\item{plot_path}{character path to inventory table (.csv or .txt) of the
-plot, with structure: ID, X, Y, DBH (in m). Coordinates have to be in
-metric system (in m)!}
+\item{plot_source}{dataframe or path to inventory table of the
+plot, with structure: ID, x, y, dbh (in m). Cartesian coordinates have to
+be in metric system (in m)!}
 
-\item{ttrees_path}{character path to table/list (.csv or .txt) of target
-trees within plot with ID_target, X, Y (does not have to be the same ID as
-in inventory table). Coordinates have to be in metric system!}
+\item{target_source}{dataframe or path to table of target trees within plot
+with ID_target, x, y (does not have to be the same ID as in inventory table).
+Cartesian coordinates have to be in metric system!}
 
 \item{radius}{numeric, Search radius (in m) around target tree, wherein all
 neighboring trees are classified as competitors}
@@ -29,17 +29,17 @@ neighboring trees are classified as competitors}
 \item{method}{character string assigning the method for quantifying
 competition "CI_Hegyi", "CI_RK1", "CI_RK2" or "all"}
 
-\item{dbh_thr}{numeric, DBH threshold for classifying the tree as a
-competitor (default is 0.1 m; trees with DBH smaller 0.1 m are no
+\item{dbh_thr}{numeric, dbh threshold for classifying the tree as a
+competitor (default is 0.1 m; trees with dbh smaller 0.1 m are no
 competitors)}
 
 \item{tolerance}{numeric. Tolerance for the match with the tree coordinates.
 If a field measurement value is used for target_tree, take a higher tolerance
-value (default=1 m), depending on the measurement accuracy}
+value (default=1 m), depending on the GPS accuracy}
 
-\item{dbh_max}{numeric, DBH threshold (max) in m, that is realistic for the
+\item{dbh_max}{numeric, dbh threshold (max) in m, that is realistic for the
 trees. (default: 1 m). It causes a warning message, if one or more tree
-within your plot shows higher DBH values.}
+within your plot shows higher dbh values.}
 }
 \value{
 dataframe with ID_target, and one or more indices per tree,
