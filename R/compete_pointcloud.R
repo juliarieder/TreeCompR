@@ -117,7 +117,7 @@ compete_pc <- function(forest_source, tree_source,
     tree_name <- deparse(substitute(tree_source))
     # if a path, get file name without extension
     if (inherits(tree_source, "character")){
-      tree_name <- tools::file_path_sans_ext(basename(tree_name))
+      tree_name <- tools::file_path_sans_ext(basename(tree_source))
     }
   }
   # print progress
