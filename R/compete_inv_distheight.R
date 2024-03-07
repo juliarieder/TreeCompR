@@ -68,7 +68,7 @@
 #' }
 compete_dh <- function(plot_source, target_source, radius,
                        method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4"),
-                       tolerance = 1) {
+                       tolerance = 1, ...) {
 
   x <- y <- ID <- h <- ID_t <- ID_target <- euc_dist_comp <-
     CI_Braathe_part <- CI_RK3_part <- CI_RK4_part <- dist <- euc_dist <-
@@ -82,6 +82,7 @@ compete_dh <- function(plot_source, target_source, radius,
   # define competitors for target trees using internal function
   trees_competition <- .define_comp(plot_source, target_source,
                                     radius=radius, tolerance = tolerance)
+
 
   #calculate part of the Competition indices for each competitor
   trees_competition <- trees_competition %>%
@@ -185,4 +186,6 @@ compete_dh <- function(plot_source, target_source, radius,
 
   return(trees_competition)
 }
+
+
 

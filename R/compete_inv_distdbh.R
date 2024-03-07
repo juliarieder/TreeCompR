@@ -5,8 +5,8 @@
 #' (or group of indices) for a list of target trees within a forest plot
 #'
 #' @param plot_source dataframe or path to inventory table of the
-#'   plot, with structure: ID, x, y, dbh (in m). Cartesian coordinates have to
-#'   be in metric system (in m)!
+#'   plot, with structure: ID, x, y, dbh (in m, cm or mm; specify in dbh_unit!).
+#'   Cartesian coordinates have to be in metric system (in m)!
 #' @param target_source dataframe or path to table of target trees within plot
 #' with ID_target, x, y (does not have to be the same ID as in inventory table).
 #'  Cartesian coordinates have to be in metric system!
@@ -17,11 +17,13 @@
 #' @param tolerance numeric. Tolerance for the match with the tree coordinates.
 #' If a field measurement value is used for target_tree, take a higher tolerance
 #' value (default=1 m), depending on the GPS accuracy
+#' @param dbh_unit character string for used unit of dbh in inventory data
+#' "m", "cm" or "mm"
 #' @param dbh_thr numeric, dbh threshold for classifying the tree as a
-#'  competitor (default is 0.1 m; trees with dbh smaller 0.1 m are no
+#'  competitor (default is 10 cm; trees with dbh smaller 10 cm are no
 #'  competitors)
-#' @param dbh_max numeric, dbh threshold (max) in m, that is realistic for the
-#' trees. (default: 1 m). It causes a warning message, if one or more tree
+#' @param dbh_max numeric, dbh threshold (max) in cm, that is realistic for the
+#' trees. (default: 100 cm). It causes a warning message, if one or more tree
 #' within your plot shows higher dbh values.
 #'
 #' @details
@@ -69,7 +71,8 @@
 #' }
 compete_dd <- function(plot_source, target_source, radius,
                        method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"),
-                       dbh_thr = 0.1, tolerance = 1, dbh_max = 1.0) {
+                       tolerance = 1, dbh_unit = c("m", "cm", "mm"),
+                       dbh_thr = 10, dbh_max = 100, ...) {
 
   # avoid errors with undefined global values in CMD check
   x <- y <- x_seg <- y_seg <- CI_h_part <- CI_RK1_part <- CI_RK2_part <-
@@ -84,19 +87,24 @@ compete_dd <- function(plot_source, target_source, radius,
   # define competitors for target trees using internal function
   trees_competition <- .define_comp(plot_source, target_source,
                                     radius=radius, tolerance = tolerance)
+  #check for dbh unit in inventory data
+  dbh_unit = match.arg(dbh_unit)
+  #multiplier needed to always use cm within the CIs
+  mult <- c(m = 100, cm = 1, mm = 0.1)[dbh_unit]
+
+  #convert dbh to unit cm if needed
+  trees_competition <- trees_competition %>% dplyr::mutate(dbh = dbh * mult)
 
   #filter out trees that are too small to be considered as competitor
-  #(dbh_thr default 0.1 m)
-  #filter out trees that are too small to be considered as competitor
-  #(dbh_thr default 0.1 m)
+  #(dbh_thr default 10 cm)
   trees_competition <- trees_competition %>% dplyr::filter(dbh >= dbh_thr)
   # Identify rows with DBH higher than dbh_max to check if there was a problem
   # with automated segmentation (in case laser scanning data was used).
-  # dbh_max default 1.0 m, should be adjusted depending on tree species and age
+  # dbh_max default 100 cm, should be adjusted depending on tree species and age
 
-  ##### under construction!!!!!!!!!
-  #select ID, x, y, dbh?
-  high_dbh_rows <- trees_competition %>% dplyr::filter(dbh > dbh_max)
+  #select trees with higher dbh than threshold and generate message
+  high_dbh_rows <- trees_competition %>% dplyr::filter(dbh > dbh_max) %>%
+    select(ID, x_seg, y_seg, dbh)
 
   # generate warning message, in case dbh of a tree within the plot is
   #higher than dbh_max (segtrees also includes the target trees)
