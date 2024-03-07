@@ -15,7 +15,8 @@
 #'   competition "CI_Braathe", "CI_RK3", "CI_RK4" or "all"
 #' @param tolerance numeric. Tolerance for the match with the tree coordinates.
 #'   If a field measurement value is used for target_tree, take a higher
-#'     tolerance value (default=1 m), depending on the measurement accuracy
+#'   tolerance value (default=1 m), depending on the measurement accuracy
+#' @param ... additional arguments passed on to [data.table::fread()]
 #'
 #' @details
 #' Using an inventory table to easily quantify distance-dependent tree
@@ -70,9 +71,13 @@ compete_dh <- function(plot_source, target_source, radius,
                        method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4"),
                        tolerance = 1, ...) {
 
+  # match arguments against the allowed values
+  method <- match.arg(method)
+
   x <- y <- ID <- h <- ID_t <- ID_target <- euc_dist_comp <-
     CI_Braathe_part <- CI_RK3_part <- CI_RK4_part <- dist <- euc_dist <-
     x_seg <- y_seg <- x_segt <- y_segt <- status <- h_target <- NULL
+
 
   #read dataframe and .validate_inv or .validate_target still needed!
   #structure should be like this:

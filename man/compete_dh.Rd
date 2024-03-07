@@ -9,7 +9,8 @@ compete_dh(
   target_source,
   radius,
   method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4"),
-  tolerance = 1
+  tolerance = 1,
+  ...
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ competition "CI_Braathe", "CI_RK3", "CI_RK4" or "all"}
 \item{tolerance}{numeric. Tolerance for the match with the tree coordinates.
 If a field measurement value is used for target_tree, take a higher
 tolerance value (default=1 m), depending on the measurement accuracy}
+
+\item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
 dataframe with ID_target, and one or more Indices depending on

@@ -25,6 +25,7 @@
 #' @param dbh_max numeric, dbh threshold (max) in cm, that is realistic for the
 #' trees. (default: 100 cm). It causes a warning message, if one or more tree
 #' within your plot shows higher dbh values.
+#' @param ... additional arguments passed on to [data.table::fread()]
 #'
 #' @details
 #' Using an inventory table to easily quantify distance-dependent tree
@@ -74,15 +75,22 @@ compete_dd <- function(plot_source, target_source, radius,
                        tolerance = 1, dbh_unit = c("m", "cm", "mm"),
                        dbh_thr = 10, dbh_max = 100, ...) {
 
+
+  # match arguments against the allowed values
+  method <- match.arg(method)
+
   # avoid errors with undefined global values in CMD check
   x <- y <- x_seg <- y_seg <- CI_h_part <- CI_RK1_part <- CI_RK2_part <-
     euc_dist_comp <- dbh <- euc_dist <- ID_target <- ID_t <- dbh_target <-
     status <- ID <- dbh_target <- x_segt <- y_segt <- NULL
 
+  # read data of whole plot
+  #plot_source <- read_inv(plot_source, verbose = print_progress == "full", ...)
   #read dataframe and .validate_inv or .validate_target still needed!
   #structure should be like this:
   colnames(plot_source) <- c("ID", "x_seg", "y_seg", "dbh")
   colnames(target_source) <- c("ID_target", "x", "y")
+
 
   # define competitors for target trees using internal function
   trees_competition <- .define_comp(plot_source, target_source,

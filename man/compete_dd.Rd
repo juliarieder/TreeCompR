@@ -9,15 +9,17 @@ compete_dd(
   target_source,
   radius,
   method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"),
-  dbh_thr = 0.1,
   tolerance = 1,
-  dbh_max = 1
+  dbh_unit = c("m", "cm", "mm"),
+  dbh_thr = 10,
+  dbh_max = 100,
+  ...
 )
 }
 \arguments{
 \item{plot_source}{dataframe or path to inventory table of the
-plot, with structure: ID, x, y, dbh (in m). Cartesian coordinates have to
-be in metric system (in m)!}
+plot, with structure: ID, x, y, dbh (in m, cm or mm; specify in dbh_unit!).
+Cartesian coordinates have to be in metric system (in m)!}
 
 \item{target_source}{dataframe or path to table of target trees within plot
 with ID_target, x, y (does not have to be the same ID as in inventory table).
@@ -29,17 +31,22 @@ neighboring trees are classified as competitors}
 \item{method}{character string assigning the method for quantifying
 competition "CI_Hegyi", "CI_RK1", "CI_RK2" or "all"}
 
-\item{dbh_thr}{numeric, dbh threshold for classifying the tree as a
-competitor (default is 0.1 m; trees with dbh smaller 0.1 m are no
-competitors)}
-
 \item{tolerance}{numeric. Tolerance for the match with the tree coordinates.
 If a field measurement value is used for target_tree, take a higher tolerance
 value (default=1 m), depending on the GPS accuracy}
 
-\item{dbh_max}{numeric, dbh threshold (max) in m, that is realistic for the
-trees. (default: 1 m). It causes a warning message, if one or more tree
+\item{dbh_unit}{character string for used unit of dbh in inventory data
+"m", "cm" or "mm"}
+
+\item{dbh_thr}{numeric, dbh threshold for classifying the tree as a
+competitor (default is 10 cm; trees with dbh smaller 10 cm are no
+competitors)}
+
+\item{dbh_max}{numeric, dbh threshold (max) in cm, that is realistic for the
+trees. (default: 100 cm). It causes a warning message, if one or more tree
 within your plot shows higher dbh values.}
+
+\item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
 dataframe with ID_target, and one or more indices per tree,
