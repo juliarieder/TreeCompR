@@ -228,18 +228,18 @@ print.compete_pc <- function(x, ...){
     )
     if ("CI_cone" %in% names(x)){
       cat(" Cone-based competition index using a cone base height of",
-          round(x$h_cone * x$height_target, 2), "and\n",
+          round(x$h_cone * 100, 1), "% of\n the tree height and",
           "an opening angle of 60 degrees:\n",
-          "CI_cone = ", x$CI_cone, "centered around the",
-          x$center_position,"of the tree\n",
+          "CI_cone =", x$CI_cone, "(centered around the",
+          x$center_position,"of the tree)\n",
           "------------------------------------------------------------------\n"
       )
     }
     if ("CI_cyl" %in% names(x)){
       cat(" Cylinder-based competition index using a cylinder radius of",
           round(x$cyl_r, 1), "m:\n",
-          "CI_cyl = ", x$CI_cyl, "centered around the",
-          x$center_position,"of the tree\n",
+          "CI_cyl =", x$CI_cyl, "(centered around the",
+          x$center_position,"of the tree)\n",
           "------------------------------------------------------------------\n"
       )
     }
