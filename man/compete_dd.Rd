@@ -8,6 +8,7 @@ compete_dd(
   plot_source,
   target_source,
   radius,
+  edge_trees = FALSE,
   method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"),
   tolerance = 1,
   dbh_unit = c("m", "cm", "mm"),
@@ -27,6 +28,10 @@ Cartesian coordinates have to be in metric system!}
 
 \item{radius}{numeric, Search radius (in m) around target tree, wherein all
 neighboring trees are classified as competitors}
+
+\item{edge_trees}{FALSE (default): just uses trees within the plot that are
+not at the edge of the plot to prevent wrong CIs; if TRUE: calculates CIs
+for all trees within the plot, even those at the edge}
 
 \item{method}{character string assigning the method for quantifying
 competition "CI_Hegyi", "CI_RK1", "CI_RK2" or "all"}

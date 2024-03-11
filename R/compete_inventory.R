@@ -147,6 +147,9 @@ compete_dh <- function(plot_source, target_source, radius,
 #'  Cartesian coordinates have to be in metric system!
 #' @param radius numeric, Search radius (in m) around target tree, wherein all
 #' neighboring trees are classified as competitors
+#' @param edge_trees FALSE (default): just uses trees within the plot that are
+#' not at the edge of the plot to prevent wrong CIs; if TRUE: calculates CIs
+#' for all trees within the plot, even those at the edge
 #' @param method character string assigning the method for quantifying
 #' competition "CI_Hegyi", "CI_RK1", "CI_RK2" or "all"
 #' @param tolerance numeric. Tolerance for the match with the tree coordinates.
@@ -205,7 +208,7 @@ compete_dh <- function(plot_source, target_source, radius,
 #' CI <- compete_dd("path/to/plot.csv", "path/to/ttrees.csv",
 #'  radius = 10, method = "CI_Hegyi")
 #' }
-compete_dd <- function(plot_source, target_source, radius,
+compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
                        method = c("all", "CI_Hegyi", "CI_RK1", "CI_RK2"),
                        tolerance = 1, dbh_unit = c("m", "cm", "mm"),
                        dbh_thr = 10, dbh_max = 100, ...) {
@@ -219,15 +222,11 @@ compete_dd <- function(plot_source, target_source, radius,
     euc_dist_comp <- dbh <- euc_dist <- ID_target <- ID_t <- dbh_target <-
     status <- ID <- dbh_target <- x_segt <- y_segt <- NULL
 
-  # read data of whole plot
-  #plot_source <- read_inv(plot_source, verbose = print_progress == "full", ...)
-  #read dataframe and .validate_inv or .validate_target still needed!
-  #structure should be like this:
-  colnames(plot_source) <- c("ID", "x_seg", "y_seg", "dbh")
-  colnames(target_source) <- c("ID_target", "x", "y")
+  #read inventory table
+  segtrees <- read_inv(plot_source)
 
-
-  # define competitors for target trees using internal function
+  # specify target trees and
+  #define competitors for target trees using internal function
   trees_competition <- .define_comp(plot_source, target_source,
                                     radius=radius, tolerance = tolerance)
   #check for dbh unit in inventory data
@@ -305,16 +304,74 @@ compete_dd <- function(plot_source, target_source, radius,
 
 #' @keywords internal
 #' internal function for defining the competitors for each target tree
-.define_comp <- function(segtrees, ttrees, radius, tolerance, verbose = TRUE){
-  # convert segmented trees to sf object
-  segtrees_sf <- sf::st_as_sf(segtrees, coords = c("x_seg", "y_seg"))
-  #convert target trees to sf object
-  ttrees_sf <- sf::st_as_sf(ttrees, coords = c("x", "y"))
-  #create buffer
+#' #still just working for inventory with dbh
+#'
+.define_comp <- function(segtrees, ttrees, edge_trees, radius,
+                        thresh = 1, tolerance) {
+
+  segtrees_sf <- sf::st_as_sf(segtrees, coords = c("x", "y"))
+  sf::st_agr(segtrees_sf) = "constant"
+  # If no target trees are defined (standard) and edge_trees is FALSE,
+  # simply set ttrees_sf <- segtrees_sf
+  if (is.null(ttrees)) {
+    ttrees <- segtrees %>% rename(ID_target = ID, dbh_t = dbh)
+    ttrees_sf <- sf::st_as_sf(ttrees, coords = c("x", "y"))
+    # Define search radius
+    thresh <- thresh
+
+    # Get polygon for concave hull
+    conc <- st_polygon(
+      list(
+        as.matrix(
+          concaveman(cbind(segtrees$x, segtrees$y),
+                     length_threshold = 2 * thresh)
+        )
+      )
+    )
+    # Find trees that are safely within the polygon (center)
+        #dist = -radius
+    buf_conc <- sf::st_buffer(conc, dist = -radius, singleSide = TRUE)
+
+    #attribute variables are assumed to be spatially constant
+    #throughout all geometries
+    sf::st_agr(ttrees_sf) = "constant"
+
+    # Check for intersections between points and buffer
+    intersection <- st_intersection(ttrees_sf, buf_conc) %>% select(ID_target)
+
+    # Update the location to "center" for intersecting points
+    #if there are any intersections
+    ttrees_sf <- ttrees_sf %>%
+      mutate(tree_loc = ifelse(ID_target %in% intersection$ID_target, "center",
+                               "edge"))
+    #only use trees within center
+    if (!edge_trees){
+      ttrees_sf <- subset(ttrees_sf, tree_loc == "center")
+
+    } else {
+      ttrees_sf <- ttrees_sf
+    }
+
+  } else if (!is.null(target_trees)) {
+    ttrees <- read_inv(target_source)
+    ttrees <- ttrees %>% rename(ID_target = ID, dbh_t = dbh)
+    ttrees_sf <- sf::st_as_sf(ttrees, coords = c("x", "y"))
+
+  } else {
+    stop("Invalid input")
+  }
+
+
+  #when target trees are set and validated: search for competitors
+
+  #create buffer around target trees with dist = search radius
   buffer <- sf::st_buffer(ttrees_sf, dist = radius,
                           nQuadSegs = 30)
   #get or set relation_to_geometry attribute of an sf object
-  sf::st_agr(segtrees_sf) = "constant"
+  #attribute variables are assumed to be spatially constant
+  #throughout all geometries
+  # convert segmented trees to sf object
+
   sf::st_agr(buffer) = "constant"
   #make intersection to define if tree is within a radius or not
   trees_competition <- sf::st_intersection(segtrees_sf, buffer)
@@ -327,38 +384,45 @@ compete_dd <- function(plot_source, target_source, radius,
   #drop geometry to work with dataframe part
   trees_competition1 <- sf::st_drop_geometry(trees_competition)
 
-  #link the x,y coordinates as columns to dataframe
-  trees_competition <- cbind(trees_competition1, coords)
+  #link the x,y of plot tree coordinates as columns to dataframe
+  segtrees1 <- segtrees %>% select(ID, x, y)
+  trees_competition <- left_join(trees_competition1, segtrees1, by = "ID") %>%
+    rename(x_seg = x, y_seg = y)
 
   #add x,y of target trees
+  ttrees1 <- ttrees %>% select(ID_target, x, y)
   trees_competition <- dplyr::left_join(trees_competition,
-                                        ttrees, by = "ID_target")
+                                        ttrees1, by = "ID_target")
   #calculate euclidean distance between target trees and plot trees to
   #match/identify target trees within the plot by nearest neighbor
-  #(not possible via ID, since they could have different IDs if you work
-  #with lidar & field data)
+  #(not possible via ID, since they could have different IDs if you
+  #work with lidar & field data)
+
+
+  #check for each target tree which tree it is within segtrees
+  #and which trees are competitors
   trees_competition <- trees_competition %>%
-    dplyr::mutate(
+    group_by(ID_target) %>%
+    mutate(
       euc_dist = sqrt((x - x_seg)^2 + (y - y_seg)^2),
-      status = ifelse(euc_dist == min(euc_dist), "target_tree",
-                      ifelse(euc_dist > min(euc_dist), "competitor", NA)))
-  #check if there is no tree within the tolerance threshold
+      is_exact_match = all(x == x_seg, y == y_seg)
+    ) %>%
+    mutate(
+      status = case_when(
+        is_exact_match ~ "target_tree",
+        TRUE ~ ifelse(euc_dist == min(euc_dist), "target_tree", "competitor")
+      )
+    ) %>%
+    select(-is_exact_match)  # Drop the intermediate column
   if (min(trees_competition$euc_dist) > tolerance) {
+    #or generate warning instead of stop?
     stop("There was no tree found within the tolerance threshold.
          Check the coordinates again or, if the accuracy of GPS signal was low,
          set a new tolerance value.")
-  } else {
-    matching_rows <- subset(trees_competition, status == "target_tree")
   }
-  matching_rows <- matching_rows %>%
-    dplyr::rename(ID_t = ID,
-                  dbh_target = dbh,
-                  x_segt = x_seg,
-                  y_segt = y_seg) %>%
-    dplyr::select(ID_t, ID_target, dbh_target, x_segt, y_segt)
-  trees_competition <- dplyr::left_join(trees_competition,
-                                        matching_rows, by = "ID_target") %>%
-    dplyr::mutate(euc_dist_comp = sqrt((x_segt - x_seg)^2 + (y_segt - y_seg)^2))
 
   return(trees_competition)
+  #output should be:
+  # ID, dbh, ID_target, dbh_t, (tree_loc), x_seg, y_seg, x, y, euc_dist, status
 }
+
