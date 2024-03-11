@@ -118,10 +118,10 @@ read_pc <- function(pc_source, verbose = TRUE, ...) {
         # message about used coordinate vectors
         if(verbose){
           message(
-          "No named coordinates. Columns ",
-          paste(names(pc), collapse = ", "),
-          " (no. ", paste(nums[1:3], collapse = ", "),
-          " in raw data)\n   used as x, y, z coordinates, respectively.")
+            "No named coordinates. Columns ",
+            paste(names(pc), collapse = ", "),
+            " (no. ", paste(nums[1:3], collapse = ", "),
+            " in raw data)\n   used as x, y, z coordinates, respectively.")
         }
         # adjust names
         names(pc) <- c("x", "y", "z")
@@ -131,5 +131,31 @@ read_pc <- function(pc_source, verbose = TRUE, ...) {
     class(pc) <- c("forest_pc", class(pc))
     # return the validated forest object
     return(pc)
+  }
+}
+
+# Define printing method for forest_pc objects:
+#' @rdname read_pc
+#' @format NULL
+#' @usage NULL
+#' @export
+print.forest_pc <- function(x, ...){
+  cat("---------------------------------------",
+      " \n'forest_pc' class point cloud: \ncollection of", nrow(x),"observations",
+      "\n---------------------------------------\n"
+  )
+
+  if (nrow(x) < 6) {
+    # if there are almost no observations, print the entire dataset
+    print(as.data.frame(x))
+  } else {
+    # else print beginning and end of the data.frame
+    temp <- data.frame(x ="...", y ="...", z="...")
+    row.names(temp) <- " "
+    print(
+      rbind(head(as.data.frame(x), 3),
+            temp,
+            tail(as.data.frame(x), n = 3))
+    )
   }
 }
