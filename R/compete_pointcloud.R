@@ -200,7 +200,7 @@ compete_pc <- function(forest_source, tree_source,
     if(comp_method == "cylinder" | comp_method == "both"){
       cat("Cylinder-based CI =", results$CI_cyl, "     ")
     }
-    cat("\n\n")
+    cat("\n")
   }
   # return results
   return(results)
@@ -212,36 +212,14 @@ compete_pc <- function(forest_source, tree_source,
 #' @usage NULL
 #' @export
 print.compete_pc <- function(x, ...){
-  # if people put together more than one object of class compete_pc, treat as
-  # normal data.frame (just to avoid wrongly formatted output, workaround that
-  # can be improved later)
-  if(nrow(x) > 1)
-    print(as.data.frame(x))
-  # else print formatted output
-  else{
-    cat(" ------------------------------------------------------------------\n",
-        "Pointcloud based competition index for",
-        paste0("'", x$target, "'"), "\n",
-        "------------------------------------------------------------------\n",
-        "Target tree height:", x$height_target, "m\n",
-        "------------------------------------------------------------------\n"
-    )
-    if ("CI_cone" %in% names(x)){
-      cat(" Cone-based competition index using a cone base height of",
-          round(x$h_cone * 100, 1), "% of\n the tree height and",
-          "an opening angle of 60 degrees:\n",
-          "CI_cone =", x$CI_cone, "(centered around the",
-          x$center_position,"of the tree)\n",
-          "------------------------------------------------------------------\n"
-      )
-    }
-    if ("CI_cyl" %in% names(x)){
-      cat(" Cylinder-based competition index using a cylinder radius of",
-          round(x$cyl_r, 1), "m:\n",
-          "CI_cyl =", x$CI_cyl, "(centered around the",
-          x$center_position,"of the tree)\n",
-          "------------------------------------------------------------------\n"
-      )
-    }
-  }
+  # get tree name or number of observations
+  target <- ifelse(nrow(x) == 1,
+                   paste0("'", x$target, "'"),
+                   paste(nrow(tree), "trees"))
+  # print header
+  cat(" ------------------------------------------------------------------\n",
+      "Point cloud based competition indices for", target, "\n",
+      "------------------------------------------------------------------\n")
+  # print body
+  print(head(as.data.frame(x)))
 }
