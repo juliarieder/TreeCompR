@@ -22,13 +22,13 @@ compete_pc(
 \arguments{
 \item{forest_source}{data.frame with neighborhood point cloud or path to file
 of neighborhood point cloud in tabular or las/laz format which is passed on
-to \code{\link[=read_tree]{read_tree()}}. The neighborhood has to include the target tree and its
+to \code{\link[=read_pc]{read_pc()}}. The neighborhood has to include the target tree and its
 neighbors, not height normalized, and can include ground points).
 Coordinates have to be in a Cartesian coordinate system in m!}
 
 \item{tree_source}{data.frame with target tree point cloud or path to file of
 target tree point cloud in tabular or las/laz format which is passed on to
-\code{\link[=read_tree]{read_tree()}}. Coordinates have to be in a Cartesian coordinate system in m
+\code{\link[=read_pc]{read_pc()}}. Coordinates have to be in a Cartesian coordinate system in m
 and with the same number of decimal places as the neighborhood point cloud.}
 
 \item{comp_method}{character string of length 1 with competition method.
