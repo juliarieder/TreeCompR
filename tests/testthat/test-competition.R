@@ -1,7 +1,7 @@
 test_that("reading a tree point cloud in txt format works", {
   # try if loading works without error
   expect_message({ # message expected due to unnamed dataset
-    test_tree <-  read_tree(tree_source = test_path("testdata", "tree.txt"))
+    test_tree <-  read_pc(pc_source = test_path("testdata", "tree.txt"))
   })
 
   # test if loaded object has the correct class
@@ -51,7 +51,7 @@ test_that("reading a tree point cloud in txt format works", {
 test_that("reading a neighborhood point cloud in txt format works", {
   # try if loading works without error
   expect_message({ # message expected due to unnamed dataset
-    test_tree <-  read_tree(tree_source = test_path("testdata", "neighborhood.txt"))
+    test_tree <-  read_pc(pc_source = test_path("testdata", "neighborhood.txt"))
   })
 
   # test if loaded object has the correct class
@@ -82,7 +82,7 @@ test_that("reading a neighborhood point cloud in txt format works", {
 test_that("reading a tree point cloud in las format works", {
   # try if loading works without error
   expect_no_error({
-    test_tree <-  read_tree(tree_source = test_path("testdata", "tree.las"))
+    test_tree <-  read_pc(pc_source = test_path("testdata", "tree.las"))
   })
 
   # test if loaded object has the correct class
@@ -113,7 +113,7 @@ test_that("reading a tree point cloud in las format works", {
 test_that("reading a tree point cloud in laz format works", {
   # try if loading works without error
   expect_no_error({
-    test_tree <-  read_tree(tree_source = test_path("testdata", "tree.laz"))
+    test_tree <-  read_pc(pc_source = test_path("testdata", "tree.laz"))
   })
 
   # test if loaded object has the correct class
@@ -145,13 +145,13 @@ test_that("reading a tree point cloud in laz format works", {
 test_that("tabular point clouds with different types, structures and extensions can be read", {
   # simple csv with named xyz columns is read without message
   expect_no_message({
-    tinytree1 <- read_tree(test_path("testdata", "tinytree1.csv"))
+    tinytree1 <- read_pc(test_path("testdata", "tinytree1.csv"))
   })
 
   # csv with different field and decimal separator can be read
   expect_equal(
     tinytree1,
-    read_tree(test_path("testdata", "tinytree2.csv"),
+    read_pc(test_path("testdata", "tinytree2.csv"),
               dec = ",", sep = ";")
   )
 
@@ -159,14 +159,14 @@ test_that("tabular point clouds with different types, structures and extensions 
   # character can be read
   expect_equal(
     tinytree1,
-    read_tree(test_path("testdata", "tinytree3.csv"),
+    read_pc(test_path("testdata", "tinytree3.csv"),
               dec = ",", sep = ";")
   )
 
   # tabstop delimited txt with d a first column of class character and wrongly
   # labeled columns can be read (resulting in a message)
   expect_message({
-    tinytree4 <- read_tree(test_path("testdata", "tinytree4.txt"),
+    tinytree4 <- read_pc(test_path("testdata", "tinytree4.txt"),
                            sep = "\t")
   })
   expect_equal(tinytree1, tinytree4)
@@ -174,7 +174,7 @@ test_that("tabular point clouds with different types, structures and extensions 
   # standard csv with different order (x, z, y) is read correctly
   expect_equal(
     tinytree1,
-    read_tree(test_path("testdata", "tinytree5.csv"))
+    read_pc(test_path("testdata", "tinytree5.csv"))
   )
 
   # trees can be loaded and validated if provided as data.frames
@@ -183,7 +183,7 @@ test_that("tabular point clouds with different types, structures and extensions 
     read.table(
       test_path("testdata", "tinytree4.txt"),
       header = TRUE) %>%
-      read_tree(verbose = FALSE)
+      read_pc(verbose = FALSE)
   )
 })
 
