@@ -1,10 +1,10 @@
-#' @title Read a single tree point cloud
+#' @title Read trees and neighborhoods from point cloud data.
 #'
 #' @description Read point cloud sourced from a file path or an object that
 #'   inherits from class data.frame.
 #'
-#' @param tree_source object that inherits from class data.frame, or character
-#'   path to point cloud of individual tree or a whole plot either in las/laz
+#' @param pc_source object that inherits from class data.frame, or character
+#'   path to point cloud of individual tree or a whole plot eitherin las/laz
 #'   format or any file format readable with [data.table::fread()]. If provided
 #'   with a point cloud object in a data.frame, the structure and column names
 #'   are validated and homogenized; else, the function tries to read the point
@@ -27,31 +27,31 @@
 #'   three numeric columns or one of the columns labeled x, y, and z is not
 #'   numeric, the function fails with an error.
 #'
-#' @return object of class c("tree_pc", "data.frame") with x, y and z
+#' @return object of class c("forest_pc", "data.frame") with x, y and z
 #'  coordinates of the tree or forest point cloud
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' # Read the tree point cloud in txt format
-#' tree <- read_tree(path = "path/to/tree_point_cloud.txt")
-#' # Read the tree point cloud in las or laz format
-#' tree <- read_tree(path = "path/to/tree_point_cloud.las")
+#' # Read a tree point cloud in txt format
+#' tree <- read_pc(pc_source = "path/to/tree_point_cloud.txt")
+#' # Read a tree point cloud in las or laz format
+#' tree <- read_pc(pc_source = "path/to/tree_point_cloud.las")
 #' }
-read_tree <- function(tree_source, verbose = TRUE, ...) {
+read_pc <- function(pc_source, verbose = TRUE, ...) {
   . <- NULL
-  # check class of source tree
-  if (inherits(tree_source, "data.frame")){
-    tree <- .validate_tree(tree_source, verbose = verbose)
-  } else if (!(is.character(tree_source) && length(tree_source) == 1)){
-    stop("Format of tree_source not recognized.\n",
+  # check class of source dataset
+  if (inherits(pc_source, "data.frame")){
+    pc <- .validate_pc(pc_source, verbose = verbose)
+  } else if (!(is.character(pc_source) && length(pc_source) == 1)){
+    stop("Format of pc_source not recognized.\n",
          " Please provide a data.frame or a path to a source file.\n")
-  } else if(!file.exists(tree_source)){
-    stop("File", tree_source,
+  } else if(!file.exists(pc_source)){
+    stop("File", pc_source,
          "does not exist. \nPlease check path to point cloud file.")
   } else {
-    # treat tree_source as path to file
-    path <- tree_source
+    # treat pc_source as path to file
+    path <- pc_source
     # get file extension
     extension <- utils::tail(
       base::strsplit(path, split = ".", fixed = TRUE)[[1]], 1)
@@ -61,8 +61,8 @@ read_tree <- function(tree_source, verbose = TRUE, ...) {
       if (requireNamespace("lidR", quietly = TRUE)) {
         # If installed, proceed with the code for *.las files
         las <- lidR::readTLSLAS(path)
-        tree <- data.frame(x = las$X, y = las$Y, z = las$Z) %>%
-          .validate_tree(verbose = verbose)
+        pc <- data.frame(x = las$X, y = las$Y, z = las$Z) %>%
+          .validate_pc(verbose = verbose)
       } else {
         # If not, return an error message about the missing package
         stop("Please install the 'lidR' package",
@@ -70,66 +70,66 @@ read_tree <- function(tree_source, verbose = TRUE, ...) {
       }
     } else {
       # try loading in point cloud with fread
-      tree <- try(
+      pc <- try(
         data.table::fread(file = path, data.table = FALSE, ...)
       )
-      if (inherits(tree, "try-error")) {
+      if (inherits(pc, "try-error")) {
         # if the file cannot be read, return error message about accepted formats.
         stop("File format cannot be read. ",
              "Please use point cloud with extension las/laz",
              "\n or a format readable by data.table::fread().")
       } else{ # else validate and return
-        tree <- .validate_tree(tree, verbose = verbose)
+        pc <- .validate_pc(pc, verbose = verbose)
       }
     }
   }
-  # return tree_df object with correct column number, names and types
-  return(tree)
+  # return forest_pc object with correct column number, names and types
+  return(pc)
 }
 
 #' @keywords internal
 #' internal function for the validation of point cloud data
-.validate_tree <- function(tree, verbose = TRUE){
-  # check if tree is already formatted correctly and return if true
-  if (inherits(tree, "tree_pc")){
-    return(tree)
+.validate_pc <- function(pc, verbose = TRUE){
+  # check if pc is already formatted correctly and return if true
+  if (inherits(pc, "forest_pc")){
+    return(pc)
   } else { #else check for consistency
     # if coordinates are named, use these
-    if (all(c("x", "y", "z") %in% tolower(names(tree)))){
+    if (all(c("x", "y", "z") %in% tolower(names(pc)))){
       # convert to upper case
-      names(tree) <- tolower(names(tree))
+      names(pc) <- tolower(names(pc))
       # use these columns
-      tree <- tree[, c("x", "y", "z")]
+      pc <- pc[, c("x", "y", "z")]
       # test if any of the columns has the wrong class
-      if (!all(sapply(tree, is.numeric))){
+      if (!all(sapply(pc, is.numeric))){
         stop("One or more of the coordinate vectors x, y, z",
              " is not numeric.\nPlease check raw data.")
       }
     } else{ # else, use the first three numeric columns
       # get numeric columns
-      nums <- which(sapply(tree, is.numeric))
+      nums <- which(sapply(pc, is.numeric))
       # warn if there are not enough numeric columns
       if (length(nums) < 3){
-        stop("Tree contains less than 3 numeric coordinate vectors.",
-             "\n Please check raw data.")
+        stop("Point cloud dataset contains less than 3 numeric coordinate",
+             "vectors.\n Please check raw data.")
       } else {
         # get first three numeric columns
-        tree <- tree[,nums[1:3]]
+        pc <- pc[,nums[1:3]]
         # message about used coordinate vectors
         if(verbose){
           message(
           "No named coordinates. Columns ",
-          paste(names(tree), collapse = ", "),
+          paste(names(pc), collapse = ", "),
           " (no. ", paste(nums[1:3], collapse = ", "),
           " in raw data)\n   used as x, y, z coordinates, respectively.")
         }
         # adjust names
-        names(tree) <- c("x", "y", "z")
+        names(pc) <- c("x", "y", "z")
       }
     }
-    # set class to tree_pc object
-    class(tree) <- c("tree_pc", class(tree))
-    # return the validated tree object
-    return(tree)
+    # set class to forest_pc object
+    class(pc) <- c("forest_pc", class(pc))
+    # return the validated forest object
+    return(pc)
   }
 }

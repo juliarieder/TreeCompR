@@ -61,7 +61,7 @@ tree_pos <- function(tree, z_min = 100L, h_xy = 0.3){
   # get name of object for output
   tree_name <- deparse(substitute(tree))
   # ensure consistency of tree object
-  tree <- .validate_tree(tree)
+  tree <- .validate_pc(tree)
   # voxelize tree
   tree_v <- VoxR::vox(tree, res = 0.1)
   # get basal z position

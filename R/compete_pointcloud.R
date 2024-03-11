@@ -4,12 +4,12 @@
 #'   et al. (2015) and Metz et al. (2013).
 #' @param forest_source data.frame with neighborhood point cloud or path to file
 #'   of neighborhood point cloud in tabular or las/laz format which is passed on
-#'   to [read_tree()]. The neighborhood has to include the target tree and its
+#'   to [read_pc()]. The neighborhood has to include the target tree and its
 #'   neighbors, not height normalized, and can include ground points).
 #'   Coordinates have to be in a Cartesian coordinate system in m!
 #' @param tree_source data.frame with target tree point cloud or path to file of
 #'   target tree point cloud in tabular or las/laz format which is passed on to
-#'   [read_tree()]. Coordinates have to be in a Cartesian coordinate system in m
+#'   [read_pc()]. Coordinates have to be in a Cartesian coordinate system in m
 #'   and with the same number of decimal places as the neighborhood point cloud.
 #' @param comp_method character string of length 1 with competition method.
 #'   Allowed values are "cone" for the cone method, "cylinder" for the cylinder
@@ -125,7 +125,7 @@ compete_pc <- function(forest_source, tree_source,
                                     tree_name, "-----\n")
 
   # read data for central tree
-  tree <- read_tree(tree_source, verbose = print_progress == "full", ...)
+  tree <- read_pc(tree_source, verbose = print_progress == "full", ...)
   # get position and height of central tree
   position <- tree_pos(tree, z_min = z_min, h_xy = h_xy)
   # get basis position of the cone/cylinder of the analysis according
@@ -134,7 +134,7 @@ compete_pc <- function(forest_source, tree_source,
   h <- position[["height"]]
 
   # read data for neighborhood
-  hood <- read_tree(forest_source, verbose = print_progress == "full", ...)
+  hood <- read_pc(forest_source, verbose = print_progress == "full", ...)
   # remove points in the neighborhood that belong to the central tree
   neighbor <- dplyr::anti_join(hood, tree, by = c("x", "y", "z"))
 
