@@ -198,11 +198,11 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       )
     }
   }
-}
-# set class to forst_inv object
-class(inv_out) <- c("forest_inv", class(inv_out))
-# return the validated inventory object
-return(inv_out)
+
+  # set class to forst_inv object
+  class(inv_out) <- c("forest_inv", class(inv_out))
+  # return the validated inventory object
+  return(inv_out)
 }
 
 
