@@ -216,6 +216,8 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
 
   # match arguments against the allowed values
   method <- match.arg(method)
+  #check for dbh unit in inventory data
+  dbh_unit = match.arg(dbh_unit)
 
   # avoid errors with undefined global values in CMD check
   x <- y <- x_seg <- y_seg <- CI_h_part <- CI_RK1_part <- CI_RK2_part <-
@@ -229,10 +231,15 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
   #define competitors for target trees using internal function
   trees_competition <- .define_comp(plot_source, target_source,
                                     radius=radius, tolerance = tolerance)
-  #check for dbh unit in inventory data
-  dbh_unit = match.arg(dbh_unit)
+
+
+  if (method %in% c("all", "CI_Hegyi", "CI_RK1", "CI_RK2")) {
+
   #multiplier needed to always use cm within the CIs
-  mult <- c(m = 100, cm = 1, mm = 0.1)[dbh_unit]
+
+  # get multipliers for units
+  dbh_mult <- c(cm = 1, mm = 0.1, m = 100)[dbh_unit]
+
 
   #convert dbh to unit cm if needed
   trees_competition <- trees_competition %>% dplyr::mutate(dbh = dbh * mult)
@@ -270,7 +277,7 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
     CI_RK1 = sum(CI_RK1_part),
     CI_RK2 = sum(CI_RK2_part))
 
-
+}
   #output depending on method and searchradius
   if (method == "all") {
     cat("DBH-distance-based competition was quantified with methods
@@ -309,6 +316,10 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
 .define_comp <- function(segtrees, ttrees, edge_trees, radius,
                         thresh = 1, tolerance) {
 
+  # avoid errors with undefined global values in CMD check
+  ID <- dbh <- target_trees <- ID_target <- dbh_t <- tree_loc <-
+    x <- y <- x_seg <- y_seg <- is_exact_match <-  NULL
+
   segtrees_sf <- sf::st_as_sf(segtrees, coords = c("x", "y"))
   sf::st_agr(segtrees_sf) = "constant"
   # If no target trees are defined (standard) and edge_trees is FALSE,
@@ -316,7 +327,10 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
   if (is.null(ttrees)) {
     ttrees <- segtrees %>% rename(ID_target = ID, dbh_t = dbh)
     ttrees_sf <- sf::st_as_sf(ttrees, coords = c("x", "y"))
-    # Define search radius
+    #attribute variables are assumed to be spatially constant
+    #throughout all geometries
+    sf::st_agr(ttrees_sf) = "constant"
+    # Define threshold for concave hull
     thresh <- thresh
 
     # Get polygon for concave hull
@@ -329,12 +343,9 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
       )
     )
     # Find trees that are safely within the polygon (center)
-        #dist = -radius
+        #dist = -radius means buffer direction towards polygon center
     buf_conc <- sf::st_buffer(conc, dist = -radius, singleSide = TRUE)
 
-    #attribute variables are assumed to be spatially constant
-    #throughout all geometries
-    sf::st_agr(ttrees_sf) = "constant"
 
     # Check for intersections between points and buffer
     intersection <- st_intersection(ttrees_sf, buf_conc) %>% select(ID_target)
@@ -347,18 +358,27 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
     #only use trees within center
     if (!edge_trees){
       ttrees_sf <- subset(ttrees_sf, tree_loc == "center")
+      #attribute variables are assumed to be spatially constant
+      #throughout all geometries
+      sf::st_agr(ttrees_sf) = "constant"
 
     } else {
       ttrees_sf <- ttrees_sf
+      #attribute variables are assumed to be spatially constant
+      #throughout all geometries
+      sf::st_agr(ttrees_sf) = "constant"
     }
 
   } else if (!is.null(target_trees)) {
     ttrees <- read_inv(target_source)
     ttrees <- ttrees %>% rename(ID_target = ID, dbh_t = dbh)
     ttrees_sf <- sf::st_as_sf(ttrees, coords = c("x", "y"))
+    #attribute variables are assumed to be spatially constant
+    #throughout all geometries
+    sf::st_agr(ttrees_sf) = "constant"
 
   } else {
-    stop("Invalid input")
+    stop("Invalid input. Please test your input with read_inv()")
   }
 
 
@@ -371,10 +391,11 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
   #attribute variables are assumed to be spatially constant
   #throughout all geometries
   # convert segmented trees to sf object
-
   sf::st_agr(buffer) = "constant"
+
   #make intersection to define if tree is within a radius or not
   trees_competition <- sf::st_intersection(segtrees_sf, buffer)
+
   #extract x,y again from geometry and convert matrix to dataframe
   coords <- sf::st_coordinates(trees_competition)
   coords <- data.frame(

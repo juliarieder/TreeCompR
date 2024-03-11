@@ -19,7 +19,8 @@ Imports:
     magrittr,
     rlang,
     Rfast,
-    sf
+    sf,
+    concaveman
 Suggests: 
     lidR,
     knitr (>= 1.43),

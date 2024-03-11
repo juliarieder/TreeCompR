@@ -69,9 +69,11 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
                      dbh_unit = c("cm", "m", "mm"),
                      height_unit = c("m", "cm", "mm"),
                      verbose = TRUE, ...) {
+
   # match function arguments for units and get multipliers
   dbh_unit    <- match.arg(dbh_unit)
   height_unit <- match.arg(height_unit)
+
   # catch and validate variable names (treated as character if not null)
   if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
   if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
@@ -83,11 +85,11 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
   if (inherits(inv_source, "data.frame")){
     inv <- .validate_inv(inv_source, x = x, y = y, dbh = dbh, height = height,
                          id = id, dbh_unit = dbh_unit, verbose = verbose)
-  } else if (!(is.character(tree_source) && length(tree_source) == 1)){
+  } else if (!(is.character(inv_source) && length(inv_source) == 1)){
     stop("Format of inv_source not recognized.\n",
          " Please provide a data.frame or a path to a source file.\n")
-  } else if(!file.exists(tree_source)){
-    stop("File", tree_source,
+  } else if(!file.exists(inv_source)){
+    stop("File", inv_source,
          "does not exist. \nPlease check path to point cloud file.")
   } else {
     # treat tree_source as path to file
@@ -96,7 +98,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     inv <- try(
       data.table::fread(file = path, data.table = FALSE, ...)
     )
-    if (inherits(tree, "try-error")) {
+    if (inherits(inv, "try-error")) {
       # if the file cannot be read, return error message about accepted formats.
       stop("File format cannot be read. Please use a format readable ",
            "by data.table::fread() or provide the necessary decimal separators,",
