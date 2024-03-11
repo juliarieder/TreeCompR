@@ -110,7 +110,7 @@ read_pc <- function(pc_source, verbose = TRUE, ...) {
       nums <- which(sapply(pc, is.numeric))
       # warn if there are not enough numeric columns
       if (length(nums) < 3){
-        stop("Point cloud dataset contains less than 3 numeric coordinate",
+        stop("Point cloud dataset contains less than 3 numeric coordinate ",
              "vectors.\n Please check raw data.")
       } else {
         # get first three numeric columns

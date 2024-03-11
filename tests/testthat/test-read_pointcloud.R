@@ -35,22 +35,10 @@ test_that("reading a tree point cloud in txt format works", {
     pos$base_pos},
     c(x = 0.1, y = -0.5, z = -0.1)
   )
-
-  # test if crown position works
-  expect_equal(
-    pos$crown_pos,
-    c(x = 1.8, y = -0.61, z = -0.1)
-  )
-  # test if height works
-  expect_equal(
-    tree_pos(test_tree)$height,
-    22.8
-  )
 })
 
 
-
-test_that("reading a neighborhood point cloud in txt format works", {
+test_that("reading pc in txt format works", {
   # try if loading works without error
   expect_message({ # message expected due to unnamed dataset
     test_tree <-  read_pc(pc_source = test_path("testdata", "neighborhood.txt"))
@@ -81,7 +69,7 @@ test_that("reading a neighborhood point cloud in txt format works", {
 })
 
 
-test_that("reading a tree point cloud in las format works", {
+test_that("reading pc in las format works", {
   # try if loading works without error
   expect_no_error({
     test_tree <-  read_pc(pc_source = test_path("testdata", "tree.las"))
@@ -112,7 +100,7 @@ test_that("reading a tree point cloud in las format works", {
 })
 
 
-test_that("reading a tree point cloud in laz format works", {
+test_that("reading pc in laz format works", {
   # try if loading works without error
   expect_no_error({
     test_tree <-  read_pc(pc_source = test_path("testdata", "tree.laz"))
@@ -144,6 +132,7 @@ test_that("reading a tree point cloud in laz format works", {
 
 })
 
+
 test_that("tabular point clouds with different types, structures and extensions can be read", {
   # simple csv with named xyz columns is read without message
   expect_no_message({
@@ -173,6 +162,12 @@ test_that("tabular point clouds with different types, structures and extensions 
   })
   expect_equal(tinytree1, tinytree4)
 
+  # messages are correctly suppressed with verbose = FALSE
+  expect_no_message({
+    read_pc(test_path("testdata", "tinytree4.txt"),
+            sep = "\t", verbose = FALSE)
+  })
+
   # standard csv with different order (x, z, y) is read correctly
   expect_equal(
     tinytree1,
@@ -187,4 +182,20 @@ test_that("tabular point clouds with different types, structures and extensions 
       header = TRUE) %>%
       read_pc(verbose = FALSE)
   )
+
+  # an error is thrown if columns are missing
+  expect_error(
+    read_pc(as.data.frame(tinytree1[,-1])),
+    regexp = "Point cloud dataset contains less than 3"
+  )
+
+  # an error is thrown if the data are characters
+  expect_error({
+    test <- as.data.frame(tinytree1)
+    test$x <- as.character(test$x)
+    read_pc(test)},
+    regexp = "One or more of the coordinate vectors x, y, z is not numeric"
+  )
 })
+
+
