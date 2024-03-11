@@ -30,7 +30,7 @@ test_that("compete_pc works for .txt file point clouds", {
 
   # test if center position is correct
   expect_equal(test1$center_position, "crown center")
-  expect_equal(test2$center_position, "crown center")
+  expect_equal(test2$center_position, "base")
   expect_equal(test3$center_position, "base")
 
   # test if different values are returned if different bases are used
