@@ -267,3 +267,33 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 }
 
 
+
+# Define printing method for forest_pc objects:
+#' @rdname read_inv
+#' @format NULL
+#' @usage NULL
+#' @export
+print.forest_inv <- function(x, ...){
+  cat("---------------------------------------",
+      " \n'forest_inv' class inventory dataset: \ncollection of", nrow(x),"observations",
+      "\n---------------------------------------\n"
+  )
+
+  if (nrow(x) < 6) {
+    # if there are almost no observations, print the entire dataset
+    print(as.data.frame(x), digits = 3)
+  } else {
+    # else print beginning and end of the data.frame
+    temp <- x[1,]
+    row.names(temp) <- " "
+    for(i in 1:ncol(temp)) temp[, i] <- "..."
+    x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
+    print(
+      rbind(head(as.data.frame(x), 3),
+            temp,
+            tail(as.data.frame(x), n = 3)
+            )
+    )
+  }
+}
+

@@ -74,7 +74,6 @@ test_that("read_inv works for data.frame objects", {
 })
 
 
-
 test_that("Unit handling works", {
   # reading dbh in ms works
   expect_equal({
@@ -109,6 +108,7 @@ test_that("Unit handling works", {
     test$height * 0.001)
 })
 
+
 test_that("read_inv works for file paths", {
   # standard csv - should read in with a message about
   # column specifications
@@ -128,4 +128,16 @@ test_that("read_inv works for file paths", {
              verbose = FALSE),
     f1)
 })
+
+
+test_that("print method for forest_pc objects works", {
+  # simple csv with named xyz columns is read without message
+  expect_output(
+    print(read_inv(test_path("testdata", "smallinv1.csv"),
+                   verbose = FALSE)),
+    "'forest_inv' class inventory dataset:"
+  )
+})
+
+
 
