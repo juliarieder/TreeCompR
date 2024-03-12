@@ -112,6 +112,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
   return(inv)
 }
 
+
 #' @keywords internal
 #' internal function for the validation of point cloud data
 .validate_inv <- function(inv_source, x = NULL, y = NULL,
@@ -153,23 +154,25 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     }
     # validate dbh
     if(!is.null(dbh)){
-      inv_out$dbh <- inv_source[[dbh]]
+      inv_out$dbh <- inv_source[[dbh]] * dbh_mult
     } else {
       inv_out$dbh <- .get_cols(
         data = inv_source,
         names = c("dbh", "diameter", "diam", "d"),
+        mult = dbh_mult,
         alternative = NULL # scrap column if not available
       )
     }
     # validate tree height
     if(!is.null(height)){
-      inv_out$height <- inv_source[[height]]
+      inv_out$height <- inv_source[[height]] * height_mult
     } else {
       inv_out$height <- .get_cols(
         data = inv_source,
         names = c("height", "h"),
+        mult = height_mult,
         alternative = NULL # scrap column if not available
-      )
+      ) * height_mult
     }
 
     # if both dbh and height are null, stop with an error
@@ -210,17 +213,21 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 
 #' @keywords internal
 #' internal function for extracting columns with matching names
-.get_cols <- function(data, names, alternative = NULL){
+.get_cols <- function(
+    data,                  # dataset
+    names,                 # allowed variable names
+    mult = 1,              # multiplier for unit conversion (1: no conversion)
+    alternative = NULL){   # alternative value if missing (standard: scrap column)
   matches <- tolower(names(data)) %in% names
   if (sum(matches) > 1){
     stop("More than one variable found with a name ",
          "that is a variation of '", paste(names, collapse = ", "), "'" )
   } else {
     if (sum(matches) == 1) {
-      return(data[, matches])
+      return(data[, matches] * mult)
     } else {
       if (!any(matches) & !is.null(alternative)){
-        return(alternative)
+        return(alternative * mult)
       } else {stop(
         "No variable found with a name ",
         "that is a variation of '", paste(names, collapse = ", "), "'" )
