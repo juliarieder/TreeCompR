@@ -74,7 +74,8 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
   dbh_unit    <- match.arg(dbh_unit)
   height_unit <- match.arg(height_unit)
 
-  # catch and validate variable names (treated as character if not null)
+  # catch and validate variable names (treated as character if not NULL,
+  # else, NULL is passed on to .validate_inv())
   if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
   if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
   if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
@@ -104,7 +105,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
            "by data.table::fread() or provide the necessary decimal separators,",
            " field separators etc. for reading.")
     } else{ # else validate and return
-      inv <- .validate_inv(inv, x = x, y = y, dbh = dbh, height = height,
+      inv <- .validate_inv(inv_source, x = x, y = y, dbh = dbh, height = height,
                            id = id, dbh_unit = dbh_unit, verbose = verbose)
     }
   }
@@ -127,7 +128,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     dbh_mult <- c(cm = 1, mm = 0.1, m = 100)[dbh_unit]
     height_mult <- c(m = 1, cm = 0.01, mm = 0.001)[height_unit]
     # define empty dataset
-    inv_out <- as.data.frame(matrix(NA, nrow = nrow(inv), ncol = 5))
+    inv_out <- as.data.frame(matrix(NA, nrow = nrow(inv_source), ncol = 5))
     names(inv_out) <- c("id", "x", "y", "dbh", "h")
 
     # validate ID
@@ -160,19 +161,20 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
         data = inv_source,
         names = c("dbh", "diameter", "diam", "d"),
         mult = dbh_mult,
-        alternative = NULL # scrap column if not available
+        fail_if_missing = FALSE # scrap column if not available
       )
     }
     # validate tree height
     if(!is.null(height)){
-      inv_out$height <- inv_source[[height]] * height_mult
+      inv_out$h <- inv_source[[height]] * height_mult
     } else {
-      inv_out$height <- .get_cols(
+      inv_out$h <- .get_cols(
         data = inv_source,
         names = c("height", "h"),
         mult = height_mult,
-        alternative = NULL # scrap column if not available
-      ) * height_mult
+        alternative = NULL,
+        fail_if_missing = FALSE # scrap column if not available
+      )
     }
 
     # if both dbh and height are null, stop with an error
@@ -216,24 +218,36 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 .get_cols <- function(
     data,                  # dataset
     names,                 # allowed variable names
-    mult = 1,              # multiplier for unit conversion (1: no conversion)
-    alternative = NULL){   # alternative value if missing (standard: scrap column)
+    mult = NULL,           # multiplier for unit conversion (NULL: no change)
+    alternative = NULL,    # alternative value if column not available
+    fail_if_missing = TRUE # if column it missing, fail (TRUE) or remove
+    ){                     # column (FALSE)
   matches <- tolower(names(data)) %in% names
   if (sum(matches) > 1){
     stop("More than one variable found with a name ",
          "that is a variation of '", paste(names, collapse = ", "), "'" )
   } else {
     if (sum(matches) == 1) {
-      return(data[, matches] * mult)
+      out <- data[, matches]
     } else {
       if (!any(matches) & !is.null(alternative)){
-        return(alternative * mult)
-      } else {stop(
+        out <- alternative
+      } else {
+        # if failure is the extended outcome, return error message
+        if (fail_if_missing){
+        stop(
         "No variable found with a name ",
         "that is a variation of '", paste(names, collapse = ", "), "'" )
+        } else { # else remove column by returning NULL
+          return(NULL)
+          }
       }
     }
   }
+  # perform unit conversion if needed
+  if (!is.null(mult)) out <- out * mult
+  # return output
+  return(out)
 }
 
 
