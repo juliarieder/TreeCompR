@@ -84,8 +84,10 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 
   # check class of source tree
   if (inherits(inv_source, "data.frame")){
-    inv <- .validate_inv(inv_source, x = x, y = y, dbh = dbh, height = height,
-                         id = id, dbh_unit = dbh_unit, verbose = verbose)
+    inv <- .validate_inv(inv_source, x = x, y = y,
+                         dbh = dbh, height = height, id = id,
+                         dbh_unit = dbh_unit, height_unit = height_unit,
+                         verbose = verbose)
   } else if (!(is.character(inv_source) && length(inv_source) == 1)){
     stop("Format of inv_source not recognized.\n",
          " Please provide a data.frame or a path to a source file.\n")
@@ -105,8 +107,10 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
            "by data.table::fread() or provide the necessary decimal separators,",
            " field separators etc. for reading.")
     } else{ # else validate and return
-      inv <- .validate_inv(inv, x = x, y = y, dbh = dbh, height = height,
-                           id = id, dbh_unit = dbh_unit, verbose = verbose)
+      inv <- .validate_inv(inv_source, x = x, y = y,
+                           dbh = dbh, height = height, id = id,
+                           dbh_unit = dbh_unit, height_unit = height_unit,
+                           verbose = verbose)
     }
   }
   # return forst_inv object with correct column number, names and types
@@ -125,11 +129,11 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     return(inv_source)
   } else { #else check for consistency
     # get multipliers for units
-    dbh_mult <- c(cm = 1, mm = 0.1, m = 100)[dbh_unit]
+    dbh_mult    <- c(cm = 1, mm = 0.1, m = 100)[dbh_unit]
     height_mult <- c(m = 1, cm = 0.01, mm = 0.001)[height_unit]
     # define empty dataset
     inv_out <- as.data.frame(matrix(NA, nrow = nrow(inv_source), ncol = 5))
-    names(inv_out) <- c("id", "x", "y", "dbh", "h")
+    names(inv_out) <- c("id", "x", "y", "dbh", "height")
     # validate ID
     inv_out$id <- .get_cols(
       data = inv_source,
@@ -161,7 +165,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       fail_if_missing = FALSE # scrap column if not available
     )
     # validate tree height
-    inv_out$h <- .get_cols(
+    inv_out$height <- .get_cols(
       data = inv_source,
       which = height,
       names = c("height", "h"),
