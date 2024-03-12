@@ -130,58 +130,50 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     # define empty dataset
     inv_out <- as.data.frame(matrix(NA, nrow = nrow(inv_source), ncol = 5))
     names(inv_out) <- c("id", "x", "y", "dbh", "h")
-
     # validate ID
-    if(!is.null(id)){
-      inv_out$id <- inv_source[[id]]
-    } else {
-      inv_out$id <- .get_cols(
-        data = inv_source,
-        names = c("id", "treeid", "tree_id", "tree.id"),
-        alternative = 1:nrow(inv_source)
-      )
-    }
+    inv_out$id <- .get_cols(
+      data = inv_source,
+      which = id,
+      names = c("id", "treeid", "tree_id", "tree.id"),
+      alternative = 1:nrow(inv_source)
+    )
     # validate x coordinate
-    if(!is.null(x)){
-      inv_out$x <- inv_source[[x]]
-    } else {
-      inv_out$x <- .get_cols(data = inv_source, names = "x")
-    }
-    # validate y coordinate
-    if(!is.null(y)){
-      inv_out$y <- inv_source[[y]]
-    } else {
-      inv_out$y <- .get_cols(data = inv_source, names = "y")
-    }
+    inv_out$x <- .get_cols(
+      data = inv_source,
+      which = x,
+      names = "x",
+      class = c("integer", "numeric")
+    )
+    #validate y coordinate
+    inv_out$y <- .get_cols(
+      data = inv_source,
+      which = y,
+      names = "y",
+      class = c("integer", "numeric")
+    )
     # validate dbh
-    if(!is.null(dbh)){
-      inv_out$dbh <- inv_source[[dbh]] * dbh_mult
-    } else {
-      inv_out$dbh <- .get_cols(
-        data = inv_source,
-        names = c("dbh", "diameter", "diam", "d"),
-        mult = dbh_mult,
-        fail_if_missing = FALSE # scrap column if not available
-      )
-    }
+    inv_out$dbh <- .get_cols(
+      data = inv_source,
+      which = dbh,
+      names = c("dbh", "diameter", "diam", "d"),
+      class = c("integer", "numeric"),
+      mult = dbh_mult,
+      fail_if_missing = FALSE # scrap column if not available
+    )
     # validate tree height
-    if(!is.null(height)){
-      inv_out$h <- inv_source[[height]] * height_mult
-    } else {
-      inv_out$h <- .get_cols(
-        data = inv_source,
-        names = c("height", "h"),
-        mult = height_mult,
-        alternative = NULL,
-        fail_if_missing = FALSE # scrap column if not available
-      )
-    }
-
+    inv_out$h <- .get_cols(
+      data = inv_source,
+      which = height,
+      names = c("height", "h"),
+      class = c("integer", "numeric"),
+      mult = height_mult,
+      alternative = NULL,
+      fail_if_missing = FALSE # scrap column if not available
+    )
     # if both dbh and height are null, stop with an error
     if (ncol(inv_out) < 4) stop(
       "Neither dbh nor height could be identified in",
       "the raw data. Please provide column names manually.")
-
     # message about used coordinate vectors
     if(verbose){
       message(
@@ -206,7 +198,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     }
   }
 
-  # set class to forst_inv object
+  # set class to forest_inv object
   class(inv_out) <- c("forest_inv", class(inv_out))
   # return the validated inventory object
   return(inv_out)
@@ -217,32 +209,52 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 #' internal function for extracting columns with matching names
 .get_cols <- function(
     data,                  # dataset
+    which,                 # column to be picked
     names,                 # allowed variable names
+    class = NULL,          # class vector for validation
     mult = NULL,           # multiplier for unit conversion (NULL: no change)
     alternative = NULL,    # alternative value if column not available
     fail_if_missing = TRUE # if column it missing, fail (TRUE) or remove
-    ){                     # column (FALSE)
-  matches <- tolower(names(data)) %in% names
-  if (sum(matches) > 1){
-    stop("More than one variable found with a name ",
-         "that is a variation of '", paste(names, collapse = ", "), "'" )
-  } else {
-    if (sum(matches) == 1) {
-      out <- data[, matches]
+){                     # column (FALSE)
+  # if column name is specified, take this column
+  if (!is.null(which)) {
+    out <- data[[which]]
+  } else { # try to identify correct column
+    matches <- tolower(names(data)) %in% names
+    if (sum(matches) > 1){
+      stop("More than one variable found with a name ",
+           "that is a variation of '", paste(names, collapse = ", "), "'" )
     } else {
-      if (!any(matches) & !is.null(alternative)){
-        out <- alternative
+      if (sum(matches) == 1) {
+        which <- names(data)[matches]
+        out   <- data[[which]]
       } else {
-        # if failure is the extended outcome, return error message
-        if (fail_if_missing){
-        stop(
-        "No variable found with a name ",
-        "that is a variation of '", paste(names, collapse = ", "), "'" )
-        } else { # else remove column by returning NULL
-          return(NULL)
+        if (!any(matches) & !is.null(alternative)){
+          # if an alternative value has been specified, return it
+          return(alternative)
+        } else {
+          # if failure is the extended outcome, return error message
+          if (fail_if_missing){
+            stop(
+              "No variable found with a name ",
+              "that is a variation of '", paste(names, collapse = ", "), "'" )
+          } else { # else remove column by returning NULL
+            return(NULL)
           }
+        }
       }
     }
+  }
+  # validate class and break if needed
+  if(!is.null(class)){
+    if (!inherits(out, class)) {
+      stop(
+        "Variable identified as ", names[1]," ('", which, "') ",
+        "not of required class (",
+        paste(class, collapse = " / "),
+        ")"
+        )
+      }
   }
   # perform unit conversion if needed
   if (!is.null(mult)) out <- out * mult
