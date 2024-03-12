@@ -53,12 +53,79 @@ test_that("read_inv works for data.frame objects", {
   },
   "Variable identified as dbh"
   )
+
+  # reading in fails with an error if a coordinate is missing
+  expect_error({
+    read_inv(test[, -2], verbose = FALSE)
+  },
+  "No variable found with a name"
+  )
+
+  # reading in fails with an error if there is neither dbh nor height
+  expect_error({
+    read_inv(test[, -4], verbose = FALSE)
+  },
+  "Neither dbh nor height"
+  )
+
+  # reading in works if there are no coordinates - but standard is assigned
+  expect_no_error(read_inv(test[, -1], verbose = FALSE))
+
 })
 
+
+
+test_that("Unit handling works", {
+  # reading dbh in ms works
+  expect_equal({
+    test <- read.csv(test_path("testdata", "smallinv1.csv"),
+                     sep = ",", dec = ".")
+    # read as meter
+    read_inv(test, dbh_unit = "m", verbose = FALSE)$dbh},
+    # outcome should be 100 times higher (assumed to be converted to cm)
+    100 * test$DBH)
+  # reading dbh in mm works
+  expect_equal(
+    read_inv(test, dbh_unit = "mm", verbose = FALSE)$dbh,
+    0.1 * test$DBH) #should be 0.1 of the original due to conversion to cm
+
+  # reading height in m works
+  expect_equal({
+    test$height <- test$DBH
+    read_inv(test, verbose = FALSE)$height},
+    # outcome should be 100 times higher (assumed to be converted to cm)
+    test$height)
+
+  # reading height in cm works
+  expect_equal({
+    read_inv(test, height_unit = "cm", verbose = FALSE)$height},
+    # outcome should be 100 times higher (assumed to be converted to cm)
+    test$height * 0.01)
+
+  # reading height in mm works
+  expect_equal({
+    read_inv(test, height_unit = "mm", verbose = FALSE)$height},
+    # outcome should be 100 times higher (assumed to be converted to cm)
+    test$height * 0.001)
+})
 
 test_that("read_inv works for file paths", {
-  # shopuld read in with a message about column specifications
+  # standard csv - should read in with a message about
+  # column specifications
   expect_message({
-    read_inv(test_path("testdata", "inventory.csv"))
+    f1 <- read_inv(test_path("testdata", "smallinv1.csv"))
   })
+
+  # manually specify separators in German style csv with sep = ";" and dec = ","
+  expect_equal(
+    read_inv(test_path("testdata", "smallinv2.csv"),
+             sep = ";", dec = ",", verbose = FALSE),
+    f1)
+
+  # tabstop delimited dataset
+  expect_equal(
+    read_inv(test_path("testdata", "smallinv3.txt"),
+             verbose = FALSE),
+    f1)
 })
+
