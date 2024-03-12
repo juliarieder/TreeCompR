@@ -105,7 +105,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
            "by data.table::fread() or provide the necessary decimal separators,",
            " field separators etc. for reading.")
     } else{ # else validate and return
-      inv <- .validate_inv(inv_source, x = x, y = y, dbh = dbh, height = height,
+      inv <- .validate_inv(inv, x = x, y = y, dbh = dbh, height = height,
                            id = id, dbh_unit = dbh_unit, verbose = verbose)
     }
   }
@@ -185,7 +185,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     # message about used coordinate vectors
     if(verbose){
       message(
-        "The folowing columns were used to create the inventory dataset:\n",
+        "The following columns were used to create the inventory dataset:\n",
         # this is absolutely hacky and ugly and should be replaced by something
         # more sensible ASAP. I just wanted a working version before I go to bed.
         paste(
