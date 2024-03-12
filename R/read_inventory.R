@@ -107,7 +107,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
            "by data.table::fread() or provide the necessary decimal separators,",
            " field separators etc. for reading.")
     } else{ # else validate and return
-      inv <- .validate_inv(inv_source, x = x, y = y,
+      inv <- .validate_inv(inv, x = x, y = y,
                            dbh = dbh, height = height, id = id,
                            dbh_unit = dbh_unit, height_unit = height_unit,
                            verbose = verbose)
