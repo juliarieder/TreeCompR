@@ -67,6 +67,166 @@
 #' CI <- compete_ALS("path/to/invtable.csv",
 #'   "path/to/target_trees.csv", radius = 10)
 #' }
+compete_inv <- function(inv_source, target, radius,
+                        method = c("all", "CI_Hegyi", "CI_Braathe",
+                                   "CI_RK1", "CI_RK2", "CI_RK3", "CI_RK4"),
+                        x = NULL, y = NULL,
+                        dbh = NULL, height = NULL, id = NULL,
+                        dbh_unit = c("cm", "m", "mm"),
+                        height_unit = c("m", "cm", "mm"),
+                        verbose = TRUE,
+                        tolerance = 1,
+                        ...) {
+
+  # match arguments against the allowed values
+  method <- match.arg(method)
+
+  # avoid errors with undefined variable names
+  x <- y <- ID <- h <- ID_t <- ID_target <- euc_dist_comp <-
+    CI_Braathe_part <- CI_RK3_part <- CI_RK4_part <- dist <- euc_dist <-
+    x_seg <- y_seg <- x_segt <- y_segt <- status <- h_target <- NULL
+
+  # catch and validate variable names (treated as character if not NULL,
+  # else, NULL is passed on to read_inv())
+  if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
+  if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
+  if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
+  if (!is.null(substitute(height))) height <- as.character(substitute(height))
+  if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
+
+  #read and validate forest inventory dataset
+  inv <- read_inv(inv_source, x = x, y = y, dbh = dbh, height = height,
+                  id = id, dbh_unit = dbh_unit, height_unit = height_unit,
+                  verbose = verbose, ...)
+
+  # stop execution if required variables are not available
+  if ((method %in% c("CI_Hegyi", "CI_RK1", "CI_RK2")) &
+      !("dbh" %in% names(inv))){
+    stop("Diameter at breast height is required for '", method, "' index.")
+  }
+  if ((method %in% c("CI_Braathe", "CI_RK3", "CI_RK4")) &
+      !("height" %in% names(inv))){
+    stop("Tree height is required for '", method, "' index.")
+  }
+
+  # define competitors for target trees using internal function
+  trees_competition <- .define_comp(inv, target, radius = radius,
+                                    tolerance = tolerance)
+
+  # EVERYTHING BELOW HAS TO BE CHECKED
+
+  #calculate part of the Competition indices for each competitor
+  trees_competition <- trees_competition %>%
+    dplyr::mutate(CI_Braathe_part = (h/ (h_target * euc_dist_comp)),
+                  CI_RK3_part = ifelse(h > h_target, atan(h / euc_dist_comp),
+                                       0), #only include trees >  target tree
+                  CI_RK4_part = (h / h_target) * atan(h / euc_dist_comp))
+  #filter out the target tree itself
+  trees_competition <- trees_competition %>% dplyr::filter(euc_dist_comp > 0)
+  #calculate CIs (height-distance dependent) for each target tree
+  CIs <- trees_competition %>%
+    dplyr::group_by(ID_target) %>%
+    dplyr::summarize(sum(CI_Braathe_part), sum(CI_RK3_part), sum(CI_RK4_part))
+  colnames(CIs) <- c("ID_target", "CI_Braathe", "CI_RK3", "CI_RK4")
+
+  if (method == "all") {
+    cat("Distance-height-based competition was quantified with methods by
+        Braathe and Rouvinen and Kuuluvainen. Search radius =", radius, ".\n")
+    print(CIs)
+    return(CIs)
+  } else if (method == "CI_Braathe") {
+    CI_Braathe <- CIs %>% dplyr::select(ID_target, CI_Braathe)
+    cat("Distance-height-based Competition was quantified using",
+        method,". Search radius =", radius,".\n")
+    print(CI_Braathe)
+    return(CI_Braathe)
+  } else if (method == "CI_RK3") {
+    CI_RK3 <- CIs %>% dplyr::select(ID_target, CI_RK3)
+    cat("Distance-height-based Competition was quantified using",
+        method,". Search radius =", radius,".\n")
+    print(CI_RK3)
+    return(CI_RK3)
+  } else if (method == "CI_RK4") {
+    CI_RK4 <- CIs %>% dplyr::select(ID_target, CI_RK4)
+    cat("Distance-height-based Competition was quantified using",
+        method,". Search radius =", radius,".\n")
+    print(CI_RK4)
+    return(CI_RK4)
+  } else {
+    stop("Invalid method. Supported methods: 'all', 'CI_Braathe',
+         'CI_RK3', 'CI_RK4'.")
+  }}
+
+
+#' Quantify distance-height-dependent Competition using ALS inventory data
+#' @description
+#' 'compete_dh()' returns a specific distance-height-dependent competition index
+#' (or group of indices) for a list of target trees within a forest plot
+#'
+#' @param plot_source dataframe or path to inventory table of the
+#'   plot, with structure: ID, x, y, h (in m). Cartesian coordinates have to
+#'   be in metric system (in m)!
+#' @param target_source dataframe or path to table of target trees within plot
+#' with ID_target, x, y (does not have to be the same ID as in inventory table).
+#'  Cartesian coordinates have to be in metric system!
+#' @param radius numeric, Search radius (in m) around target tree, wherein all
+#'   neighboring trees are classified as competitors
+#' @param method character string assigning the method for quantifying
+#'   competition "CI_Braathe", "CI_RK3", "CI_RK4" or "all"
+#' @param tolerance numeric. Tolerance for the match with the tree coordinates.
+#'   If a field measurement value is used for target_tree, take a higher
+#'   tolerance value (default=1 m), depending on the measurement accuracy
+#' @param ... additional arguments passed on to [data.table::fread()]
+#'
+#' @details
+#' Using an inventory table to easily quantify distance-dependent tree
+#' competition for a list of trees within a plot.
+#' The input data can either be taken directly from field measurements or
+#' derived beforehand from LiDAR point clouds.
+#' The function calculates 3 Competition indices, based on tree heights and
+#' distance to competitors.
+#'
+#' @section Methods:
+#'  * CI_Braathe according to Braathe (1980)
+#'    \eqn{\sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
+#'  * CI_RK3 according to CI5 in Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i}), h_{i} > h}
+#'  * CI_RK4 based on CI3 in Rouvinen & Kuuluvainen (1997) and
+#'    Contreras et al. (2011)
+#'    \eqn{\sum_{i=1}^{n} (h_{i} / h) \cdot \mathrm{arctan}(h_{i} / dist_{i})}
+#'
+#' @section Tree Segmentation:
+#' Various approaches can be used to segment airborne laser scanning point
+#' clouds into single trees and to obtain inventory data based it. Existing R
+#' packages for this are for example:
+#' * lidR package with different options to segment the point cloud or a Canopy
+#'    Height Model (CHM)
+#' * itcLiDARallo within the package itcSegment
+#'
+#' Be careful with low resolution/low density point clouds, as oversegmentation
+#' of trees is usually an issue!
+#'
+#' @section Literature:
+#'  * Braathe, P., 1980. Height increment of young single trees in relation to
+#'     height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130,
+#'      43–48.
+#'  * Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree
+#'   crowns in relation to local competition in a natural mature Scot pine
+#'   forest. Can. J. For. Res. 27, 890–902.
+#'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree
+#'  competition indices as predictors of basal area increment in western
+#'  Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
+#'
+#'
+#' @return dataframe with ID_target, and one or more Indices depending on
+#'   chosen method
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' CI <- compete_ALS("path/to/invtable.csv",
+#'   "path/to/target_trees.csv", radius = 10)
+#' }
 compete_dh <- function(plot_source, target_source, radius,
                        method = c("all", "CI_Braathe", "CI_RK3", "CI_RK4"),
                        tolerance = 1, ...) {
@@ -235,49 +395,49 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
 
   if (method %in% c("all", "CI_Hegyi", "CI_RK1", "CI_RK2")) {
 
-  #multiplier needed to always use cm within the CIs
+    #multiplier needed to always use cm within the CIs
 
-  # get multipliers for units
-  dbh_mult <- c(cm = 1, mm = 0.1, m = 100)[dbh_unit]
+    # get multipliers for units
+    dbh_mult <- c(cm = 1, mm = 0.1, m = 100)[dbh_unit]
 
 
-  #convert dbh to unit cm if needed
-  trees_competition <- trees_competition %>% dplyr::mutate(dbh = dbh * mult)
+    #convert dbh to unit cm if needed
+    trees_competition <- trees_competition %>% dplyr::mutate(dbh = dbh * mult)
 
-  #filter out trees that are too small to be considered as competitor
-  #(dbh_thr default 10 cm)
-  trees_competition <- trees_competition %>% dplyr::filter(dbh >= dbh_thr)
-  # Identify rows with DBH higher than dbh_max to check if there was a problem
-  # with automated segmentation (in case laser scanning data was used).
-  # dbh_max default 100 cm, should be adjusted depending on tree species and age
+    #filter out trees that are too small to be considered as competitor
+    #(dbh_thr default 10 cm)
+    trees_competition <- trees_competition %>% dplyr::filter(dbh >= dbh_thr)
+    # Identify rows with DBH higher than dbh_max to check if there was a problem
+    # with automated segmentation (in case laser scanning data was used).
+    # dbh_max default 100 cm, should be adjusted depending on tree species and age
 
-  #select trees with higher dbh than threshold and generate message
-  high_dbh_rows <- trees_competition %>% dplyr::filter(dbh > dbh_max) %>%
-    select(ID, x_seg, y_seg, dbh)
+    #select trees with higher dbh than threshold and generate message
+    high_dbh_rows <- trees_competition %>% dplyr::filter(dbh > dbh_max) %>%
+      select(ID, x_seg, y_seg, dbh)
 
-  # generate warning message, in case dbh of a tree within the plot is
-  #higher than dbh_max (segtrees also includes the target trees)
-  if (nrow(high_dbh_rows) > 0) {
-    cat("The following trees have a diameter above", dbh_max,"m\n")
-    colnames(high_dbh_rows) <- c("ID", "x", "y", "dbh")
-    print((high_dbh_rows[, c("ID", "x", "y", "dbh")]))
+    # generate warning message, in case dbh of a tree within the plot is
+    #higher than dbh_max (segtrees also includes the target trees)
+    if (nrow(high_dbh_rows) > 0) {
+      cat("The following trees have a diameter above", dbh_max,"m\n")
+      colnames(high_dbh_rows) <- c("ID", "x", "y", "dbh")
+      print((high_dbh_rows[, c("ID", "x", "y", "dbh")]))
+    }
+
+
+    #calculate part of the Competition indices for each competitor
+    trees_competition <- trees_competition %>%
+      dplyr::mutate(CI_h_part = dbh / (dbh_target * euc_dist_comp),
+                    CI_RK1_part = atan(dbh / euc_dist_comp),
+                    CI_RK2_part = (dbh / dbh_target) * atan(dbh / euc_dist_comp))
+    #filter out the target tree(s) itself
+    trees_competition <- trees_competition %>% dplyr::filter(euc_dist_comp > 0)
+    #calculate competition indices distance-height based:
+    CIs <- trees_competition %>% dplyr::group_by(ID_target) %>% dplyr::summarise(
+      CI_Hegyi = sum(CI_h_part),
+      CI_RK1 = sum(CI_RK1_part),
+      CI_RK2 = sum(CI_RK2_part))
+
   }
-
-
-  #calculate part of the Competition indices for each competitor
-  trees_competition <- trees_competition %>%
-    dplyr::mutate(CI_h_part = dbh / (dbh_target * euc_dist_comp),
-                  CI_RK1_part = atan(dbh / euc_dist_comp),
-                  CI_RK2_part = (dbh / dbh_target) * atan(dbh / euc_dist_comp))
-  #filter out the target tree(s) itself
-  trees_competition <- trees_competition %>% dplyr::filter(euc_dist_comp > 0)
-  #calculate competition indices distance-height based:
-  CIs <- trees_competition %>% dplyr::group_by(ID_target) %>% dplyr::summarise(
-    CI_Hegyi = sum(CI_h_part),
-    CI_RK1 = sum(CI_RK1_part),
-    CI_RK2 = sum(CI_RK2_part))
-
-}
   #output depending on method and searchradius
   if (method == "all") {
     cat("DBH-distance-based competition was quantified with methods
@@ -313,25 +473,30 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
 #' internal function for defining the competitors for each target tree
 #' #still just working for inventory with dbh
 #'
-.define_comp <- function(segtrees, ttrees, edge_trees, radius,
-                        thresh = 1, tolerance) {
+.define_comp <- function(segtrees, ttrees = NULL, edge_trees, radius,
+                         thresh = radius, tolerance) {
 
   # avoid errors with undefined global values in CMD check
   ID <- dbh <- target_trees <- ID_target <- dbh_t <- tree_loc <-
     x <- y <- x_seg <- y_seg <- is_exact_match <-  NULL
 
+  # validate class of inventory
+  if(!inherits(segtrees, "forest_inv")){
+    stop("Please supply forest inventory data in the forest_inv format",
+         "as created with read_inv().")
+  }
+
+  # convert to sf object
   segtrees_sf <- sf::st_as_sf(segtrees, coords = c("x", "y"))
   sf::st_agr(segtrees_sf) = "constant"
   # If no target trees are defined (standard) and edge_trees is FALSE,
   # simply set ttrees_sf <- segtrees_sf
-  if (is.null(ttrees)) {
+  if (is.null(ttrees) && !edge_trees) {
     ttrees <- segtrees %>% rename(ID_target = ID, dbh_t = dbh)
     ttrees_sf <- sf::st_as_sf(ttrees, coords = c("x", "y"))
     #attribute variables are assumed to be spatially constant
     #throughout all geometries
     sf::st_agr(ttrees_sf) = "constant"
-    # Define threshold for concave hull
-    thresh <- thresh
 
     # Get polygon for concave hull
     conc <- st_polygon(
@@ -343,7 +508,7 @@ compete_dd <- function(plot_source, target_source, radius, edge_trees = FALSE,
       )
     )
     # Find trees that are safely within the polygon (center)
-        #dist = -radius means buffer direction towards polygon center
+    #dist = -radius means buffer direction towards polygon center
     buf_conc <- sf::st_buffer(conc, dist = -radius, singleSide = TRUE)
 
 
