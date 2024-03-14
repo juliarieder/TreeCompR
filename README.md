@@ -13,12 +13,12 @@ on Plot level
 
 This R package is designed for the quantitative analysis of individual
 tree competition within forest ecosystems. It accepts inputs such as
-LiDAR point clouds (as .txt or las/laz files) of forest plots and
-individual target trees, or inventory tables (including tree ID, X, Y,
-DBH, H). Through the use of various competition indices, it enables the
-assessment and measurement of competition between trees, providing
-valuable insights for forest ecology, inventories, and forest management
-strategies. This package facilitates a systematic approach to
+LiDAR point clouds (as dataframe with xyz columns or las/laz files) of
+forest plots and individual target trees, or inventory tables (including
+tree ID, x, y, dbh, h). Through the use of various competition indices,
+it enables the assessment and measurement of competition between trees,
+providing valuable insights for forest ecology, inventories, and forest
+management strategies. This package facilitates a systematic approach to
 understanding interactions and resource competition among trees and
 enables informed decision making in forest management.
 
@@ -52,13 +52,15 @@ cone method:
 library(TreeCompR)
 ## insert path to point cloud of the forest plot and to the target tree point cloud
 compete_pc("tests/testthat/testdata/neighborhood.txt", "tests/testthat/testdata/tree.txt", "cone")
+#> ----- Processing competition indices for: tree -----
 #>  ------------------------------------------------------------------
-#>  Pointcloud based competition index for 'tree' 
+#>  Point cloud based competition indices for 'tree' 
 #>  ------------------------------------------------------------------
-#>  Target tree height: 22.8 m
+#>   target height_target center_position CI_cone h_cone
+#> 1   tree          22.8    crown center   16046    0.6
 #>  ------------------------------------------------------------------
-#>  Cone-based competition index using a cone base height of 13.68 and
-#>  an opening angle of 60°:
-#>  CI_cone =  22810 
+#>  Point cloud based competition indices for 'tree' 
 #>  ------------------------------------------------------------------
+#>   target height_target center_position CI_cone h_cone
+#> 1   tree          22.8    crown center   16046    0.6
 ```

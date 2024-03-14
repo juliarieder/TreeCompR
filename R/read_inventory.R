@@ -168,7 +168,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     inv_out$height <- .get_cols(
       data = inv_source,
       which = height,
-      names = c("height", "h"),
+      names = c("height", "h", "height_m"),
       class = c("integer", "numeric"),
       mult = height_mult,
       alternative = NULL,
