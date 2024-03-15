@@ -25,8 +25,8 @@
 #'   from the data. At least one of `dbh` or `height` has to be specified.
 #' @param id character of length 1 or name of the variable in `inv_source`
 #'   containing a unique tree ID. If `NULL` (default), the function tries to
-#'   identify the ID from the data. If this is not possible, a numeric idenfier
-#'   is assigned by the function.
+#'   identify the ID from the data. If this is not possible, the trees are
+#'   assigned a unique number. All IDs are coerced to character.
 #' @param dbh_unit character of length 1. Unit for the diameter measurements
 #'   (one of "cm", "m" or "mm". defaults to "cm").
 #' @param height_unit character of length 1. Unit for the diameter measurements
@@ -52,9 +52,9 @@
 #'   make specifying custom target trees difficult).
 #'
 #' @return object of class `c("forest_inv", "data.frame")` with x and y
-#'  coordinates of the tree, a unique tree identifier (`ID`) and at least one
-#'  of tree diameter at breast height (`dbh`, in cm) and tree height (`height`, in
-#'  m).
+#'  coordinates of the tree, a unique tree identifier (`id`) and at least one
+#'  of tree diameter at breast height (`dbh`, in cm) and tree height (`height`,
+#'  in m).
 #' @export
 #'
 #' @examples
@@ -135,11 +135,13 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     inv_out <- as.data.frame(matrix(NA, nrow = nrow(inv_source), ncol = 5))
     names(inv_out) <- c("id", "x", "y", "dbh", "height")
     # validate ID
-    inv_out$id <- .get_cols(
-      data = inv_source,
-      which = id,
-      names = c("id", "treeid", "tree_id", "tree.id"),
-      alternative = 1:nrow(inv_source)
+    inv_out$id <- as.character(
+      .get_cols(
+        data = inv_source,
+        which = id,
+        names = c("id", "treeid", "tree_id", "tree.id"),
+        alternative = 1:nrow(inv_source)
+      )
     )
     # validate x coordinate
     inv_out$x <- .get_cols(
@@ -257,8 +259,8 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
         "not of required class (",
         paste(class, collapse = " / "),
         ")"
-        )
-      }
+      )
+    }
   }
   # perform unit conversion if needed
   if (!is.null(mult)) out <- out * mult
@@ -292,7 +294,7 @@ print.forest_inv <- function(x, ...){
       rbind(head(as.data.frame(x), 3),
             temp,
             tail(as.data.frame(x), n = 3)
-            )
+      )
     )
   }
 }
