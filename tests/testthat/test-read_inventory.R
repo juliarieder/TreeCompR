@@ -61,12 +61,8 @@ test_that("read_inv works for data.frame objects", {
   "No variable found with a name"
   )
 
-  # reading in fails with an error if there is neither dbh nor height
-  expect_error({
-    read_inv(test[, -4], verbose = FALSE)
-  },
-  "Neither dbh nor height"
-  )
+  # reading in without diamete nor height is tpossible
+  expect_length(read_inv(test[, -4], verbose = FALSE), 3)
 
   # reading in works if there are no coordinates - but standard is assigned
   expect_no_error(read_inv(test[, -1], verbose = FALSE))

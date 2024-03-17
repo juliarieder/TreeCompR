@@ -280,7 +280,7 @@ define_target <- function(inv, target_source, radius, tol = 1) {
     closest <- inv$id[.closest(inv[,2:3], conc[-1,], 0.1)]
     inv$target <-inv$id %in% closest
   } else {
-    if(type = "buff_edge"){
+    if(type == "buff_edge"){
       # convert to sf object
       inv_sf <- sf::st_as_sf(inv, coords = c("x", "y"))
       sf::st_agr(inv_sf) <- "constant"
