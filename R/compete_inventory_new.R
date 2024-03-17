@@ -3,7 +3,7 @@
 #' 'compete_dh()' returns a specific distance-height-dependent competition index
 #' (or group of indices) for a list of target trees within a forest plot
 #'
-#' @param plot_source dataframe or path to inventory table of the
+#' @param inv_source dataframe or path to inventory table of the
 #'   plot, with structure: ID, x, y, h (in m). Cartesian coordinates have to
 #'   be in metric system (in m)!
 #' @param target_source dataframe or path to table of target trees within plot
@@ -81,31 +81,144 @@ compete_inv <- function(inv_source, target, radius,
   # match arguments against the allowed values
   method <- match.arg(method)
 
-  # avoid errors with undefined variable names
-  x <- y <- ID <- h <- ID_t <- ID_target <- euc_dist_comp <-
-    CI_Braathe_part <- CI_RK3_part <- CI_RK4_part <- dist <- euc_dist <-
-    x_seg <- y_seg <- x_segt <- y_segt <- status <- h_target <- NULL
+  # if target trees are already defined in inv_source, bypass the following
+  # steps and directly compute competition indices
+  if(!inherits(inv_source, "target_inv")){
+    # catch and validate variable names (treated as character if not NULL,
+    # else, NULL is passed on to read_inv())
+    if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
+    if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
+    if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
+    if (!is.null(substitute(height))) height <- as.character(substitute(height))
+    if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
 
-  # catch and validate variable names (treated as character if not NULL,
-  # else, NULL is passed on to read_inv())
-  if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
-  if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
-  if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
-  if (!is.null(substitute(height))) height <- as.character(substitute(height))
-  if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
+    # read and validate forest inventory dataset
+    inv <- read_inv(
+      inv_source, x = x, y = y, dbh = dbh, height = height, id = id,
+      dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose, ...)
 
-  #read and validate forest inventory dataset
-  inv <- read_inv(inv_source, x = x, y = y, dbh = dbh, height = height,
-                  id = id, dbh_unit = dbh_unit, height_unit = height_unit,
-                  verbose = verbose, ...)
+    # check if data required to calculate indices are available
+    if (method %in%  c("CI_Hegyi", "CI_RK1", "CI_RK2") &&
+        !"dbh" %in% names(inv)) {
+      stop("Diameter at breast height is required for ", method, ".")
+    }
+    if (method %in%  c("CI_Braathe", "CI_RK3", "CI_RK4") &&
+        !"dbh" %in% names(inv)) {
+      stop("Tree height of all trees is required for ", method, ".")
+    }
 
-  # define target trees
-  inv <- define_target(inv = inv, target_source = target_source,
-                       radius = radius, thresh = thresh, tol = tol)
+    # check if target_source is a length 1 character
+    if(inherits(target_source, "character") && length(target_source) == 1){
+      # if it is a valid file path, read and validate target tree dataset
+      if (file.exists(target_source)){
+        target_source <- read_inv(
+          target_source, x = x, y = y, dbh = dbh, height = height, id = id,
+          dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
+          ...)
+        # else it is passed to define_target as a character string
+      }
+    }
+    # validate target source in the same way if it is an unformatted table
+    if(inherits(target_source, "data.frame")){
+      target_source <- read_inv(
+        target_source, x = x, y = y, dbh = dbh, height = height, id = id,
+        dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose, ...)
+    }
+    # define target trees
+    inv <- define_target(inv = inv, target_source = target_source,
+                         radius = radius, thresh = thresh, tol = tol)
+  }
+  # test if there are any duplicated coordinates (resulting in 0 distance -->
+  # singularity in inverse distance weighting)
+  if (any(!duplicated(inv[,c("x", "y")]))) {
+    stop("Dataset contains duplicate coordinates. ",
+         "Please revise tree positions.")
+  }
+  # define methods to calculate if method == "all"
+  if (method == "all"){
+    method <- c(
+      ifelse("dbh" %in% names(inv),
+             c("CI_Hegyi", "CI_RK1", "CI_RK2"), NULL),
+      ifelse("height" %in% names(inv),
+             c("CI_Braathe", "CI_RK3", "CI_RK4"), NULL)
+    )
+  }
+  # compute matrices required for calculation
+  # Euclidean distance matrix
+  distance <- with(inv, sqrt(outer(x, x, "-") ^ 2 + outer(y, y, "-") ^ 2))
+  # get inverse distance matrix
+  inv_distance  <- 1 / distance # careful: diagonal becomes infinite
+  diag(inv_distance) <- 0 # focal tree taken out of the calculation and
+  # singularity resolved by setting diagonal to zero
+  # get trees within critical distance
+  trees_in_radius <- distance <= radius
+  # trees outside radius are taken out of the summation by setting to zero
 
-  # ...then compute indices and return
-
-
+  # get matrix with focal trees (for row-wise summation of indices)
+  target_matrix <- matrix(rep(ifelse(inv$type == "target", 1, NA),
+                              nrow(inv)), ncol = nrow(inv))
+  if (any(method %in%  c("CI_Hegyi", "CI_RK1", "CI_RK2"))) {
+    # get matrix with focal tree dbh
+    focal_dbh <- matrix(rep(inv$dbh, nrow(inv)), ncol = nrow(inv))
+    # get matrix with neighbor tree dbh
+    neighbor_dbh <- t(focal_dbh) # calculation per tree is row-wise so neighbor
+    # matrix has to be column-wise
+  }
+  if (any(method %in%  c("CI_Braathe", "CI_RK3", "CI_RK4"))) {
+    # get matrix with focal tree height
+    focal_height <- matrix(rep(inv$height, nrow(inv)), ncol = nrow(inv))
+    # get matrix with neighbor tree height
+    neighbor_height <- t(focal_height) # caculation per tree is row-wise so neighbor
+    # matrix has to be column-wise
+  }
+  # compute Hegyi index for all target trees
+  if("CI_Hegyi" %in% method){
+    inv$CI_Hegyi <- rowSums(
+      target_matrix * trees_in_radius *
+        inv_distance * neighbor_dbh / focal_dbh)
+  }
+  # compute Braathe index for all target trees
+  if("CI_Braathe" %in% method){
+    inv$CI_Braathe <- rowSums(
+      target_matrix * trees_in_radius *
+        inv_distance * neighbor_height / focal_height)
+  }
+  # compute RK1 index for all target trees
+  if("CI_RK1" %in% method){
+    inv$CI_RK1 <- rowSums(
+      target_matrix * trees_in_radius *
+        atan(inv_distance * neighbor_dbh))
+  }
+  # compute RK2 index for all target trees
+  if("CI_RK2" %in% method){
+    inv$CI_RK2 <- rowSums(
+      target_matrix * trees_in_radius *
+        atan(inv_distance * neighbor_dbh) * neighbor_dbh / focal_dbh)
+  }
+  # compute RK3 index for all target trees
+  if("CI_RK3" %in% method){
+    inv$CI_RK3 <- rowSums(
+      target_matrix * trees_in_radius *
+        atan(inv_distance * neighbor_height))
+  }
+  # compute RK4 index for all target trees
+  if("CI_RK4" %in% method){
+    inv$CI_RK4 <- rowSums(
+      target_matrix * trees_in_radius *
+        atan(inv_distance * neighbor_height) * neighbor_height / focal_height)
+  }
+  # format and return output
+  output <- list(
+    inventory = inv,
+    radius = radius,
+    method = method,
+    target_type = attr(inv, "target_type"),
+    vars = list(id = id, x = x, y = y, dbh = dbh, height = height)
+  )
+  # define class
+  class(output) <- c("compete_inv", class(output))
+  # return output
+  return(output)
 }
 
 #' Define target trees in forest inventory data
@@ -128,11 +241,7 @@ compete_inv <- function(inv_source, target, radius,
 #'   coordinates in `inv` and IDs may differ (useful e.g. when target trees
 #'   are defined based on GPS coordinates and matched against an airborne laser
 #'   scanning dataset).
-#'   4. a data.frame or matrix with two columns named `x` and `y` specifying
-#'   the x and y coordinates of each target tree, or potentially a data.frame
-#'    with a third `id` column with IDs that may differ from the IDs in `inv`.
-#'    Treated as in 3.
-#'   5. a character vector of length 1 defining the method by which the target
+#'   4. a character vector of length 1 defining the method by which the target
 #'   trees should be determined. Allowed are `"buff_edge"` for excluding all
 #'   trees that are at least one search radius from the forest edge,
 #'   `"exclude_edge"` for only excluding edge trees or `"all"` for including
@@ -178,15 +287,15 @@ compete_inv <- function(inv_source, target, radius,
 #' }
 #'
 define_target <- function(inv, target_source, radius, tol = 1) {
-
-  # avoid errors with undefined global values in CMD check
-  ID <- dbh <- target_trees <- ID_target <- dbh_t <- tree_loc <-
-    x <- y <- x_seg <- y_seg <- is_exact_match <-  NULL
-
   # validate class of inventory
   if(!inherits(inv, "forest_inv")){
     stop("Please supply forest inventory data in the forest_inv format",
          "as created with read_inv().")
+  }
+  # check if forest inventory contains the required variables
+  if(!ncol(inv) < 4){
+    stop("To calculate competition indices, at least one of 'dbh' or 'height'",
+         "are required. Please check data structure in 'inv'.")
   }
   # check if radius, buffer threshold and tolerance are valid
   if (!(inherits(radius, "numeric") & length(radius) == 1))
@@ -198,68 +307,78 @@ define_target <- function(inv, target_source, radius, tol = 1) {
   if (is.logical(target_source)){
     # handle logical vector
     if (length(target_source) == nrow(inv)) {
+      # define target
       inv$target <- target_source
+      # keep information about source
+      target_type <- "logical"
     } else {
       stop("If 'target_source' is a logical vector, its length has to match ",
            "the number of rows of 'inv.'")
     }
-  }
-
-  if (is.character(target_source)){
-    # handle characters
-    if (length(target_source) == 1){
-      if (target_source %in% c("buff_edge", "exclude_edge")) {
-        # compute target trees from spatial arrangement using internal function
-        inv <- .spatial_comp(inv, type = target_source,
-                             radius = radius)
-      } else {
-        if (target_source == "all"){
-          # define all trees as target trees and send a warning
-          inv$target <- TRUE
-          warning("Defining all trees as target trees is rarely a good idea.",
-                  " Unless your forest inventory contains all trees in the",
-                  " forest, this will lead to strong edge effects. Please make",
-                  " sure that this is really what you want to do.")
+  } else{
+    if (is.character(target_source)){
+      # handle characters
+      if (length(target_source) == 1){
+        if (target_source %in% c("buff_edge", "exclude_edge")) {
+          # compute target trees from spatial arrangement using internal function
+          inv <- .spatial_comp(inv, type = target_source,
+                               radius = radius)
+          # keep information about source
+          target_type <- target_source
         } else {
-          # set single target tree
-          inv$target <- target_source %in% inv$id
+          if (target_source == "all"){
+            # define all trees as target trees and send a warning
+            inv$target <- TRUE
+            # keep information about source
+            target_type <- "all"
+            warning(
+              "Defining all trees as target trees is rarely a good idea.",
+              " Unless your forest inventory contains all trees in the",
+              " forest, this will lead to strong edge effects. Please make",
+              " sure that this is really what you want to do.")
+          } else {
+            # set single target tree
+            inv$target <- target_source %in% inv$id
+            # keep information about source
+            target_type <- "character"
+          }
         }
+      } else {
+        # set multiple target trees
+        inv$target <- target_source %in% inv$id
+        # keep information about source
+        target_type <- "character"
       }
     } else {
-      # set multiple target trees
-      inv$target <- target_source %in% inv$id
+      if (inherits(target_source, "forest_inv")){
+        # handle second inventory
+        # get matching coordinates
+        closest <- .closest(inv[, c("x", "y")],
+                            target_source[, c("x", "y")],
+                            tol = tol)
+        # check for target trees missing within tolerance
+        if (any(is.na(closest))){
+          warning("No matching coordinates found for the following ",
+                  "target tree(s):\n", paste(target_source$id, sep = ", "))      }
+        # get target trees
+        inv$target <- inv$id %in% inv$id[na.omit(closest)]
+        # carry over ID
+        inv$target_id <- NA
+        inv$target_id[na.omit(closest1)] <- target_source$id[!is.na(closest)]
+        # keep information about source
+        target_type <- "second inventory"
+      }
     }
   }
-
-  if (inherits(target_source, c("matrix", "data.frame"))){
-    if (inherits(target_source, "forest_inv")){
-      # handle second inventory
-      # get matching coordinates
-      closest <- .closest(inv[, c("x", "y")],
-                          target_source[, c("x", "y")],
-                          tol = tol)
-      # check for target trees missing within tolerance
-      if (any(is.na(closest))){
-        warning("No matching coordinates found for the following ",
-                "target tree(s):\n", paste(target_source$id, sep = ", "))      }
-      # get target trees
-      inv$target <- inv$id %in% inv$id[na.omit(closest)]
-      # carry over ID
-      inv$target_id <- NA
-      inv$target_id[na.omit(closest1)] <- target_source$id[!is.na(closest)]
-    } else{
-      # handle unformatted dataset
-
-    }
-  }
-
 
   # check if the selection has resulted in any target trees
   if (!any(inv$target)) warning(
     "No target trees have been found with the provided specifications.")
-
-  # update class and return
+  # update class
   class(inv) <- c("target_inv,", class(inv))
+  # set attribute for target type
+  attr(inv, "target_type") <- target_type
+  # return inventory
   return(inv)
 }
 
