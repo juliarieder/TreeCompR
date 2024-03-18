@@ -1,32 +1,35 @@
-#' Quantify distance-height-dependent Competition using ALS inventory data
+#' Quantify distance-dependent Competition using inventory data
 #' @description
-#' 'compete_inv()' returns a specific distance-height-dependent competition
-#' index (or group of indices) for a list of target trees within a forest plot
+#' 'compete_inv()' returns a specific distance-height-dependent or
+#' distance-dbh-dependent competition index (or group of indices) for all trees
+#' within a forest plot or specified target trees
 #'
-#' @param inv_source dataframe or path to inventory table of the
-#'   plot, with structure: ID, x, y, dbh (in cm) or h (in m).
-#'   Cartesian coordinates have to be in metric system (in m)!
+#' @param inv_source dataframe or path to inventory table of the plot, with
+#' structure: ID, x, y, dbh (in cm) and/or h (in m). Cartesian coordinates have
+#' to be in metric system (in m)!
 #' @param target_source dataframe or path to table of target trees within plot
 #' with ID_target, x, y (does not have to be the same ID as in inventory table).
-#'  Cartesian coordinates have to be in metric system
-#'  (same coordinate system as inv_source!)
+#'  Cartesian coordinates have to be in metric system!
+#'  (and same coordinate system as inv_source!)
 #' @param radius numeric, Search radius (in m) around target tree, wherein all
 #'   neighboring trees are classified as competitors
 #' @param method character string assigning the method for quantifying
-#'   competition "CI_Hegyi", "CI_RK1", "CI_RK2", "CI_Braathe", "CI_RK3",
-#'   "CI_RK4" or "all"
+#'   competition dbh-distance-dependent: "CI_Hegyi", "CI_RK1", "CI_RK2",
+#'   height-distance-dependent: "CI_Braathe", "CI_RK3", "CI_RK4" or "all"
+#'   for all the indices
 #' @param tolerance numeric. Tolerance for the match with the tree coordinates.
-#'   If a field measurement value is used for target_tree, take a higher
-#'   tolerance value (default=1 m), depending on the measurement accuracy
+#'   If coordinates are measured in the field with GPS, but inv_source contains
+#'   x,y from segmentation, allow for tolerance to match the target tree
+#'   positions. (default = 1 m), depending on the measurement accuracy of GPS
 #' @param ... additional arguments passed on to [data.table::fread()]
 #'
 #' @details
 #' Using an inventory table to easily quantify distance-dependent tree
-#' competition for a list of trees within a plot.
+#' competition for a list of trees within a plot or all the trees.
 #' The input data can either be taken directly from field measurements or
 #' derived beforehand from LiDAR point clouds.
-#' The function calculates 3 Competition indices, based on tree heights and
-#' distance to competitors.
+#' The function calculates 6 different Competition indices, based on tree
+#' heights or dbh and distance to competitors.
 #'
 #' @section Methods:
 #'  * CI_Hegyi Index introduced by Hegyi (1974)
@@ -44,9 +47,10 @@
 #'    \eqn{\sum_{i=1}^{n} (h_{i} / h) \cdot \mathrm{arctan}(h_{i} / dist_{i})}
 #'
 #' @section Tree Segmentation:
-#' Various approaches can be used to segment airborne laser scanning point
+#' Various approaches can be used to segment (airborne) laser scanning point
 #' clouds into single trees and to obtain inventory data based it. Existing R
 #' packages for this are for example:
+#' * TreeLS package for automated segmentation of terrestrial/mobile laser scans
 #' * lidR package with different options to segment the point cloud or a Canopy
 #'    Height Model (CHM)
 #' * itcLiDARallo within the package itcSegment
@@ -59,14 +63,14 @@
 #'    Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models
 #'    for tree and stand simulation, Royal College of Forestry, Stockholm.
 #'  * Braathe, P., 1980. Height increment of young single trees in relation to
-#'     height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130,
-#'      43–48.
+#'    height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130,
+#'    43–48.
 #'  * Rouvinen, S., Kuuluvainen, T., 1997. Structure and asymmetry of tree
-#'   crowns in relation to local competition in a natural mature Scot pine
-#'   forest. Can. J. For. Res. 27, 890–902.
+#'    crowns in relation to local competition in a natural mature Scot pine
+#'    forest. Can. J. For. Res. 27, 890–902.
 #'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree
-#'  competition indices as predictors of basal area increment in western
-#'  Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
+#'    competition indices as predictors of basal area increment in western
+#'    Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 #'
 #'
 #' @return dataframe with ID_target, and one or more Indices depending on
