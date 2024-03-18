@@ -1,27 +1,54 @@
-#' Quantify distance-dependent Competition using inventory data
+#' Quantify size- and distance-dependent competition using inventory data
 #' @description
 #' 'compete_inv()' returns a specific distance-height-dependent or
 #' distance-dbh-dependent competition index (or group of indices) for all trees
-#' within a forest plot or specified target trees
+#' within a forest plot or specified target trees.
 #'
-#' @param inv_source dataframe or path to inventory table of the plot, with
-#' structure: ID, x, y, dbh (in cm) and/or h (in m). Cartesian coordinates have
-#' to be in metric system (in m)!
-#' @param target_source dataframe or path to table of target trees within plot
-#' with ID_target, x, y (does not have to be the same ID as in inventory table).
-#'  Cartesian coordinates have to be in metric system!
-#'  (and same coordinate system as inv_source!)
-#' @param radius numeric, Search radius (in m) around target tree, wherein all
-#'   neighboring trees are classified as competitors
+#' @param inv_source either an object of class `target_inv`, or any object that
+#'   can be imported by [read_inv()] (in this case, `x`, `y`, `id`,
+#'   `dbh`, and/or `height` can be specified as in this function -- see the
+#'   corresponding documentation for details).
+#'   If provided with a `target_inv` object, the function overrides further
+#'   arguments passed to [read_inv()] and [define_target()].
+#' @param target_source  one of the following:
+#'   1. a path to an any object that can be imported by [read_inv()] (in this
+#'   case, column specifications have to be the same as in `inv_source` - if
+#'   this is not possible, load outside of `compete_inv()`).
+#'   2. a vector of class `"character"` containing the tree IDs identifying the
+#'   target trees in the  same format as in the `id` column of `inv`,
+#'   3. a vector of class `logical` specifying for each row of `inv` whether
+#'   the corresponding tree is a target tree,
+#'   4. another object of class `forest_inv` containing the coordinates of the
+#'   target trees. In this case, the coordinates are matched against the
+#'   coordinates in `inv` and IDs may differ (useful e.g. when target trees
+#'   are defined based on GPS coordinates and matched against an airborne laser
+#'   scanning dataset).
+#'   5. a character vector of length 1 defining the method by which the target
+#'   trees should be determined. Allowed are `"buff_edge"` for excluding all
+#'   trees that are at least one search radius from the forest edge,
+#'   `"exclude_edge"` for only excluding edge trees or `"all"` for including
+#'   all trees of the dataset (which is hardly ever a good idea unless all
+#'   trees in the entire forest are in the dataset). The standard is
+#'   `"buff_edge"`. See [define_target()] for details.
+#' @param radius numeric of length 1. Search radius (in m) around the target
+#'   tree. All neighboring trees within this radius are classified as
+#'   competitors.
 #' @param method character string assigning the method for quantifying
-#'   competition dbh-distance-dependent: "CI_Hegyi", "CI_RK1", "CI_RK2",
-#'   height-distance-dependent: "CI_Braathe", "CI_RK3", "CI_RK4" or "all"
-#'   for all the indices
-#' @param tolerance numeric. Tolerance for the match with the tree coordinates.
-#'   If coordinates are measured in the field with GPS, but inv_source contains
-#'   x,y from segmentation, allow for tolerance to match the target tree
-#'   positions. (default = 1 m), depending on the measurement accuracy of GPS
-#' @param ... additional arguments passed on to [data.table::fread()]
+#'   competition. dbh-distance-dependent methods are "CI_Hegyi", "CI_RK1",
+#'   and "CI_RK2".Height-distance-dependent methods are "CI_Braathe", "CI_RK3",
+#'   "CI_RK4". "all" can be specified to compute all the indices that can be
+#'   calculated with the available data.
+#' @param tol numeric of length 1. Tolerance for the match with the tree
+#'   coordinates. If coordinates are measured in the field with GPS, but
+#'   `inv_source` contains x and y coordinates from a larger number of trees
+#'   obtained by segmentation, this is the tolerance for the matching the
+#'   forest inventory against the target tree positions. If no forest tree is
+#'   within the tolerance to a target tree, no competition indices will be
+#'   calculated for this tree and the function will return a warning.
+#'   `tol` defaults to 1 m, but should be chosen depending on the measurement
+#'   accuracy of the GPS coordinates.
+#' @param ... additional arguments passed on to [data.table::fread()].
+#' @inheritParams read_inv
 #'
 #' @details
 #' Using an inventory table to easily quantify distance-dependent tree
@@ -84,8 +111,9 @@
 #'    Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 #'
 #'
-#' @return dataframe with ID_target, and one or more Indices depending on
-#'   chosen method
+#' @return `compete_inv` object: a modified data.frame with the forest
+#'   invetory data, target tree specifications and or more competition indices
+#'   depending on chosen method.
 #' @export
 #'
 #' @examples
@@ -145,7 +173,8 @@ compete_inv <- function(inv_source, target_source, radius,
       }
     }
     # validate target source in the same way if it is an unformatted table
-    if(inherits(target_source, "data.frame")){
+    if(inherits(target_source, "data.frame") &&
+       !inherits(target_source, "forest_inv")){
       target_source <- read_inv(
         target_source, x = x, y = y, dbh = dbh, height = height, id = id,
         dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose, ...)
@@ -155,9 +184,9 @@ compete_inv <- function(inv_source, target_source, radius,
                          radius = radius, tol = tol)
   } else { # warn if radii are different
     if (attr(inv, "target_method") %in% c("buff_edge", "exclude_edge")){
-    if(attr(inv, "spatial_radius") != radius){
-      warning("Radius used to determine target trees differs from search",
-              " radius for competition indices.")
+      if(attr(inv, "spatial_radius") != radius){
+        warning("Radius used to determine target trees differs from search",
+                " radius for competition indices.")
       }
     }
   }
@@ -169,12 +198,13 @@ compete_inv <- function(inv_source, target_source, radius,
   }
   # define methods to calculate if method == "all"
   if (method == "all"){
-    method <- c(
-      ifelse("dbh" %in% names(inv),
-             c("CI_Hegyi", "CI_RK1", "CI_RK2"), NULL),
-      ifelse("height" %in% names(inv),
-             c("CI_Braathe", "CI_RK3", "CI_RK4"), NULL)
-    )
+    # preallocate empty vector
+    method <- vector("character")
+    # get names with available data
+    if("dbh" %in% names(inv))
+      method <- c("CI_Hegyi", "CI_RK1", "CI_RK2")
+    if("height" %in% names(inv))
+      method <- c(method, c("CI_Braathe", "CI_RK3", "CI_RK4"))
   }
   # compute matrices required for calculation
   # Euclidean distance matrix
@@ -246,7 +276,56 @@ compete_inv <- function(inv_source, target_source, radius,
   attr(inv, "method") <- method
 
   # define class
-  class(output) <- c("compete_inv", class(output))
+  class(inv) <- c("compete_inv", class(inv))
+
   # return output
-  return(output)
+  return(inv)
 }
+
+
+
+# Define printing method for target_pc objects:
+#' @rdname compete_inv
+#' @format NULL
+#' @usage NULL
+#' @export
+print.compete_inv <- function(x, ...){
+  # get description of target source from lookup table
+  target <- as.character(
+    c(inventory = "second inventory",
+      character = "character vector",
+      logical   = "logical vector",
+      exclude_edge = "excluding edge",
+      buff_edge = "excluding buffer around edge"
+    )[ attr(x, "target_type")]
+  )
+  # print header
+  cat("---------------------------------------------------------------------",
+      "\n'compete_inv' class inventory with distance-based competition indices",
+      "\nCollection of data for", sum(x$target),"target and",
+      nrow(x) - sum(x$target), "edge trees.",
+      "\nSource of target trees:",target, "\t Search radius:", attr(x, "radius"),
+      "\n---------------------------------------------------------------------\n"
+  )
+  # only print for target trees
+  x <- x[x$target,]
+  if (nrow(x) < 6) {
+    # if there are almost no observations, print the entire dataset
+    print(as.data.frame(x), digits = 3)
+  } else {
+    # else print beginning and end of the data.frame
+    temp <- x[1,]
+    row.names(temp) <- " "
+    for(i in 1:ncol(temp)) temp[, i] <- "..."
+    x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
+    print(
+      rbind(head(as.data.frame(x), 3),
+            temp,
+            tail(as.data.frame(x), n = 3)
+      )
+    )
+  }
+}
+
+
+
