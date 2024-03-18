@@ -202,12 +202,11 @@ plot_target <- function(inv, radius = NULL) {
   # if provided with compete_inv object, get corresponding target inventory
   # and search radius
   if(inherits(inv, "compete_inv")){
-    inv    <- inv$inventory
-    radius <- inv$radius
+    radius <- attr(inv, "radius")
   }
   # else try if a spatial radius was defined
   if (is.null(radius)){
-    if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")) {
+    if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")){
       radius <- attr(inv, "spatial_radius")
     } else{ # if not, stop with an error
       stop("'radius' has to be defined for plotting.")
