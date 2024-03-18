@@ -8,9 +8,8 @@
 #'
 #' @param inv object of class `forest_inv` as created with [read_inv()].
 #' @param target_source one of the following:
-#'   1. a vector of class "character" or "numeric" containing the tree IDs
-#'   identifying the target trees in the  same format as in the `id` column of
-#'    `inv`,
+#'   1. a vector of class `"character"` containing the tree IDs identifying the
+#'   target trees in the  same format as in the `id` column of `inv`,
 #'   2. a vector of class `logical` specifying for each row of `inv` whether
 #'   the corresponding tree is a target tree,
 #'   3. another object of class `forest_inv` containing the coordinates of the
@@ -26,7 +25,8 @@
 #'   trees in the entire forest are in the dataset). The standard is
 #'   `"buff_edge"`. See below for details.
 #' @param radius numeric of length 1, Search radius (in m) around target tree
-#'   wherein all neighboring trees are classified as competitors.
+#'   wherein all neighboring trees are classified as competitors. Only used if
+#'   `target_source` is `"buff_edge"` or `"exclude_edge"`. Defaults to NULL.
 #' @param tol numeric. Tolerance for the match between tree coordinates in the
 #'   forest inventory and target datasets if specified as a second set of
 #'   coordinates. If a field measurements (e.g. based on GPS) are used to
@@ -63,20 +63,21 @@
 #'   "path/to/target_trees.csv", radius = 10, tol = 1)
 #' }
 #'
-define_target <- function(inv, target_source, radius, tol = 1) {
+define_target <- function(inv, target_source, radius = NULL, tol = 1) {
   # validate class of inventory
   if(!inherits(inv, "forest_inv")){
     stop("Please supply forest inventory data in the forest_inv format",
          "as created with read_inv().")
   }
   # check if forest inventory contains the required variables
-  if(!ncol(inv) < 4){
+  if(ncol(inv) < 4){
     stop("To calculate competition indices, at least one of 'dbh' or 'height'",
          "are required. Please check data structure in 'inv'.")
   }
   # check if radius, buffer threshold and tolerance are valid
-  if (!(inherits(radius, "numeric") & length(radius) == 1))
-    stop("'radius' should be a numeric of length 1.")
+  if (!is.null(radius)) {
+    if (!(inherits(radius, "numeric") & length(radius) == 1))
+    stop("'radius' should be a numeric of length 1.")}
   if (!(inherits(tol, "numeric") & length(tol) == 1))
     stop("'tol' should be a numeric of length 1.")
 
@@ -97,7 +98,10 @@ define_target <- function(inv, target_source, radius, tol = 1) {
       # handle characters
       if (length(target_source) == 1){
         if (target_source %in% c("buff_edge", "exclude_edge")) {
-          # compute target trees from spatial arrangement using internal function
+          # test if radius is specified
+          if (is.null(radius)) stop("'radius' is required for ",
+                                    "methods 'buff_edge' and 'exclude_edge'.")
+          # compute target trees from spatial arrangement using internal fun
           inv <- .spatial_comp(inv, type = target_source,
                                radius = radius)
           # keep information about source
@@ -115,14 +119,14 @@ define_target <- function(inv, target_source, radius, tol = 1) {
               " sure that this is really what you want to do.")
           } else {
             # set single target tree
-            inv$target <- target_source %in% inv$id
+            inv$target <- inv$id %in% target_source
             # keep information about source
             target_type <- "character"
           }
         }
       } else {
         # set multiple target trees
-        inv$target <- target_source %in% inv$id
+        inv$target <- inv$id %in% target_source
         # keep information about source
         target_type <- "character"
       }
@@ -141,13 +145,12 @@ define_target <- function(inv, target_source, radius, tol = 1) {
         inv$target <- inv$id %in% inv$id[na.omit(closest)]
         # carry over ID
         inv$target_id <- NA
-        inv$target_id[na.omit(closest1)] <- target_source$id[!is.na(closest)]
+        inv$target_id[na.omit(closest)] <- target_source$id[!is.na(closest)]
         # keep information about source
         target_type <- "second inventory"
       }
     }
   }
-
   # check if the selection has resulted in any target trees
   if (!any(inv$target)) warning(
     "No target trees have been found with the provided specifications.")
