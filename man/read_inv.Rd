@@ -2,6 +2,7 @@
 % Please edit documentation in R/read_inventory.R
 \name{read_inv}
 \alias{read_inv}
+\alias{print.forest_inv}
 \title{Read forest inventory data}
 \usage{
 read_inv(
@@ -35,18 +36,17 @@ function tries to identify the y coordinate from the data.}
 \item{dbh}{character of length 1 or name of the variable in \code{inv_source}
 containing the diameter at breast height of the tree (by default in cm, but
 can be defined via \code{dbh_unit}). If \code{NULL} (default), the function tries to
-identify the dbh from the data. At least one of \code{dbh} or \code{height} has to be
-specified.}
+identify the dbh from the data.}
 
 \item{height}{character of length 1 or name of the variable in \code{inv_source}
 containing the height of the tree (by default in m, but   can be defined
 via \code{h_unit}). If \code{NULL} (default), the function tries to identify the dbh
-from the data. At least one of \code{dbh} or \code{height} has to be specified.}
+from the data.}
 
 \item{id}{character of length 1 or name of the variable in \code{inv_source}
 containing a unique tree ID. If \code{NULL} (default), the function tries to
-identify the ID from the data. If this is not possible, a numeric idenfier
-is assigned by the function.}
+identify the ID from the data. If this is not possible, the trees are
+assigned a unique number. All IDs are coerced to character.}
 
 \item{dbh_unit}{character of length 1. Unit for the diameter measurements
 (one of "cm", "m" or "mm". defaults to "cm").}
@@ -61,9 +61,9 @@ printed? Defaults to TRUE.}
 }
 \value{
 object of class \code{c("forest_inv", "data.frame")} with x and y
-coordinates of the tree, a unique tree identifier (\code{ID}) and at least one
-of tree diameter at breast height (\code{dbh}, in cm) and tree height (\code{height}, in
-m).
+coordinates of the tree, a unique tree identifier (\code{id}) and tree diameter
+at breast height (\code{dbh}, in cm) and tree height (\code{height}, in m) if
+available.
 }
 \description{
 Read point cloud sourced from a file path or an object that
@@ -75,16 +75,19 @@ Supports any formats readable with \code{\link[data.table:fread]{data.table::fre
 
 If provided with tabular data without explicitly specified variable names,
 the function by default takes the columns named "X" and "Y" (or "x" and
-"y") to be the tree coordinates, and looks for columns named
-"height" or "h" as well as "dbh", "diameter","diam", or "d" (in any
+"y") to be the tree coordinates, and looks for columns named "height",
+"height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any
 capitalization) as size-related variables. The coordinates are taken from
 columns named "id", "tree_id", "treeID" or "tree.id" (in any
 capitalization).
 
-If no columns with coordinates and/or none of either dbh or h can be
-identified, the function fails with an error. If no ID column is available,
-the function assigns a unique number to each tree (but note that this will
-make specifying custom target trees difficult).
+If no columns with coordinates can be identified, the function fails with
+an error. If no ID column is available, the function assigns a unique
+number to each tree (but note that this will make specifying custom target
+trees difficult). It is possible to read in datasets without dbh and
+height, but usually only sensible if these are used as accessory datasets
+for identifying target trees (e.g. if target trees where identified by
+taking their GPS coordinates manually in the field).
 }
 \examples{
 \dontrun{

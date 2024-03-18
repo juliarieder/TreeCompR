@@ -8,11 +8,13 @@
 #'   be in metric system (in m)!
 #' @param target_source dataframe or path to table of target trees within plot
 #' with ID_target, x, y (does not have to be the same ID as in inventory table).
-#'  Cartesian coordinates have to be in metric system!
+#'  Cartesian coordinates have to be in metric system
+#'  (same coordinate system as inv_source!)
 #' @param radius numeric, Search radius (in m) around target tree, wherein all
 #'   neighboring trees are classified as competitors
 #' @param method character string assigning the method for quantifying
-#'   competition "CI_Braathe", "CI_RK3", "CI_RK4" or "all"
+#'   competition "CI_Hegyi", "CI_RK1", "CI_RK2", "CI_Braathe", "CI_RK3",
+#'   "CI_RK4" or "all"
 #' @param tolerance numeric. Tolerance for the match with the tree coordinates.
 #'   If a field measurement value is used for target_tree, take a higher
 #'   tolerance value (default=1 m), depending on the measurement accuracy
@@ -27,6 +29,12 @@
 #' distance to competitors.
 #'
 #' @section Methods:
+#'  * CI_Hegyi Index introduced by Hegyi (1974)
+#'    \eqn{\sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})}
+#'  * CI_RK1 according to CI1 Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})}
+#'  * CI_RK2 according to CI3 in Rouvinen & Kuuluvainen (1997)
+#'    \eqn{\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i} / dist_{i})}
 #'  * CI_Braathe according to Braathe (1980)
 #'    \eqn{\sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
 #'  * CI_RK3 according to CI5 in Rouvinen & Kuuluvainen (1997)
@@ -47,6 +55,9 @@
 #' of trees is usually an issue!
 #'
 #' @section Literature:
+#'  * Hegyi, F., 1974. A simulation model for managing jackpine stands. In:
+#'    Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models for
+#'    tree and stand simulation, Royal College of Forestry, Stockholm.
 #'  * Braathe, P., 1980. Height increment of young single trees in relation to
 #'     height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130,
 #'      43–48.
@@ -64,8 +75,8 @@
 #'
 #' @examples
 #' \dontrun{
-#' CI <- compete_ALS("path/to/invtable.csv",
-#'   "path/to/target_trees.csv", radius = 10)
+#' CI <- compete_inv("path/to/invtable.csv",
+#'   "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi")
 #' }
 compete_inv <- function(inv_source, target, radius,
                         method = c("all", "CI_Hegyi", "CI_Braathe",
@@ -168,7 +179,8 @@ compete_inv <- function(inv_source, target, radius,
     # get matrix with focal tree height
     focal_height <- matrix(rep(inv$height, nrow(inv)), ncol = nrow(inv))
     # get matrix with neighbor tree height
-    neighbor_height <- t(focal_height) # caculation per tree is row-wise so neighbor
+    neighbor_height <- t(focal_height) # caculation per tree is row-wise
+    #so neighbor
     # matrix has to be column-wise
   }
   # compute Hegyi index for all target trees
@@ -245,7 +257,7 @@ compete_inv <- function(inv_source, target, radius,
 #'   trees should be determined. Allowed are `"buff_edge"` for excluding all
 #'   trees that are at least one search radius from the forest edge,
 #'   `"exclude_edge"` for only excluding edge trees or `"all"` for including
-#'   all trees om the dataset (which is hardly ever a good idea unless all
+#'   all trees of the dataset (which is hardly ever a good idea unless all
 #'   trees in the entire forest are in the dataset). The standard is
 #'   `"buff_edge"`. See below for details.
 #' @param radius numeric of length 1, Search radius (in m) around target tree
@@ -282,8 +294,8 @@ compete_inv <- function(inv_source, target, radius,
 #'
 #' @examples
 #' \dontrun{
-#' CI <- compete_ALS("path/to/invtable.csv",
-#'   "path/to/target_trees.csv", radius = 10)
+#' target <- define_target("path/to/invtable.csv",
+#'   "path/to/target_trees.csv", radius = 10, tol = 1)
 #' }
 #'
 define_target <- function(inv, target_source, radius, tol = 1) {
