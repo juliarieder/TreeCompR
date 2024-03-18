@@ -26,11 +26,11 @@ column names are validated and homogenized; else, the function tries to
 read the dataset in the specified path.}
 
 \item{x}{character of length 1 or name of the variable in \code{inv_source}
-containing the x coordinates of the tree in meters . If `NULL (default),
+containing the x coordinates of the tree in m. If \code{NULL} (default),
 the function tries to identify the x coordinate from the data.}
 
 \item{y}{character of length 1 or name of the variable in \code{inv_source}
-containing the y coordinates of the tree in meters. If `NULL (default), the
+containing the y coordinates of the tree in meters. If \code{NULL} (default), the
 function tries to identify the y coordinate from the data.}
 
 \item{dbh}{character of length 1 or name of the variable in \code{inv_source}

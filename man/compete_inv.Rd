@@ -2,7 +2,8 @@
 % Please edit documentation in R/compete_inventory.R
 \name{compete_inv}
 \alias{compete_inv}
-\title{Quantify distance-dependent Competition using inventory data}
+\alias{print.compete_inv}
+\title{Quantify size- and distance-dependent competition using inventory data}
 \usage{
 compete_inv(
   inv_source,
@@ -17,43 +18,104 @@ compete_inv(
   dbh_unit = c("cm", "m", "mm"),
   height_unit = c("m", "cm", "mm"),
   verbose = TRUE,
-  tolerance = 1,
+  tol = 1,
   ...
 )
 }
 \arguments{
-\item{inv_source}{dataframe or path to inventory table of the plot, with
-structure: ID, x, y, dbh (in cm) and/or h (in m). Cartesian coordinates have
-to be in metric system (in m)!}
+\item{inv_source}{either an object of class \code{target_inv}, or any object that
+can be imported by \code{\link[=read_inv]{read_inv()}} (in this case, \code{x}, \code{y}, \code{id},
+\code{dbh}, and/or \code{height} can be specified as in this function -- see the
+corresponding documentation for details).
+If provided with a \code{target_inv} object, the function overrides further
+arguments passed to \code{\link[=read_inv]{read_inv()}} and \code{\link[=define_target]{define_target()}}.}
 
-\item{target_source}{dataframe or path to table of target trees within plot
-with ID_target, x, y (does not have to be the same ID as in inventory table).
-Cartesian coordinates have to be in metric system!
-(and same coordinate system as inv_source!)}
+\item{target_source}{one of the following:
+\enumerate{
+\item a path to an any object that can be imported by \code{\link[=read_inv]{read_inv()}} (in this
+case, column specifications have to be the same as in \code{inv_source} - if
+this is not possible, load outside of \code{compete_inv()}).
+\item a vector of class \code{"character"} containing the tree IDs identifying the
+target trees in the  same format as in the \code{id} column of \code{inv},
+\item a vector of class \code{logical} specifying for each row of \code{inv} whether
+the corresponding tree is a target tree,
+\item another object of class \code{forest_inv} containing the coordinates of the
+target trees. In this case, the coordinates are matched against the
+coordinates in \code{inv} and IDs may differ (useful e.g. when target trees
+are defined based on GPS coordinates and matched against an airborne laser
+scanning dataset).
+\item a character vector of length 1 defining the method by which the target
+trees should be determined. Allowed are \code{"buff_edge"} for excluding all
+trees that are at least one search radius from the forest edge,
+\code{"exclude_edge"} for only excluding edge trees or \code{"all"} for including
+all trees of the dataset (which is hardly ever a good idea unless all
+trees in the entire forest are in the dataset). The standard is
+\code{"buff_edge"}. See \code{\link[=define_target]{define_target()}} for details.
+}}
 
-\item{radius}{numeric, Search radius (in m) around target tree, wherein all
-neighboring trees are classified as competitors}
+\item{radius}{numeric of length 1. Search radius (in m) around the target
+tree. All neighboring trees within this radius are classified as
+competitors.}
 
 \item{method}{character string assigning the method for quantifying
-competition dbh-distance-dependent: "CI_Hegyi", "CI_RK1", "CI_RK2",
-height-distance-dependent: "CI_Braathe", "CI_RK3", "CI_RK4" or "all"
-for all the indices}
+competition. dbh-distance-dependent methods are "CI_Hegyi", "CI_RK1",
+and "CI_RK2".Height-distance-dependent methods are "CI_Braathe", "CI_RK3",
+"CI_RK4". "all" can be specified to compute all the indices that can be
+calculated with the available data.}
 
-\item{tolerance}{numeric. Tolerance for the match with the tree coordinates.
-If coordinates are measured in the field with GPS, but inv_source contains
-x,y from segmentation, allow for tolerance to match the target tree
-positions. (default = 1 m), depending on the measurement accuracy of GPS}
+\item{x}{character of length 1 or name of the variable in \code{inv_source}
+containing the x coordinates of the tree in m. If \code{NULL} (default),
+the function tries to identify the x coordinate from the data.}
 
-\item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
+\item{y}{character of length 1 or name of the variable in \code{inv_source}
+containing the y coordinates of the tree in meters. If \code{NULL} (default), the
+function tries to identify the y coordinate from the data.}
+
+\item{dbh}{character of length 1 or name of the variable in \code{inv_source}
+containing the diameter at breast height of the tree (by default in cm, but
+can be defined via \code{dbh_unit}). If \code{NULL} (default), the function tries to
+identify the dbh from the data.}
+
+\item{height}{character of length 1 or name of the variable in \code{inv_source}
+containing the height of the tree (by default in m, but   can be defined
+via \code{h_unit}). If \code{NULL} (default), the function tries to identify the dbh
+from the data.}
+
+\item{id}{character of length 1 or name of the variable in \code{inv_source}
+containing a unique tree ID. If \code{NULL} (default), the function tries to
+identify the ID from the data. If this is not possible, the trees are
+assigned a unique number. All IDs are coerced to character.}
+
+\item{dbh_unit}{character of length 1. Unit for the diameter measurements
+(one of "cm", "m" or "mm". defaults to "cm").}
+
+\item{height_unit}{character of length 1. Unit for the diameter measurements
+(one of "m", "cm" or "mm". defaults to "m").}
+
+\item{verbose}{logical of length 1. Should information about progress be
+printed? Defaults to TRUE.}
+
+\item{tol}{numeric of length 1. Tolerance for the match with the tree
+coordinates. If coordinates are measured in the field with GPS, but
+\code{inv_source} contains x and y coordinates from a larger number of trees
+obtained by segmentation, this is the tolerance for the matching the
+forest inventory against the target tree positions. If no forest tree is
+within the tolerance to a target tree, no competition indices will be
+calculated for this tree and the function will return a warning.
+\code{tol} defaults to 1 m, but should be chosen depending on the measurement
+accuracy of the GPS coordinates.}
+
+\item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }
 \value{
-dataframe with ID_target, and one or more Indices depending on
-chosen method
+\code{compete_inv} object: a modified data.frame with the forest
+invetory data, target tree specifications and or more competition indices
+depending on chosen method.
 }
 \description{
 'compete_inv()' returns a specific distance-height-dependent or
 distance-dbh-dependent competition index (or group of indices) for all trees
-within a forest plot or specified target trees
+within a forest plot or specified target trees.
 }
 \details{
 Using an inventory table to easily quantify distance-dependent tree
@@ -65,20 +127,34 @@ heights or dbh and distance to competitors.
 }
 \section{Methods}{
 
+The available competition indices are computed according to the following
+equations, where \eqn{d_i} and \eqn{h_i} are the dbh and height of neighbor
+tree \eqn{i}, \eqn{d} and \eqn{h} are dbh and height of the focal tree, and
+\eqn{dist_i} is the distance of neighbor tree \eqn{i}.
+\subsection{Diameter-based competition indices}{
 \itemize{
-\item CI_Hegyi Index introduced by Hegyi (1974)
-\eqn{\sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})}
-\item CI_RK1 according to CI1 Rouvinen & Kuuluvainen (1997)
-\eqn{\sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})}
-\item CI_RK2 according to CI3 in Rouvinen & Kuuluvainen (1997)
-\eqn{\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i} / dist_{i})}
-\item CI_Braathe according to Braathe (1980)
-\eqn{\sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
-\item CI_RK3 according to CI5 in Rouvinen & Kuuluvainen (1997)
-\eqn{\sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i}), h_{i} > h}
+\item CI_Hegyi introduced by Hegyi (1974): \cr
+\eqn{CI_{Hegyi} = \sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})}
+\item CI_RK1 according to CI1 Rouvinen & Kuuluvainen (1997):\cr
+\eqn{CI_{RK1} = \sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})}
+\item CI_RK2 according to CI3 in Rouvinen & Kuuluvainen (1997): \cr
+\eqn{CI_{RK2} =\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i}
+   / dist_{i})}
+}
+}
+
+\subsection{Height-based competition indices}{
+\itemize{
+\item CI_Braathe according to Braathe (1980): \cr
+\eqn{CI_{Braathe} = \sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
+\item CI_RK3 according to CI5 in Rouvinen & Kuuluvainen (1997): \cr
+\eqn{CI_{RK3} = \sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i})}
+for all trees with \eqn{h_{i} > h}
 \item CI_RK4 based on CI3 in Rouvinen & Kuuluvainen (1997) and
-Contreras et al. (2011)
-\eqn{\sum_{i=1}^{n} (h_{i} / h) \cdot \mathrm{arctan}(h_{i} / dist_{i})}
+Contreras et al. (2011): \cr
+\eqn{CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
+   \mathrm{arctan}(h_{i} / dist_{i})}
+}
 }
 }
 

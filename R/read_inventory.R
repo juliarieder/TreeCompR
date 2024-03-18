@@ -9,10 +9,10 @@
 #'   column names are validated and homogenized; else, the function tries to
 #'   read the dataset in the specified path.
 #' @param x character of length 1 or name of the variable in `inv_source`
-#'   containing the x coordinates of the tree in meters . If `NULL (default),
+#'   containing the x coordinates of the tree in m. If `NULL` (default),
 #'   the function tries to identify the x coordinate from the data.
 #' @param y character of length 1 or name of the variable in `inv_source`
-#'   containing the y coordinates of the tree in meters. If `NULL (default), the
+#'   containing the y coordinates of the tree in meters. If `NULL` (default), the
 #'   function tries to identify the y coordinate from the data.
 #' @param dbh character of length 1 or name of the variable in `inv_source`
 #'   containing the diameter at breast height of the tree (by default in cm, but
