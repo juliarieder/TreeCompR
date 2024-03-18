@@ -224,6 +224,8 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 ){                     # column (FALSE)
   # if column name is specified, take this column
   if (!is.null(which)) {
+    if (!which %in% names(data)) stop("No variable named ", which,
+                                      " in dataset.")
     out <- data[[which]]
   } else { # try to identify correct column
     matches <- tolower(names(data)) %in% names
