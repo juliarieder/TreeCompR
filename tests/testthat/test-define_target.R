@@ -14,7 +14,7 @@ test_that("define_target works for character vectors", {
   # test if correct rows are returned
   expect_equal(test1$id[test1$target], "3")
   # test if type is passed on
-  expect_equal(attr(test1, "target_type"), "character")
+  expect_equal(attr(test1, "target_type"), "character vector")
 
 
   # test if target can be defined for multiple observations
@@ -25,7 +25,7 @@ test_that("define_target works for character vectors", {
   # test if correct rows are returned
   expect_equal(test2$id[test2$target], c("51", "52"))
   # test if type is passed on
-  expect_equal(attr(test2, "target_type"), "character")
+  expect_equal(attr(test2, "target_type"), "character vector")
 
   # test for warning if target does not exist
   expect_warning(
@@ -38,13 +38,15 @@ test_that("define_target works for character vectors", {
 test_that("define_target works for logical vectors", {
   # test if target can be defined with logical vector
   expect_no_error({
+    test_inv <- read_inv(test_path("testdata", "inventory.csv"),
+                         sep = ";", dec = ".", verbose = FALSE)
     test3 <- define_target(inv = test_inv,
                            target_source = rep(c(TRUE, TRUE, FALSE), 16))
   })
   # test if correct rows are returned (only the rows not divisible by 3)
   expect_true(!any(as.numeric((1:nrow(test3))[test3$target]) %% 3 == 0))
   # test if type is passed on
-  expect_equal(attr(test3, "target_type"), "logical")
+  expect_equal(attr(test3, "target_type"), "logical vector")
 
 
   # test if wrong length results in error
@@ -55,11 +57,11 @@ test_that("define_target works for logical vectors", {
   )
 })
 
-
-
 test_that("define_target works for other inventories", {
   # test if target can be defined with subset
   expect_no_error({
+    test_inv <- read_inv(test_path("testdata", "inventory.csv"),
+                         sep = ";", dec = ".", verbose = FALSE)
     target <- test_inv[c(3, 5:17), ]
     test4 <- define_target(inv = test_inv, target_source = target)
   })
@@ -95,11 +97,13 @@ test_that("define_target works for other inventories", {
 test_that("define_target works for methods specified as character strings", {
   # test if target can be defined with subset
   expect_warning({
+    test_inv <- read_inv(test_path("testdata", "inventory.csv"),
+                         sep = ";", dec = ".", verbose = FALSE)
     test6 <- define_target(inv = test_inv, target_source = "all")
     },
     "Defining all trees as target trees is rarely a good idea.")
   # test if type is passed on
-  expect_equal(attr(test6, "target_type"), "all")
+  expect_equal(attr(test6, "target_type"), "all trees")
 
   # test if missing radius results in error for spatial methods
   expect_error({
@@ -115,14 +119,20 @@ test_that("define_target works for methods specified as character strings", {
                            radius = 10)
   })
   # test if type is passed on
-  expect_equal(attr(test8, "target_type"), "exclude_edge")
+  expect_equal(attr(test7, "target_type"), "excluding edge")
 
   # test if target can be defined by removing edge trees with a buffer around
   # the plot margin
   expect_no_error({
-    test8 <- define_target(inv = test_inv, target_source = "buff_edge",
+    test8 <- define_target(inv = test_inv,
+                           target_source = "buff_edge",
                            radius = 10)
   })
   # test if type is passed on
-  expect_equal(attr(test8, "target_type"), "buff_edge")
+  expect_equal(attr(test8, "target_type"), "excluding buffer around edge")
+
+  # test if print methods works
+  expect_output(print(test8), "'target_inv' class inventory dataset")
 })
+
+

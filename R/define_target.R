@@ -77,7 +77,7 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
   # check if radius, buffer threshold and tolerance are valid
   if (!is.null(radius)) {
     if (!(inherits(radius, "numeric") & length(radius) == 1))
-    stop("'radius' should be a numeric of length 1.")}
+      stop("'radius' should be a numeric of length 1.")}
   if (!(inherits(tol, "numeric") & length(tol) == 1))
     stop("'tol' should be a numeric of length 1.")
 
@@ -88,7 +88,7 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
       # define target
       inv$target <- target_source
       # keep information about source
-      target_type <- "logical"
+      target_type <- "logical vector"
     } else {
       stop("If 'target_source' is a logical vector, its length has to match ",
            "the number of rows of 'inv.'")
@@ -105,13 +105,15 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
           inv <- .spatial_comp(inv, type = target_source,
                                radius = radius)
           # keep information about source
-          target_type <- target_source
+          target_type <- ifelse(
+            target_source == "exclude_edge", "excluding edge",
+            "excluding buffer around edge")
         } else {
           if (target_source == "all"){
             # define all trees as target trees and send a warning
             inv$target <- TRUE
             # keep information about source
-            target_type <- "all"
+            target_type <- "all trees"
             warning(
               "Defining all trees as target trees is rarely a good idea.",
               " Unless your forest inventory contains all trees in the",
@@ -121,14 +123,14 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
             # set single target tree
             inv$target <- inv$id %in% target_source
             # keep information about source
-            target_type <- "character"
+            target_type <- "character vector"
           }
         }
       } else {
         # set multiple target trees
         inv$target <- inv$id %in% target_source
         # keep information about source
-        target_type <- "character"
+        target_type <- "character vector"
       }
     } else {
       if (inherits(target_source, "forest_inv")){
@@ -155,7 +157,7 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
   if (!any(inv$target)) warning(
     "No target trees have been found with the provided specifications.")
   # update class
-  class(inv) <- c("target_inv,", class(inv))
+  class(inv) <- c("target_inv", class(inv))
   # set attribute for target type
   attr(inv, "target_type") <- target_type
   # return inventory
@@ -217,3 +219,36 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
     stop("More than one point is any equally good match.")
   return(out)
 }
+
+
+# Define printing method for target_pc objects:
+#' @rdname define_target
+#' @format NULL
+#' @usage NULL
+#' @export
+print.target_inv <- function(x, ...){
+  cat("---------------------------------------------------------------",
+      "\n'target_inv' class inventory dataset with defined target trees:",
+      "\ncollection of", nrow(x),"observations",
+      "\nSource of target trees:", attr(x, "target_type"),
+      "\n---------------------------------------------------------------\n"
+  )
+  if (nrow(x) < 6) {
+    # if there are almost no observations, print the entire dataset
+    print(as.data.frame(x), digits = 3)
+  } else {
+    # else print beginning and end of the data.frame
+    temp <- x[1,]
+    row.names(temp) <- " "
+    for(i in 1:ncol(temp)) temp[, i] <- "..."
+    x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
+    print(
+      rbind(head(as.data.frame(x), 3),
+            temp,
+            tail(as.data.frame(x), n = 3)
+      )
+    )
+  }
+}
+
+

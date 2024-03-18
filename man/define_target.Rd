@@ -2,6 +2,7 @@
 % Please edit documentation in R/define_target.R
 \name{define_target}
 \alias{define_target}
+\alias{print.target_inv}
 \title{Define target trees in forest inventory data}
 \usage{
 define_target(inv, target_source, radius = NULL, tol = 1)
