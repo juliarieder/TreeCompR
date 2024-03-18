@@ -73,8 +73,8 @@ of trees is usually an issue!
 }
 \examples{
 \dontrun{
-CI <- compete_ALS("path/to/invtable.csv",
-  "path/to/target_trees.csv", radius = 10)
+target <- define_target("path/to/invtable.csv",
+  "path/to/target_trees.csv", radius = 10, tol = 1)
 }
 
 }

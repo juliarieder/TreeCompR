@@ -1,11 +1,11 @@
 #' Quantify distance-height-dependent Competition using ALS inventory data
 #' @description
-#' 'compete_dh()' returns a specific distance-height-dependent competition index
+#' 'compete_inv()' returns a specific distance-height-dependent competition index
 #' (or group of indices) for a list of target trees within a forest plot
 #'
 #' @param inv_source dataframe or path to inventory table of the
-#'   plot, with structure: ID, x, y, h (in m). Cartesian coordinates have to
-#'   be in metric system (in m)!
+#'   plot, with structure: ID, x, y, dbh (in cm) or h (in m).
+#'   Cartesian coordinates have to be in metric system (in m)!
 #' @param target_source dataframe or path to table of target trees within plot
 #' with ID_target, x, y (does not have to be the same ID as in inventory table).
 #'  Cartesian coordinates have to be in metric system
@@ -56,8 +56,8 @@
 #'
 #' @section Literature:
 #'  * Hegyi, F., 1974. A simulation model for managing jackpine stands. In:
-#'    Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models for
-#'    tree and stand simulation, Royal College of Forestry, Stockholm.
+#'    Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models
+#'    for tree and stand simulation, Royal College of Forestry, Stockholm.
 #'  * Braathe, P., 1980. Height increment of young single trees in relation to
 #'     height and distance of neighboring trees. Mitt. Forstl. VersAnst. 130,
 #'      43–48.
@@ -78,7 +78,7 @@
 #' CI <- compete_inv("path/to/invtable.csv",
 #'   "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi")
 #' }
-compete_inv <- function(inv_source, target, radius,
+compete_inv <- function(inv_source, target_source, radius,
                         method = c("all", "CI_Hegyi", "CI_Braathe",
                                    "CI_RK1", "CI_RK2", "CI_RK3", "CI_RK4"),
                         x = NULL, y = NULL,
@@ -371,7 +371,7 @@ define_target <- function(inv, target_source, radius, tol = 1) {
         # check for target trees missing within tolerance
         if (any(is.na(closest))){
           warning("No matching coordinates found for the following ",
-                  "target tree(s):\n", paste(target_source$id, sep = ", "))      }
+                  "target tree(s):\n", paste(target_source$id, sep = ", "))   }
         # get target trees
         inv$target <- inv$id %in% inv$id[na.omit(closest)]
         # carry over ID
