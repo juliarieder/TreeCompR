@@ -91,9 +91,11 @@ taking their GPS coordinates manually in the field).
 }
 \examples{
 \dontrun{
-# Read the tree point cloud in txt format
-tree <- read_tree(path = "path/to/tree_point_cloud.txt")
-# Read the tree point cloud in las or laz format
-tree <- read_tree(path = "path/to/tree_point_cloud.las")
+# prepare inventory table for compete_inv()
+inv <- fread(path = "path/to/table.csv")
+inv_table <- read_inv(inv, dbh_unit = "cm", height_unit = "m")
+# Read inventory table from directory
+inv_table <- read_inv(inv_source = "path/to/table.csv", dbh_unit = "cm",
+height_unit = "m")
 }
 }
