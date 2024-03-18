@@ -14,7 +14,7 @@ test_that("define_target works for character vectors", {
   # test if correct rows are returned
   expect_equal(test1$id[test1$target], "3")
   # test if type is passed on
-  expect_equal(attr(test1, "target_type"), "character vector")
+  expect_equal(attr(test1, "target_type"), "character")
 
 
   # test if target can be defined for multiple observations
@@ -24,14 +24,17 @@ test_that("define_target works for character vectors", {
   })
   # test if correct rows are returned
   expect_equal(test2$id[test2$target], c("51", "52"))
-  # test if type is passed on
-  expect_equal(attr(test2, "target_type"), "character vector")
+    # test if type is passed on
+  expect_equal(attr(test2, "target_type"), "character")
 
   # test for warning if target does not exist
   expect_warning(
     define_target(inv = test_inv, target_source = "wrong ID"),
     "No target trees have been found"
   )
+
+  # test if plotting with plot_target works
+  expect_no_error(plot_target(test2, radius = 5))
 })
 
 
@@ -46,7 +49,7 @@ test_that("define_target works for logical vectors", {
   # test if correct rows are returned (only the rows not divisible by 3)
   expect_true(!any(as.numeric((1:nrow(test3))[test3$target]) %% 3 == 0))
   # test if type is passed on
-  expect_equal(attr(test3, "target_type"), "logical vector")
+  expect_equal(attr(test3, "target_type"), "logical")
 
 
   # test if wrong length results in error
@@ -55,6 +58,9 @@ test_that("define_target works for logical vectors", {
                   target_source = c(FALSE, FALSE, TRUE)),
     "If 'target_source' is a logical vector"
   )
+
+  # test if plotting with plot_target works
+  expect_no_error(plot_target(test3, radius = 5))
 })
 
 test_that("define_target works for other inventories", {
@@ -68,7 +74,7 @@ test_that("define_target works for other inventories", {
   # test if correct rows are returned
   expect_equal(test_inv$id[c(3, 5:17)], test4$id[test4$target])
   # test if type is passed on
-  expect_equal(attr(test4, "target_type"), "second inventory")
+  expect_equal(attr(test4, "target_type"), "inventory")
 
   # test if it works when no dbh is available
   expect_no_error({
@@ -90,6 +96,9 @@ test_that("define_target works for other inventories", {
     target2$id <- letters[1:4]
     define_target(inv = test_inv, target_source = target2)
   }, "More than one point is any equally good match.")
+
+  # test if plotting with plot_target works
+  expect_no_error(plot_target(test5, radius = 5))
 })
 
 
@@ -118,21 +127,30 @@ test_that("define_target works for methods specified as character strings", {
     test7 <- define_target(inv = test_inv, target_source = "exclude_edge",
                            radius = 10)
   })
-  # test if type is passed on
-  expect_equal(attr(test7, "target_type"), "excluding edge")
+  # test if attributes are passed on
+  expect_equal(attr(test7, "target_type"), "exclude_edge")
+  expect_equal(attr(test7, "spatial_radius"), 10)
+  # test if plotting with plot_target works and radius is passed on here
+  expect_no_error(plot_target(test7))
 
-  # test if target can be defined by removing edge trees with a buffer around
+
+    # test if target can be defined by removing edge trees with a buffer around
   # the plot margin
   expect_no_error({
     test8 <- define_target(inv = test_inv,
                            target_source = "buff_edge",
-                           radius = 10)
+                           radius = 5)
   })
   # test if type is passed on
-  expect_equal(attr(test8, "target_type"), "excluding buffer around edge")
+  expect_equal(attr(test8, "target_type"), "buff_edge")
+  expect_equal(attr(test8, "spatial_radius"), 5)
+
+  # test if plotting with plot_target works and radius is passed on here
+  expect_no_error(plot_target(test8))
 
   # test if print methods works
   expect_output(print(test8), "'target_inv' class inventory dataset")
+
 })
 
 
