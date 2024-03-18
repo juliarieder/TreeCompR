@@ -59,8 +59,10 @@
 #'
 #' @examples
 #' \dontrun{
-#' target <- define_target("path/to/invtable.csv",
-#'   "path/to/target_trees.csv", radius = 10, tol = 1)
+#' # red inventory
+#' inv    <- read_inv("path/to/invtable.csv")
+#' # target trees defined by a buffer around the plot edges
+#' target <- define_target(inv, target_source = "buff_edge", radius = 10)
 #' }
 #'
 define_target <- function(inv, target_source, radius = NULL, tol = 1) {
@@ -88,7 +90,7 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
       # define target
       inv$target <- target_source
       # keep information about source
-      target_type <- "logical vector"
+      target_type <- "logical"
     } else {
       stop("If 'target_source' is a logical vector, its length has to match ",
            "the number of rows of 'inv.'")
@@ -105,9 +107,7 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
           inv <- .spatial_comp(inv, type = target_source,
                                radius = radius)
           # keep information about source
-          target_type <- ifelse(
-            target_source == "exclude_edge", "excluding edge",
-            "excluding buffer around edge")
+          target_type <- target_source
         } else {
           if (target_source == "all"){
             # define all trees as target trees and send a warning
@@ -123,14 +123,14 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
             # set single target tree
             inv$target <- inv$id %in% target_source
             # keep information about source
-            target_type <- "character vector"
+            target_type <- "character"
           }
         }
       } else {
         # set multiple target trees
         inv$target <- inv$id %in% target_source
         # keep information about source
-        target_type <- "character vector"
+        target_type <- "character"
       }
     } else {
       if (inherits(target_source, "forest_inv")){
@@ -149,7 +149,7 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
         inv$target_id <- NA
         inv$target_id[na.omit(closest)] <- target_source$id[!is.na(closest)]
         # keep information about source
-        target_type <- "second inventory"
+        target_type <- "inventory"
       }
     }
   }
@@ -160,8 +160,125 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
   class(inv) <- c("target_inv", class(inv))
   # set attribute for target type
   attr(inv, "target_type") <- target_type
+  # if a radius-dependent method was used, add as an attribute
+  if (target_source %in% c("buff_edge", "exclude_edge")) {
+    attr(inv, "spatial_radius") <- radius
+  }
   # return inventory
   return(inv)
+}
+
+
+#' Plot selection of target trees
+#' @description
+#' `plot_target()` can be used with  a `target_inv` dataset or the output
+#' of the `compete_inv` function to inspect the spatial positions of the
+#' target trees.
+#'
+#' @param inv object of class `target_inv` (as created with [define_target()]).
+#'
+#' @details The function creates a plot of the trees in the forest inventory
+#'   dataset where the target trees and the surrounding search radii are
+#'   highlighted. If they were created with `target_source = "buff_edge"` or
+#'   `target_source = "exclude_edge"`, the estimated plot margin (and, in case
+#'   of `"buff_edge"`, also the buffer to the margin) are added as a polygon.
+#'
+#'   This function is meant as a visual inspection tool for checking the
+#'   validity of the choice of target trees.
+#'
+#' @return A plot of the spatial arrangement of target trees.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' x
+#' }
+#'
+plot_target <- function(inv, radius = NULL) {
+  # if provided with compete_inv object, get corresponding target inventory
+  # and search radius
+  if(inherits(inv, "compete_inv")){
+    inv    <- inv$inventory
+    radius <- inv$radius
+  }
+  # else try if a spatial radius was defined
+  if (is.null(radius)){
+    if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")) {
+      radius <- attr(inv, "spatial_radius")
+    } else{ # if not, stop with an error
+      stop("'radius' has to be defined for plotting.")
+    }
+  }
+  # get original graphics parameters
+  op <- par(c("mfrow", "mar"))
+  # reset original parameters if function breaks
+  on.exit(par(op))
+  # set graphical parameters for plot
+  par(mfrow = c(1, 1), mar = c(0,0,2,0))
+  # convert inventory to sf objects
+  center <- sf::st_multipoint(
+    as.matrix(inv[inv$target,c("x", "y")]))
+  border <-  sf::st_multipoint(
+    as.matrix(inv[!inv$target,c("x", "y")]))
+
+  # plot points and buffer
+  plot(sf::st_buffer(center, dist = radius),
+       col = "grey90", lty = 0,
+       xlim = range(inv$x) + c(-radius, radius + diff(range(inv$x))),
+       ylim = range(inv$y) +  c(-radius, radius),
+       main = "Plot of tree positions")
+  plot(center, pch = 16, add = TRUE)
+  plot(border, pch = 1, add = TRUE)
+
+  leg <- data.frame(pch = c(16, 1, 16), lty = NA,
+                    col = c(1, 1, "grey90"),
+                    cex = c(1, 1, 3),
+                    label = c("Target trees",
+                              "Border trees",
+                              "1 search radius \naround target trees"))
+
+  # if spatial method was used, also plot approximate plot borders
+  if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")) {
+    # get concave hull
+    conc <-  sf::st_polygon(
+      list(
+        concaveman::concaveman(
+          cbind(inv$x, inv$y),
+          length_threshold = 2 * radius)
+      )
+    )
+    # plot concave hull
+    plot(conc, add = TRUE, border = "grey40")
+    # update legend
+    leg <- rbind(leg, data.frame(
+      pch = NA, lty = 1, col = "grey40", cex = 1,
+      label = "Estimated plot border"))
+
+    # if a buffer was used, add buffer
+    if (attr(inv, "target_type") == "buff_edge"){
+      plot(sf::st_buffer(
+        conc, dist = -radius, singleSide = TRUE), add = TRUE,
+        lty = 2)
+      # update legend
+      leg <- rbind(leg, data.frame(
+        pch = NA, lty = 2, col = "grey40", cex = 1,
+        label = "1 search radius \ndistance from plot border"))
+    }
+  }
+  # plot legend
+  if (nrow(leg) == 3){ # plot without lty when no lines are involved
+    with(leg, legend(x = max(inv$x) + diff(range(inv$x))/3,
+                     y = max(range(inv$y)),
+                     pch = pch,  col = col, pt.cex = cex,
+                     legend = label, bty = "n", y.intersp = 1.5))
+  } else{ # plot with lty if lines are involved
+    with(leg, legend(x = max(inv$x) + diff(range(inv$x))/3,
+                     y = max(range(inv$y)),
+                     pch = pch, lty = lty, col = col, pt.cex = cex,
+                     legend = label, bty = "n", y.intersp = 1.5))
+  }
+  # reset graphical parameters
+  par(op)
 }
 
 
@@ -172,14 +289,14 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
   # get convex hull of dataset
   conc <- concaveman::concaveman(
     cbind(inv$x, inv$y),
-    length_threshold = 2 * radius # minimum distance up to which the
-    # concave hull should try to find shapes that extend inwards more
-    # strongly - should not be lower than 2 search radii
-  )
+    length_threshold = 2 * radius) # minimum distance up to which the
+  # concave hull should try to find shapes that extend inwards more
+  # strongly - should not be lower than 2 search radii
+
   # if only edge trees are considered, identify edge trees
   if (type == "exclude_edge"){
     closest <- inv$id[.closest(inv[,2:3], conc[-1,], 0.1)]
-    inv$target <-inv$id %in% closest
+    inv$target <- !(inv$id %in% closest)
   } else {
     if(type == "buff_edge"){
       # convert to sf object
@@ -227,10 +344,20 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
 #' @usage NULL
 #' @export
 print.target_inv <- function(x, ...){
+  # get description of target source from lookup table
+  target <- as.character(
+    c(inventory = "second inventory",
+      character = "character vector",
+      logical   = "logical vector",
+      exclude_edge = "excluding edge",
+      buff_edge = "excluding buffer around edge"
+    )[ attr(x, "target_type")]
+  )
+  # print header
   cat("---------------------------------------------------------------",
       "\n'target_inv' class inventory dataset with defined target trees:",
       "\ncollection of", nrow(x),"observations",
-      "\nSource of target trees:", attr(x, "target_type"),
+      "\nSource of target trees:",target,
       "\n---------------------------------------------------------------\n"
   )
   if (nrow(x) < 6) {
