@@ -32,19 +32,30 @@
 #' heights or dbh and distance to competitors.
 #'
 #' @section Methods:
-#'  * CI_Hegyi Index introduced by Hegyi (1974)
-#'    \eqn{\sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})}
-#'  * CI_RK1 according to CI1 Rouvinen & Kuuluvainen (1997)
-#'    \eqn{\sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})}
-#'  * CI_RK2 according to CI3 in Rouvinen & Kuuluvainen (1997)
-#'    \eqn{\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i} / dist_{i})}
-#'  * CI_Braathe according to Braathe (1980)
-#'    \eqn{\sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
-#'  * CI_RK3 according to CI5 in Rouvinen & Kuuluvainen (1997)
-#'    \eqn{\sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i}), h_{i} > h}
+#' The available competition indices are computed according to the following
+#' equations, where \eqn{d_i} and \eqn{h_i} are the dbh and height of neighbor
+#' tree \eqn{i}, \eqn{d} and \eqn{h} are dbh and height of the focal tree, and
+#' \eqn{dist_i} is the distance of neighbor tree \eqn{i}.
+#'
+#' ### Diameter-based competition indices
+#'  * CI_Hegyi introduced by Hegyi (1974): \cr
+#'    \eqn{CI_{Hegyi} = \sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})}
+#'  * CI_RK1 according to CI1 Rouvinen & Kuuluvainen (1997):\cr
+#'    \eqn{CI_{RK1} = \sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})}
+#'  * CI_RK2 according to CI3 in Rouvinen & Kuuluvainen (1997): \cr
+#'    \eqn{CI_{RK2} =\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i}
+#'    / dist_{i})}
+#'
+#'  ### Height-based competition indices
+#'  * CI_Braathe according to Braathe (1980): \cr
+#'    \eqn{CI_{Braathe} = \sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
+#'  * CI_RK3 according to CI5 in Rouvinen & Kuuluvainen (1997): \cr
+#'    \eqn{CI_{RK3} = \sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i})}
+#'    for all trees with \eqn{h_{i} > h}
 #'  * CI_RK4 based on CI3 in Rouvinen & Kuuluvainen (1997) and
-#'    Contreras et al. (2011)
-#'    \eqn{\sum_{i=1}^{n} (h_{i} / h) \cdot \mathrm{arctan}(h_{i} / dist_{i})}
+#'    Contreras et al. (2011): \cr
+#'    \eqn{CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
+#'    \mathrm{arctan}(h_{i} / dist_{i})}
 #'
 #' @section Tree Segmentation:
 #' Various approaches can be used to segment (airborne) laser scanning point
@@ -90,7 +101,7 @@ compete_inv <- function(inv_source, target_source, radius,
                         dbh_unit = c("cm", "m", "mm"),
                         height_unit = c("m", "cm", "mm"),
                         verbose = TRUE,
-                        tolerance = 1,
+                        tol = 1,
                         ...) {
 
   # match arguments against the allowed values
@@ -141,11 +152,18 @@ compete_inv <- function(inv_source, target_source, radius,
     }
     # define target trees
     inv <- define_target(inv = inv, target_source = target_source,
-                         radius = radius, thresh = thresh, tol = tol)
+                         radius = radius, tol = tol)
+  } else { # warn if radii are different
+    if (attr(inv, "target_method") %in% c("buff_edge", "exclude_edge")){
+    if(attr(inv, "spatial_radius") != radius){
+      warning("Radius used to determine target trees differs from search",
+              " radius for competition indices.")
+      }
+    }
   }
   # test if there are any duplicated coordinates (resulting in 0 distance -->
   # singularity in inverse distance weighting)
-  if (any(!duplicated(inv[,c("x", "y")]))) {
+  if (any(duplicated(inv[,c("x", "y")]))) {
     stop("Dataset contains duplicate coordinates. ",
          "Please revise tree positions.")
   }
@@ -170,7 +188,7 @@ compete_inv <- function(inv_source, target_source, radius,
   # trees outside radius are taken out of the summation by setting to zero
 
   # get matrix with focal trees (for row-wise summation of indices)
-  target_matrix <- matrix(rep(ifelse(inv$type == "target", 1, NA),
+  target_matrix <- matrix(rep(ifelse(inv$target, 1, NA),
                               nrow(inv)), ncol = nrow(inv))
   if (any(method %in%  c("CI_Hegyi", "CI_RK1", "CI_RK2"))) {
     # get matrix with focal tree dbh
@@ -214,7 +232,7 @@ compete_inv <- function(inv_source, target_source, radius,
   # compute RK3 index for all target trees
   if("CI_RK3" %in% method){
     inv$CI_RK3 <- rowSums(
-      target_matrix * trees_in_radius *
+      target_matrix * trees_in_radius * (neighbor_height > focal_height) *
         atan(inv_distance * neighbor_height))
   }
   # compute RK4 index for all target trees
@@ -224,13 +242,9 @@ compete_inv <- function(inv_source, target_source, radius,
         atan(inv_distance * neighbor_height) * neighbor_height / focal_height)
   }
   # format and return output
-  output <- list(
-    inventory = inv,
-    radius = radius,
-    method = method,
-    target_type = attr(inv, "target_type"),
-    vars = list(id = id, x = x, y = y, dbh = dbh, height = height)
-  )
+  attr(inv, "radius") <- radius
+  attr(inv, "method") <- method
+
   # define class
   class(output) <- c("compete_inv", class(output))
   # return output
