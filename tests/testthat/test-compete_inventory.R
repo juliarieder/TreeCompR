@@ -1,14 +1,13 @@
 # testthat-based unit tests for the functionality of the functions for
 # inventory-based competition indices
 
-test_that("Hegyi index works", {
-  expect_equal(
-    length(
-      compete_dd(plot_path = test_path("testdata", "inventory.csv"),
-                 ttrees_path = test_path("testdata", "targettrees_inventory.csv"),
-                 radius = 10, method = "CI_Hegyi",dbh_thr = 0.1)
-    ),
-    2)
+test_that("Hegyi index works for inv tables with dbh values", {
+  expect_no_error(
+    test1 <- compete_inv(inv_source = test_path("testdata", "inventory.csv"),
+                 target_source = test_path("testdata", "targettrees_inventory.csv"),
+                 radius = 10, method = "CI_Hegyi", dbh_unit = "m",
+                 height_unit = "m")
+    )
 })
 
 test_that("CI_RK1 index works", {

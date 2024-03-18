@@ -67,7 +67,7 @@
 #' CI <- compete_ALS("path/to/invtable.csv",
 #'   "path/to/target_trees.csv", radius = 10)
 #' }
-compete_inv <- function(inv_source, target, radius,
+compete_inv2 <- function(inv_source, target, radius,
                         method = c("all", "CI_Hegyi", "CI_Braathe",
                                    "CI_RK1", "CI_RK2", "CI_RK3", "CI_RK4"),
                         x = NULL, y = NULL,
