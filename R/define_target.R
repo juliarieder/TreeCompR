@@ -83,6 +83,8 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
   if (!(inherits(tol, "numeric") & length(tol) == 1))
     stop("'tol' should be a numeric of length 1.")
 
+  # set flag for spatial methods
+  spatial <- FALSE
   # handle different cases for target_source
   if (is.logical(target_source)){
     # handle logical vector
@@ -100,6 +102,8 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
       # handle characters
       if (length(target_source) == 1){
         if (target_source %in% c("buff_edge", "exclude_edge")) {
+          # set flag for spatial methods
+          spatial <- TRUE
           # test if radius is specified
           if (is.null(radius)) stop("'radius' is required for ",
                                     "methods 'buff_edge' and 'exclude_edge'.")
@@ -161,7 +165,7 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
   # set attribute for target type
   attr(inv, "target_type") <- target_type
   # if a radius-dependent method was used, add as an attribute
-  if (target_source %in% c("buff_edge", "exclude_edge")) {
+  if (spatial) {
     attr(inv, "spatial_radius") <- radius
   }
   # return inventory
