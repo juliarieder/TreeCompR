@@ -9,14 +9,16 @@
 #' @param inv object of class `forest_inv` as created with [read_inv()].
 #' @param target_source one of the following:
 #'   1. a vector of class `"character"` containing the tree IDs identifying the
-#'   target trees in the  same format as in the `id` column of `inv`,
+#'   target trees in the  same format as in the `id` column of `inv`.
 #'   2. a vector of class `logical` specifying for each row of `inv` whether
-#'   the corresponding tree is a target tree,
+#'   the corresponding tree is a target tree.
 #'   3. another object of class `forest_inv` containing the coordinates of the
 #'   target trees. In this case, the coordinates are matched against the
 #'   coordinates in `inv` and IDs may differ (useful e.g. when target trees
 #'   are defined based on GPS coordinates and matched against an airborne laser
-#'   scanning dataset).
+#'   scanning dataset). In this case, the extent of `inv` will be cropped to
+#'   the extent of `forest_inv` \eqn{\pm} `radius + tol` to reduce
+#'   computational load.
 #'   4. a character vector of length 1 defining the method by which the target
 #'   trees should be determined. Allowed are `"buff_edge"` for excluding all
 #'   trees that are at least one search radius from the forest edge,
@@ -26,7 +28,8 @@
 #'   `"buff_edge"`. See below for details.
 #' @param radius numeric of length 1, Search radius (in m) around target tree
 #'   wherein all neighboring trees are classified as competitors. Only used if
-#'   `target_source` is `"buff_edge"` or `"exclude_edge"`. Defaults to NULL.
+#'   `target_source` is `"buff_edge"`, `"exclude_edge"` or of type `forest_inv`.
+#'   Defaults to 10.
 #' @param tol numeric. Tolerance for the match between tree coordinates in the
 #'   forest inventory and target datasets if specified as a second set of
 #'   coordinates. If a field measurements (e.g. based on GPS) are used to
@@ -65,7 +68,8 @@
 #' target <- define_target(inv, target_source = "buff_edge", radius = 10)
 #' }
 #'
-define_target <- function(inv, target_source, radius = NULL, tol = 1) {
+define_target <- function(inv, target_source, radius = 10,
+                          tol = 1, verbose = TRUE) {
   # validate class of inventory
   if(!inherits(inv, "forest_inv")){
     stop("Please supply forest inventory data in the forest_inv format",
@@ -77,9 +81,8 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
          "are required. Please check data structure in 'inv'.")
   }
   # check if radius, buffer threshold and tolerance are valid
-  if (!is.null(radius)) {
-    if (!(inherits(radius, "numeric") & length(radius) == 1))
-      stop("'radius' should be a numeric of length 1.")}
+  if (!(inherits(radius, "numeric") & length(radius) == 1))
+      stop("'radius' should be a numeric of length 1.")
   if (!(inherits(tol, "numeric") & length(tol) == 1))
     stop("'tol' should be a numeric of length 1.")
 
@@ -104,9 +107,6 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
         if (target_source %in% c("buff_edge", "exclude_edge")) {
           # set flag for spatial methods
           spatial <- TRUE
-          # test if radius is specified
-          if (is.null(radius)) stop("'radius' is required for ",
-                                    "methods 'buff_edge' and 'exclude_edge'.")
           # compute target trees from spatial arrangement using internal fun
           inv <- .spatial_comp(inv, type = target_source,
                                radius = radius)
@@ -139,6 +139,19 @@ define_target <- function(inv, target_source, radius = NULL, tol = 1) {
     } else {
       if (inherits(target_source, "forest_inv")){
         # handle second inventory
+        # set flag for spatial methods
+        spatial <- TRUE
+        # test if there are trees outside the relevant range
+        inside <- inv$x >= min(target_source$x) - radius - tol &
+          inv$x <= max(target_source$x) + radius + tol &
+          inv$y >= min(target_source$y) - radius - tol &
+          inv$y <= max(target_source$y) + radius + tol
+        # message if dataset was modified
+        if (any(!inside) && verbose) message(
+          sum(!inside), " trees outside the competitive zone around the target",
+          " trees were removed. ", sum(inside), " trees remain.")
+        # filter out trees outside of radius
+        inv <- inv[inside, ]
         # get matching coordinates
         closest <- .closest(inv[, c("x", "y")],
                             target_source[, c("x", "y")],

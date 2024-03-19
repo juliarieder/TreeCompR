@@ -183,12 +183,13 @@ compete_inv <- function(inv_source, target_source, radius,
     }
     # define target trees
     inv <- define_target(inv = inv, target_source = target_source,
-                         radius = radius, tol = tol)
+                         radius = radius, tol = tol, verbose = verbose)
   } else { # warn if radii are different
-    if (attr(inv, "target_method") %in% c("buff_edge", "exclude_edge")){
+    if (attr(inv, "target_method") %in% c("buff_edge", "exclude_edge",
+                                          "inventory")){
       if(attr(inv, "spatial_radius") != radius){
-        warning("Radius used to determine target trees differs from search",
-                " radius for competition indices.")
+        warning("Radius used to determine target trees / filter surrounding",
+        "trees differs from search radius for competition indices.")
       }
     }
   }

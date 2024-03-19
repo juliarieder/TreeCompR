@@ -15,6 +15,7 @@ read_inv(
   dbh_unit = c("cm", "m", "mm"),
   height_unit = c("m", "cm", "mm"),
   verbose = TRUE,
+  names_as_is = FALSE,
   ...
 )
 }
@@ -56,6 +57,12 @@ assigned a unique number. All IDs are coerced to character.}
 
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
+
+\item{names_as_is}{logical of length 1. If TRUE, only NULL or characters
+are excepted as column names in \code{x}, \code{y}, \code{dbh}, \code{height} and \code{id}, and
+the column names are not internally substituted. Defaults to FALSE, which
+should normally be the right choice for interactive use (TRUE is only
+needed for use within functions).}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }

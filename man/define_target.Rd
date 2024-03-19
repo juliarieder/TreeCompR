@@ -5,7 +5,7 @@
 \alias{print.target_inv}
 \title{Define target trees in forest inventory data}
 \usage{
-define_target(inv, target_source, radius = NULL, tol = 1)
+define_target(inv, target_source, radius = 10, tol = 1, verbose = TRUE)
 }
 \arguments{
 \item{inv}{object of class \code{forest_inv} as created with \code{\link[=read_inv]{read_inv()}}.}
@@ -13,14 +13,16 @@ define_target(inv, target_source, radius = NULL, tol = 1)
 \item{target_source}{one of the following:
 \enumerate{
 \item a vector of class \code{"character"} containing the tree IDs identifying the
-target trees in the  same format as in the \code{id} column of \code{inv},
+target trees in the  same format as in the \code{id} column of \code{inv}.
 \item a vector of class \code{logical} specifying for each row of \code{inv} whether
-the corresponding tree is a target tree,
+the corresponding tree is a target tree.
 \item another object of class \code{forest_inv} containing the coordinates of the
 target trees. In this case, the coordinates are matched against the
 coordinates in \code{inv} and IDs may differ (useful e.g. when target trees
 are defined based on GPS coordinates and matched against an airborne laser
-scanning dataset).
+scanning dataset). In this case, the extent of \code{inv} will be cropped to
+the extent of \code{forest_inv} \eqn{\pm} \code{radius + tol} to reduce
+computational load.
 \item a character vector of length 1 defining the method by which the target
 trees should be determined. Allowed are \code{"buff_edge"} for excluding all
 trees that are at least one search radius from the forest edge,
@@ -32,7 +34,8 @@ trees in the entire forest are in the dataset). The standard is
 
 \item{radius}{numeric of length 1, Search radius (in m) around target tree
 wherein all neighboring trees are classified as competitors. Only used if
-\code{target_source} is \code{"buff_edge"} or \code{"exclude_edge"}. Defaults to NULL.}
+\code{target_source} is \code{"buff_edge"}, \code{"exclude_edge"} or of type \code{forest_inv}.
+Defaults to 10.}
 
 \item{tol}{numeric. Tolerance for the match between tree coordinates in the
 forest inventory and target datasets if specified as a second set of
