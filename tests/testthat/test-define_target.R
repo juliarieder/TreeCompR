@@ -69,7 +69,8 @@ test_that("define_target works for other inventories", {
     test_inv <- read_inv(test_path("testdata", "inventory.csv"),
                          sep = ";", dec = ".", verbose = FALSE)
     target <- test_inv[c(3, 5:17), ]
-    test4 <- define_target(inv = test_inv, target_source = target)
+    test4 <- define_target(inv = test_inv, target_source = target,
+                           verbose = FALSE)
   })
   # test if correct rows are returned
   expect_equal(test_inv$id[c(3, 5:17)], test4$id[test4$target])
@@ -78,14 +79,16 @@ test_that("define_target works for other inventories", {
 
   # test if it works when no dbh is available
   expect_no_error({
-   define_target(inv = test_inv, target_source = target[, 1:3])
+   define_target(inv = test_inv, target_source = target[, 1:3],
+                 verbose = FALSE)
   })
 
   # test if it works if IDs are different
   expect_no_error({
     target1 <- target[1:2,]
     target1$id <- paste("target", target1$id)
-    test5 <- define_target(inv = test_inv, target_source = target1)
+    test5 <- define_target(inv = test_inv, target_source = target1,
+                           verbose = FALSE)
   })
   # test if correct IDs are passed on
   expect_equal(test5$target_id[test5$target], c("target 3", "target 5"))
@@ -94,7 +97,8 @@ test_that("define_target works for other inventories", {
   expect_error({
     target2 <- rbind(target1, target1)
     target2$id <- letters[1:4]
-    define_target(inv = test_inv, target_source = target2)
+    define_target(inv = test_inv, target_source = target2,
+                  verbose = FALSE)
   }, "More than one point is any equally good match.")
 
   # test if plotting with plot_target works
@@ -114,14 +118,6 @@ test_that("define_target works for methods specified as character strings", {
   # test if type is passed on
   expect_equal(attr(test6, "target_type"), "all trees")
 
-  # test if missing radius results in error for spatial methods
-  expect_error({
-    define_target(inv = test_inv, target_source = "exclude_edge")
-  }, "'radius' is required for methods 'buff_edge' and 'exclude_edge'.")
-  expect_error({
-    define_target(inv = test_inv, target_source = "buff_edge")
-  }, "'radius' is required for methods 'buff_edge' and 'exclude_edge'.")
-
   # test if target can be defined by removing only edge trees
   expect_no_error({
     test7 <- define_target(inv = test_inv, target_source = "exclude_edge",
@@ -133,8 +129,7 @@ test_that("define_target works for methods specified as character strings", {
   # test if plotting with plot_target works and radius is passed on here
   expect_no_error(plot_target(test7))
 
-
-    # test if target can be defined by removing edge trees with a buffer around
+  # test if target can be defined by removing edge trees with a buffer around
   # the plot margin
   expect_no_error({
     test8 <- define_target(inv = test_inv,

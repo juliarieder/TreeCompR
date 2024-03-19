@@ -16,7 +16,9 @@ test_that("Indices work for two different forest_inv datasets", {
       radius = 10,
       method = "CI_Hegyi",
       dbh_unit = "m",
-      height_unit = "m")
+      height_unit = "m",
+      verbose = FALSE
+      )
   })
 
   # compute RK1
@@ -27,7 +29,8 @@ test_that("Indices work for two different forest_inv datasets", {
       radius = 10,
       method = "CI_RK1",
       dbh_unit = "m",
-      height_unit = "m")
+      height_unit = "m",
+      verbose = FALSE)
   })
 
   # compute RK2
@@ -38,7 +41,8 @@ test_that("Indices work for two different forest_inv datasets", {
       radius = 10,
       method = "CI_RK2",
       dbh_unit = "m",
-      height_unit = "m")
+      height_unit = "m",
+      verbose = FALSE)
   })
 
   # compute all dbh-based indices
@@ -49,7 +53,8 @@ test_that("Indices work for two different forest_inv datasets", {
       radius = 10,
       method = "all",
       dbh_unit = "m",
-      height_unit = "m")
+      height_unit = "m",
+      verbose = FALSE)
   })
 
   # compute Braathe
@@ -62,7 +67,8 @@ test_that("Indices work for two different forest_inv datasets", {
       radius = 10,
       method = "CI_Braathe",
       dbh_unit = "m",
-      height_unit = "m")
+      height_unit = "m",
+      verbose = FALSE)
   })
 
   # compute RK3
@@ -73,7 +79,8 @@ test_that("Indices work for two different forest_inv datasets", {
       radius = 10,
       method = "CI_RK3",
       dbh_unit = "m",
-      height_unit = "m")
+      height_unit = "m",
+      verbose = FALSE)
   })
 
   # compute RK4
@@ -84,7 +91,8 @@ test_that("Indices work for two different forest_inv datasets", {
       radius = 10,
       method = "CI_RK4",
       dbh_unit = "m",
-      height_unit = "m")
+      height_unit = "m",
+      verbose = FALSE)
   })
 
   # compute all indices
@@ -95,7 +103,8 @@ test_that("Indices work for two different forest_inv datasets", {
       radius = 10,
       method = "all",
       dbh_unit = "m",
-      height_unit = "m")
+      height_unit = "m",
+      verbose = FALSE)
   })
 
   # check if the correct indices are returned
