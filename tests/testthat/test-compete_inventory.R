@@ -111,10 +111,7 @@ test_that("Indices work for two different forest_inv datasets", {
 })
 
 
-
-
 test_that("Indices work for two file paths", {
-
 
   expect_no_error(
     compete_inv(
@@ -126,6 +123,48 @@ test_that("Indices work for two file paths", {
       verbose = FALSE)
   )
 
+})
+
+test_that("Indices work for other types of target determination", {
+  # read plot dataset
+  plot <- read_inv(test_path("testdata", "inventory.csv"),
+                   verbose = FALSE)
+  target <- plot[1:5,]
+  # select by id
+  expect_no_error(
+    test1 <- compete_inv(
+      inv_source = plot,
+      target_source = target$id,
+      radius = 10,
+      method = "all",
+      dbh_unit = "m",
+      verbose = FALSE)
+  )
+
+  # compare against selection by logical vector
+  expect_equal(
+    test1$CI_Hegyi,
+    compete_inv(
+      inv_source = plot,
+      target_source = plot$id %in% target$id,
+      radius = 10,
+      method = "all",
+      dbh_unit = "m",
+      verbose = FALSE)$CI_Hegyi
+  )
+
+  # compare against selection by subset
+  # select by id
+  expect_equal(
+    test1$CI_RK1,
+    compete_inv(
+      inv_source = plot,
+      target_source = target,
+      radius = 10,
+      method = "all",
+      dbh_unit = "m",
+      verbose = FALSE)$CI_RK1
+  )
 })
 
 
