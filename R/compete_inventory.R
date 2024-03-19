@@ -314,7 +314,12 @@ print.compete_inv <- function(x, ...){
       "\nSource of target trees:",target, "\t Search radius:", attr(x, "radius"),
       "\n---------------------------------------------------------------------\n"
   )
-  if (ncol(x) >= 10) names(x) <- gsub("CI_", "", names(x))
+  if (ncol(x) >= 10) {
+    x[, 2] <- "..."
+    names(x)[2] <- "..."
+    x[, 3] <- NULL
+
+  }
 
   if (nrow(x) < 6) {
     # if there are almost no observations, print the entire dataset
