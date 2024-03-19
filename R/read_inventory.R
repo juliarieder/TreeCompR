@@ -32,6 +32,11 @@
 #'   (one of "m", "cm" or "mm". defaults to "m").
 #' @param verbose logical of length 1. Should information about progress be
 #'   printed? Defaults to TRUE.
+#' @param names_as_is logical of length 1. If TRUE, only NULL or characters
+#'   are excepted as column names in `x`, `y`, `dbh`, `height` and `id`, and
+#'   the column names are not internally substituted. Defaults to FALSE, which
+#'   should normally be the right choice for interactive use (TRUE is only
+#'   needed for use within functions).
 #' @param ... additional arguments passed on to [data.table::fread()]
 #'
 #' @details Function for reading and validating forest inventory data.
@@ -72,19 +77,22 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
                      dbh = NULL, height = NULL, id = NULL,
                      dbh_unit = c("cm", "m", "mm"),
                      height_unit = c("m", "cm", "mm"),
-                     verbose = TRUE, ...) {
+                     verbose = TRUE, names_as_is = FALSE, ...) {
 
   # match function arguments for units and get multipliers
   dbh_unit    <- match.arg(dbh_unit)
   height_unit <- match.arg(height_unit)
 
-  # catch and validate variable names (treated as character if not NULL,
-  # else, NULL is passed on to .validate_inv())
-  if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
-  if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
-  if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
-  if (!is.null(substitute(height))) height <- as.character(substitute(height))
-  if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
+  # parse names if !names_as_is
+  if (!names_as_is){
+    # catch and validate variable names (treated as character if not NULL,
+    # else, NULL is passed on to .validate_inv())
+    if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
+    if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
+    if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
+    if (!is.null(substitute(height))) height <- as.character(substitute(height))
+    if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
+  }
 
   # check class of source tree
   if (inherits(inv_source, "data.frame")){
@@ -269,7 +277,6 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
   # return output
   return(out)
 }
-
 
 
 # Define printing method for forest_pc objects:

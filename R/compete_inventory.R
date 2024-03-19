@@ -149,7 +149,8 @@ compete_inv <- function(inv_source, target_source, radius,
     # read and validate forest inventory dataset
     inv <- read_inv(
       inv_source, x = x, y = y, dbh = dbh, height = height, id = id,
-      dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose, ...)
+      dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
+      names_as_is = TRUE, ...)
 
     # check if data required to calculate indices are available
     if (method %in%  c("CI_Hegyi", "CI_RK1", "CI_RK2") &&
@@ -168,7 +169,7 @@ compete_inv <- function(inv_source, target_source, radius,
         target_source <- read_inv(
           target_source, x = x, y = y, dbh = dbh, height = height, id = id,
           dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
-          ...)
+          names_as_is = TRUE, ...)
         # else it is passed to define_target as a character string
       }
     }
@@ -177,7 +178,8 @@ compete_inv <- function(inv_source, target_source, radius,
        !inherits(target_source, "forest_inv")){
       target_source <- read_inv(
         target_source, x = x, y = y, dbh = dbh, height = height, id = id,
-        dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose, ...)
+        dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
+        names_as_is = TRUE, ...)
     }
     # define target trees
     inv <- define_target(inv = inv, target_source = target_source,
