@@ -281,6 +281,8 @@ compete_inv <- function(inv_source, target_source, radius,
   attr(inv, "edge_trees") <- as.matrix(inv[!inv$target, c("x", "y")])
   # filter out edge trees
   inv <- inv[inv$target, ]
+  # remove target column (table only contains target trees)
+  inv$target <- NULL
   # define class
   class(inv) <- c("compete_inv", class(inv))
   # return output
@@ -307,11 +309,13 @@ print.compete_inv <- function(x, ...){
   # print header
   cat("---------------------------------------------------------------------",
       "\n'compete_inv' class inventory with distance-based competition indices",
-      "\nCollection of data for", sum(x$target),"target and",
-      nrow(x) - sum(x$target), "edge trees.",
+      "\nCollection of data for", nrow(x),"target and",
+        nrow(attr(x, "edge_trees")), "edge trees.",
       "\nSource of target trees:",target, "\t Search radius:", attr(x, "radius"),
       "\n---------------------------------------------------------------------\n"
   )
+  if (ncol(x) >= 10) names(x) <- gsub("CI_", "", names(x))
+
   if (nrow(x) < 6) {
     # if there are almost no observations, print the entire dataset
     print(as.data.frame(x), digits = 3)
