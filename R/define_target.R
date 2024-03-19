@@ -202,9 +202,18 @@ plot_target <- function(inv, radius = NULL) {
   # if provided with compete_inv object, get corresponding target inventory
   # and search radius
   if(inherits(inv, "compete_inv")){
+    # get radius from attributes
     radius <- attr(inv, "radius")
-  }
-  # else try if a spatial radius was defined
+    # get full positions from attributes
+    center <- sf::st_multipoint(attr(inv, "target_trees"))
+    border <- sf::st_multipoint(attr(inv, "edge_trees"))
+  } else {
+    # if it is a target_inv object, get coordinates by filtering by col target
+    center <- sf::st_multipoint(
+      as.matrix(inv[inv$target,c("x", "y")]))
+    border <-  sf::st_multipoint(
+      as.matrix(inv[!inv$target,c("x", "y")]))
+  # check if a spatial radius was defined
   if (is.null(radius)){
     if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")){
       radius <- attr(inv, "spatial_radius")
@@ -212,34 +221,30 @@ plot_target <- function(inv, radius = NULL) {
       stop("'radius' has to be defined for plotting.")
     }
   }
+  }
+  # get full coordinates for both data sources (for plot dimensions)
+  coords <- rbind(as.matrix(center), as.matrix(border))
   # get original graphics parameters
   op <- par(c("mfrow", "mar"))
   # reset original parameters if function breaks
   on.exit(par(op))
   # set graphical parameters for plot
   par(mfrow = c(1, 1), mar = c(0,0,2,0))
-  # convert inventory to sf objects
-  center <- sf::st_multipoint(
-    as.matrix(inv[inv$target,c("x", "y")]))
-  border <-  sf::st_multipoint(
-    as.matrix(inv[!inv$target,c("x", "y")]))
-
   # plot points and buffer
   plot(sf::st_buffer(center, dist = radius),
        col = "grey90", lty = 0,
-       xlim = range(inv$x) + c(-radius, radius + diff(range(inv$x))),
-       ylim = range(inv$y) +  c(-radius, radius),
+       xlim = range(coords[,1]) + c(-radius, radius + diff(range(coords[, 1]))),
+       ylim = range(coords[,2]) +  c(-radius, radius),
        main = "Plot of tree positions")
   plot(center, pch = 16, add = TRUE)
   plot(border, pch = 1, add = TRUE)
-
+  # get subset of legend
   leg <- data.frame(pch = c(16, 1, 16), lty = NA,
                     col = c(1, 1, "grey90"),
                     cex = c(1, 1, 3),
                     label = c("Target trees",
                               "Border trees",
                               "1 search radius \naround target trees"))
-
   # if spatial method was used, also plot approximate plot borders
   if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")) {
     # get concave hull
@@ -270,13 +275,13 @@ plot_target <- function(inv, radius = NULL) {
   }
   # plot legend
   if (nrow(leg) == 3){ # plot without lty when no lines are involved
-    with(leg, legend(x = max(inv$x) + diff(range(inv$x))/3,
-                     y = max(range(inv$y)),
+    with(leg, legend(x = max(coords[,1]) + diff(range(coords[,1]))/3,
+                     y = max(range(coords[,2])),
                      pch = pch,  col = col, pt.cex = cex,
                      legend = label, bty = "n", y.intersp = 1.5))
   } else{ # plot with lty if lines are involved
-    with(leg, legend(x = max(inv$x) + diff(range(inv$x))/3,
-                     y = max(range(inv$y)),
+    with(leg, legend(x = max(coords[,1]) + diff(range(coords[,1]))/3,
+                     y = max(range(coords[,2])),
                      pch = pch, lty = lty, col = col, pt.cex = cex,
                      legend = label, bty = "n", y.intersp = 1.5))
   }

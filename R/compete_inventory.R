@@ -273,13 +273,16 @@ compete_inv <- function(inv_source, target_source, radius,
       target_matrix * trees_in_radius *
         atan(inv_distance * neighbor_height) * neighbor_height / focal_height)
   }
-  # format and return output
+  # add radius and method as attributes
   attr(inv, "radius") <- radius
   attr(inv, "method") <- method
-
+  # add tree coordinates as attributes
+  attr(inv, "target_trees") <- as.matrix(inv[inv$target, c("x", "y")])
+  attr(inv, "edge_trees") <- as.matrix(inv[!inv$target, c("x", "y")])
+  # filter out edge trees
+  inv <- inv[inv$target, ]
   # define class
   class(inv) <- c("compete_inv", class(inv))
-
   # return output
   return(inv)
 }
@@ -309,8 +312,6 @@ print.compete_inv <- function(x, ...){
       "\nSource of target trees:",target, "\t Search radius:", attr(x, "radius"),
       "\n---------------------------------------------------------------------\n"
   )
-  # only print for target trees
-  x <- x[x$target,]
   if (nrow(x) < 6) {
     # if there are almost no observations, print the entire dataset
     print(as.data.frame(x), digits = 3)
