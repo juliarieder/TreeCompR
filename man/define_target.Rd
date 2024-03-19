@@ -44,6 +44,9 @@ identify target trees and the full inventory is from a different data
 source (e.g. ALS data), a higher tolerance value may be required to
 identify the trees depending on the measurement accuracy. Values of 0 mean
 exact matching.}
+
+\item{verbose}{logical of length 1. Should information about progress be
+printed? Defaults to TRUE.}
 }
 \value{
 object of \code{c("target_inv", "forest_inv", "data.frame")} with x and y

@@ -37,6 +37,8 @@
 #'   source (e.g. ALS data), a higher tolerance value may be required to
 #'   identify the trees depending on the measurement accuracy. Values of 0 mean
 #'   exact matching.
+#' @param verbose logical of length 1. Should information about progress be
+#'   printed? Defaults to TRUE.
 #'
 #' @details
 #' The input data can either be taken directly from field measurements or
