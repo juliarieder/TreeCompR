@@ -37,7 +37,7 @@ area and the stem height of a tree
 \details{
 Calculates the stem base position, metroid of the crown projected
 area and height of a tree from a data.frame with  a point cloud as created
-with \code{\link[=read_tree]{read_tree()}}.
+with \code{\link[=read_pc]{read_pc()}}.
 
 For the \emph{stem base}, the z position is taken as the z position of the first
 voxel layer containing at least z_min points of the point cloud (the

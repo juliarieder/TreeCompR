@@ -78,8 +78,8 @@ identify the dbh from the data.}
 
 \item{height}{character of length 1 or name of the variable in \code{inv_source}
 containing the height of the tree (by default in m, but   can be defined
-via \code{h_unit}). If \code{NULL} (default), the function tries to identify the dbh
-from the data.}
+via \code{heigh_unit}). If \code{NULL} (default), the function tries to identify the
+height from the data.}
 
 \item{id}{character of length 1 or name of the variable in \code{inv_source}
 containing a unique tree ID. If \code{NULL} (default), the function tries to

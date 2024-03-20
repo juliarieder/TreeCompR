@@ -7,7 +7,13 @@
 plot_target(inv, radius = NULL)
 }
 \arguments{
-\item{inv}{object of class \code{target_inv} (as created with \code{\link[=define_target]{define_target()}}).}
+\item{inv}{object of class\code{compete_inv} or \code{target_inv}.}
+
+\item{radius}{numeric of length 1, Search radius (in m) around target tree
+wherein all neighboring trees are classified as competitors. Only needed
+for \code{target_inv} objects in methods that are not radius dependent (i.e.,
+in cases where \code{target_source} defined by a character or logical vector or
+in cases where \code{target_source = "all"}).}
 }
 \value{
 A plot of the spatial arrangement of target trees.
@@ -29,7 +35,9 @@ validity of the choice of target trees.
 }
 \examples{
 \dontrun{
-x
+  # plot neighborhood for existing inventory
+  comp <- compete_inv(inv, "buff_edge", radius = 10)
+  plot_target(comp)
 }
 
 }
