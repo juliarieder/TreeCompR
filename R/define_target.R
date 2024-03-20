@@ -161,12 +161,14 @@ define_target <- function(inv, target_source, radius = 10,
         # check for target trees missing within tolerance
         if (any(is.na(closest))){
           warning("No matching coordinates found for the following ",
-                  "target tree(s):\n", paste(target_source$id, sep = ", "))      }
+                  "target tree(s):\n", paste(target_source$id, sep = ", "))
+          }
         # get target trees
-        inv$target <- inv$id %in% inv$id[na.omit(closest)]
+        inv$target <- inv$id %in% inv$id[stats::na.omit(closest)]
         # carry over ID
         inv$target_id <- NA
-        inv$target_id[na.omit(closest)] <- target_source$id[!is.na(closest)]
+        inv$target_id[stats::na.omit(closest)] <-
+          target_source$id[!is.na(closest)]
         # keep information about source
         target_type <- "inventory"
       }
@@ -194,7 +196,12 @@ define_target <- function(inv, target_source, radius = 10,
 #' of the `compete_inv` function to inspect the spatial positions of the
 #' target trees.
 #'
-#' @param inv object of class `target_inv` (as created with [define_target()]).
+#' @param inv object of class`compete_inv` or `target_inv`.
+#' @param radius numeric of length 1, Search radius (in m) around target tree
+#'   wherein all neighboring trees are classified as competitors. Only needed
+#'   for `target_inv` objects in methods that are not radius dependent (i.e.,
+#'   in cases where `target_source` defined by a character or logical vector or
+#'   in cases where `target_source = "all"`).
 #'
 #' @details The function creates a plot of the trees in the forest inventory
 #'   dataset where the target trees and the surrounding search radii are
@@ -210,7 +217,9 @@ define_target <- function(inv, target_source, radius = 10,
 #'
 #' @examples
 #' \dontrun{
-#' x
+#'   # plot neighborhood for existing inventory
+#'   comp <- compete_inv(inv, "buff_edge", radius = 10)
+#'   plot_target(comp)
 #' }
 #'
 plot_target <- function(inv, radius = NULL) {
@@ -240,11 +249,11 @@ plot_target <- function(inv, radius = NULL) {
   # get full coordinates for both data sources (for plot dimensions)
   coords <- rbind(as.matrix(center), as.matrix(border))
   # get original graphics parameters
-  op <- par(c("mfrow", "mar"))
+  op <- graphics::par(c("mfrow", "mar"))
   # reset original parameters if function breaks
-  on.exit(par(op))
+  on.exit(graphics::par(op))
   # set graphical parameters for plot
-  par(mfrow = c(1, 1), mar = c(0,0,2,0))
+  graphics::par(mfrow = c(1, 1), mar = c(0,0,2,0))
   # plot points and buffer
   plot(sf::st_buffer(center, dist = radius),
        col = "grey90", lty = 0,
@@ -301,7 +310,7 @@ plot_target <- function(inv, radius = NULL) {
                      legend = label, bty = "n", y.intersp = 1.5))
   }
   # reset graphical parameters
-  par(op)
+  graphics::par(op)
 }
 
 
@@ -393,9 +402,9 @@ print.target_inv <- function(x, ...){
     for(i in 1:ncol(temp)) temp[, i] <- "..."
     x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
     print(
-      rbind(head(as.data.frame(x), 3),
+      rbind(utils::head(as.data.frame(x), 3),
             temp,
-            tail(as.data.frame(x), n = 3)
+            utils::tail(as.data.frame(x), n = 3)
       )
     )
   }

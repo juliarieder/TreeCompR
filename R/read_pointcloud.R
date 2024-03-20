@@ -144,7 +144,6 @@ print.forest_pc <- function(x, ...){
       " \n'forest_pc' class point cloud: \ncollection of", nrow(x),"observations",
       "\n---------------------------------------\n"
   )
-
   if (nrow(x) < 6) {
     # if there are almost no observations, print the entire dataset
     print(as.data.frame(x), digits = 3)
@@ -155,9 +154,9 @@ print.forest_pc <- function(x, ...){
     for(i in 1:ncol(temp)) temp[, i] <- "..."
     x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
     print(
-      rbind(head(as.data.frame(x), 3),
+      rbind(utils::head(as.data.frame(x), 3),
             temp,
-            tail(as.data.frame(x), n = 3)
+            utils::tail(as.data.frame(x), n = 3)
             )
     )
   }

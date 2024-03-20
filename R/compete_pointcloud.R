@@ -215,11 +215,26 @@ print.compete_pc <- function(x, ...){
   # get tree name or number of observations
   target <- ifelse(nrow(x) == 1,
                    paste0("'", x$target, "'"),
-                   paste(nrow(tree), "trees"))
+                   paste(nrow(x), "trees"))
   # print header
   cat(" ------------------------------------------------------------------\n",
       "Point cloud based competition indices for", target, "\n",
       "------------------------------------------------------------------\n")
   # print body
-  print(head(as.data.frame(x)))
+  if (nrow(x) < 6) {
+    # if there are almost no observations, print the entire dataset
+    print(as.data.frame(x), digits = 3)
+  } else {
+    # else print beginning and end of the data.frame
+    temp <- x[1,]
+    row.names(temp) <- " "
+    for(i in 1:ncol(temp)) temp[, i] <- "..."
+    x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
+    print(
+      rbind(utils::head(as.data.frame(x), 3),
+            temp,
+            utils::tail(as.data.frame(x), n = 3)
+      )
+    )
+  }
 }

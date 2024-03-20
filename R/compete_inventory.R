@@ -321,7 +321,6 @@ print.compete_inv <- function(x, ...){
     x[, 3] <- NULL
 
   }
-
   if (nrow(x) < 6) {
     # if there are almost no observations, print the entire dataset
     print(as.data.frame(x), digits = 3)
@@ -332,9 +331,9 @@ print.compete_inv <- function(x, ...){
     for(i in 1:ncol(temp)) temp[, i] <- "..."
     x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
     print(
-      rbind(head(as.data.frame(x), 3),
+      rbind(utils::head(as.data.frame(x), 3),
             temp,
-            tail(as.data.frame(x), n = 3)
+            utils::tail(as.data.frame(x), n = 3)
       )
     )
   }

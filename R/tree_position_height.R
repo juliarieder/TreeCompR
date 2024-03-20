@@ -14,7 +14,7 @@
 #'
 #' @details Calculates the stem base position, metroid of the crown projected
 #'   area and height of a tree from a data.frame with  a point cloud as created
-#'   with [read_tree()].
+#'   with [read_pc()].
 #'
 #'   For the *stem base*, the z position is taken as the z position of the first
 #'   voxel layer containing at least z_min points of the point cloud (the
