@@ -22,28 +22,28 @@ test_that("read_inv works for data.frame objects", {
     test_inv1 <- read_inv(test1, id = "a", x = "b", y = "c",
                           dbh = "d", verbose = FALSE)
   })
-  expect_equal(test_inv, test_inv1)
+  expect_equal(test_inv, test_inv1, ignore_attr = TRUE)
 
   # reading in with a subset of specified names
   expect_no_error({
     test_inv2 <- read_inv(test1, id = "a", x = "b", y = "c",
                           verbose = FALSE) # d is a valid alternative for dbh
   })
-  expect_equal(test_inv, test_inv2)
+  expect_equal(test_inv, test_inv2, ignore_attr = TRUE)
 
   # reading in with a subset of specified names in unquoted form
   expect_no_error({
     test_inv3 <- read_inv(test1, id = a, x = b, y = c,
                           verbose = FALSE)
   })
-  expect_equal(test_inv, test_inv3)
+  expect_equal(test_inv, test_inv3, ignore_attr = TRUE)
 
   # reading in works with different order of columns
   expect_no_error({
     test2 <- test[, c(3,1,4,2)]
     test_inv4 <- read_inv(test2, verbose = FALSE)
   })
-  expect_equal(test_inv, test_inv4)
+  expect_equal(test_inv, test_inv4, ignore_attr = TRUE)
 
   # reading in fails with an error if class of a vector is incorrect
   expect_error({
@@ -61,11 +61,11 @@ test_that("read_inv works for data.frame objects", {
   "No variable found with a name"
   )
 
-  # reading in without diamete nor height is tpossible
+  # reading in without diamete nor height is possible
   expect_length(read_inv(test[, -4], verbose = FALSE), 3)
 
-  # reading in works if there are no coordinates - but standard is assigned
-  expect_no_error(read_inv(test[, -1], verbose = FALSE))
+  # reading in works if there are no ids - but standard is assigned
+  expect_message(read_inv(test[, -1]), "automatically generated")
 
 })
 
@@ -78,30 +78,31 @@ test_that("Unit handling works", {
     # read as meter
     read_inv(test, dbh_unit = "m", verbose = FALSE)$dbh},
     # outcome should be 100 times higher (assumed to be converted to cm)
-    100 * test$DBH)
+    100 * test$DBH, ignore_attr = TRUE)
   # reading dbh in mm works
   expect_equal(
     read_inv(test, dbh_unit = "mm", verbose = FALSE)$dbh,
-    0.1 * test$DBH) #should be 0.1 of the original due to conversion to cm
+    0.1 * test$DBH, #should be 0.1 of the original due to conversion to cm
+    ignore_attr = TRUE)
 
   # reading height in m works
   expect_equal({
     test$height <- test$DBH
     read_inv(test, verbose = FALSE)$height},
     # outcome should be 100 times higher (assumed to be converted to cm)
-    test$height)
+    test$height, ignore_attr = TRUE)
 
   # reading height in cm works
   expect_equal({
     read_inv(test, height_unit = "cm", verbose = FALSE)$height},
     # outcome should be 100 times higher (assumed to be converted to cm)
-    test$height * 0.01)
+    test$height * 0.01, ignore_attr = TRUE)
 
   # reading height in mm works
   expect_equal({
     read_inv(test, height_unit = "mm", verbose = FALSE)$height},
     # outcome should be 100 times higher (assumed to be converted to cm)
-    test$height * 0.001)
+    test$height * 0.001, ignore_attr = TRUE)
 })
 
 
@@ -134,6 +135,4 @@ test_that("print method for forest_pc objects works", {
     "'forest_inv' class inventory dataset:"
   )
 })
-
-
 
