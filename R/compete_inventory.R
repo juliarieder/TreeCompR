@@ -158,7 +158,7 @@ compete_inv <- function(inv_source, target_source, radius,
       stop("Diameter at breast height is required for ", method, ".")
     }
     if (method %in%  c("CI_Braathe", "CI_RK3", "CI_RK4") &&
-        !"dbh" %in% names(inv)) {
+        !"height" %in% names(inv)) {
       stop("Tree height of all trees is required for ", method, ".")
     }
 
@@ -211,83 +211,78 @@ compete_inv <- function(inv_source, target_source, radius,
   }
   # compute matrices required for calculation
   # Euclidean distance matrix
-  distance <- with(inv, sqrt(outer(x, x, "-") ^ 2 + outer(y, y, "-") ^ 2))
+  distance <- with(inv, sqrt(outer(x[target], x, "-") ^ 2 +
+                               outer(y[target], y, "-") ^ 2))
   # get inverse distance matrix
   inv_distance  <- 1 / distance # careful: diagonal becomes infinite
-  diag(inv_distance) <- 0 # focal tree taken out of the calculation and
-  # singularity resolved by setting diagonal to zero
+  inv_distance[with(inv, outer(id[target], id, "=="))] <- 0
+  # singularity resolved by setting to zero for identical values
   # get trees within critical distance
   trees_in_radius <- distance <= radius
   # trees outside radius are taken out of the summation by setting to zero
 
   # get matrix with focal trees (for row-wise summation of indices)
-  target_matrix <- matrix(rep(ifelse(inv$target, 1, NA),
-                              nrow(inv)), ncol = nrow(inv))
   if (any(method %in%  c("CI_Hegyi", "CI_RK1", "CI_RK2"))) {
     # get matrix with focal tree dbh
-    focal_dbh <- matrix(rep(inv$dbh, nrow(inv)), ncol = nrow(inv))
+    focal_dbh <- matrix(rep(inv$dbh[inv$target], nrow(inv)), ncol = nrow(inv))
     # get matrix with neighbor tree dbh
-    neighbor_dbh <- t(focal_dbh) # calculation per tree is row-wise so neighbor
-    # matrix has to be column-wise
+    neighbor_dbh <-  matrix(rep(inv$dbh, sum(inv$target)), ncol = nrow(inv),
+                            byrow = TRUE)
+    # calculation per tree is row-wise so neighbor matrix has to be column-wise
   }
   if (any(method %in%  c("CI_Braathe", "CI_RK3", "CI_RK4"))) {
     # get matrix with focal tree height
-    focal_height <- matrix(rep(inv$height, nrow(inv)), ncol = nrow(inv))
+    focal_height <-matrix(rep(inv$height[inv$target], nrow(inv)),
+                          ncol = nrow(inv))
     # get matrix with neighbor tree height
-    neighbor_height <- t(focal_height) # caculation per tree is row-wise
-    #so neighbor
-    # matrix has to be column-wise
+    neighbor_height <- matrix(rep(inv$height, sum(inv$target)),
+                              ncol = nrow(inv),
+                              byrow = TRUE)
+    # caculation per tree is row-wise so neighbor matrix has to be column-wise
   }
+  # prepare output file (remove edge trees and target column)
+  out <- inv[inv$target, ]
+  out$target <- NULL
+
   # compute Hegyi index for all target trees
   if("CI_Hegyi" %in% method){
-    inv$CI_Hegyi <- rowSums(
-      target_matrix * trees_in_radius *
-        inv_distance * neighbor_dbh / focal_dbh)
+    out$CI_Hegyi <- rowSums(trees_in_radius * inv_distance *
+                              neighbor_dbh / focal_dbh)
   }
   # compute Braathe index for all target trees
   if("CI_Braathe" %in% method){
-    inv$CI_Braathe <- rowSums(
-      target_matrix * trees_in_radius *
-        inv_distance * neighbor_height / focal_height)
+    out$CI_Braathe <- rowSums(trees_in_radius * inv_distance *
+                                neighbor_height / focal_height)
   }
   # compute RK1 index for all target trees
   if("CI_RK1" %in% method){
-    inv$CI_RK1 <- rowSums(
-      target_matrix * trees_in_radius *
-        atan(inv_distance * neighbor_dbh))
+    out$CI_RK1 <- rowSums(trees_in_radius * atan(inv_distance * neighbor_dbh))
   }
   # compute RK2 index for all target trees
   if("CI_RK2" %in% method){
-    inv$CI_RK2 <- rowSums(
-      target_matrix * trees_in_radius *
-        atan(inv_distance * neighbor_dbh) * neighbor_dbh / focal_dbh)
+    out$CI_RK2 <- rowSums(trees_in_radius * atan(inv_distance * neighbor_dbh)
+                          * neighbor_dbh / focal_dbh)
   }
   # compute RK3 index for all target trees
   if("CI_RK3" %in% method){
-    inv$CI_RK3 <- rowSums(
-      target_matrix * trees_in_radius * (neighbor_height > focal_height) *
+    out$CI_RK3 <- rowSums(trees_in_radius * (neighbor_height > focal_height) *
         atan(inv_distance * neighbor_height))
   }
   # compute RK4 index for all target trees
   if("CI_RK4" %in% method){
-    inv$CI_RK4 <- rowSums(
-      target_matrix * trees_in_radius *
-        atan(inv_distance * neighbor_height) * neighbor_height / focal_height)
+    out$CI_RK4 <- rowSums(trees_in_radius * atan(inv_distance * neighbor_height)
+                          * neighbor_height / focal_height)
   }
   # add radius and method as attributes
-  attr(inv, "radius") <- radius
-  attr(inv, "method") <- method
+  attr(out, "radius") <- radius
+  attr(out, "method") <- method
   # add tree coordinates as attributes
-  attr(inv, "target_trees") <- as.matrix(inv[inv$target, c("x", "y")])
-  attr(inv, "edge_trees") <- as.matrix(inv[!inv$target, c("x", "y")])
-  # filter out edge trees
-  inv <- inv[inv$target, ]
-  # remove target column (table only contains target trees)
-  inv$target <- NULL
+  attr(out, "target_trees") <- as.matrix(inv[inv$target, c("x", "y")])
+  attr(out, "edge_trees") <- as.matrix(inv[!inv$target, c("x", "y")])
   # define class
-  class(inv) <- c("compete_inv", class(inv))
+  class(out) <- c("compete_inv", class(inv))
   # return output
-  return(inv)
+  return(out)
 }
 
 
