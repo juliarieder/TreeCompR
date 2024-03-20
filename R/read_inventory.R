@@ -20,8 +20,8 @@
 #'   identify the dbh from the data.
 #' @param height character of length 1 or name of the variable in `inv_source`
 #'   containing the height of the tree (by default in m, but   can be defined
-#'   via `h_unit`). If `NULL` (default), the function tries to identify the dbh
-#'   from the data.
+#'   via `heigh_unit`). If `NULL` (default), the function tries to identify the
+#'   height from the data.
 #' @param id character of length 1 or name of the variable in `inv_source`
 #'   containing a unique tree ID. If `NULL` (default), the function tries to
 #'   identify the ID from the data. If this is not possible, the trees are
@@ -48,7 +48,8 @@
 #'   "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any
 #'   capitalization) as size-related variables. The coordinates are taken from
 #'   columns named "id", "tree_id", "treeID" or "tree.id" (in any
-#'   capitalization).
+#'   capitalization). All special characters besides "." and "_" are stripped
+#'   from the column names before matching.
 #'
 #'   If no columns with coordinates can be identified, the function fails with
 #'   an error. If no ID column is available, the function assigns a unique
@@ -147,34 +148,36 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     inv_out <- as.data.frame(matrix(NA, nrow = nrow(inv_source), ncol = 5))
     names(inv_out) <- c("id", "x", "y", "dbh", "height")
     # validate ID
-    inv_out$id <- as.character(
-      .get_cols(
-        data = inv_source,
-        which = id,
-        names = c("id", "treeid", "tree_id", "tree.id"),
-        alternative = 1:nrow(inv_source)
-      )
+    inv_out$id <- .get_cols(
+      data = inv_source,
+      which = id,
+      names = c("id", "treeid", "tree_id", "tree.id"),
+      class_out = "character",
+      alternative = 1:nrow(inv_source)
     )
     # validate x coordinate
     inv_out$x <- .get_cols(
       data = inv_source,
       which = x,
       names = "x",
-      class = c("integer", "numeric")
+      class_in = c("integer", "numeric"),
+      class_out = "numeric"
     )
     #validate y coordinate
     inv_out$y <- .get_cols(
       data = inv_source,
       which = y,
       names = "y",
-      class = c("integer", "numeric")
+      class_in = c("integer", "numeric"),
+      class_out = "numeric"
     )
     # validate dbh
     inv_out$dbh <- .get_cols(
       data = inv_source,
       which = dbh,
       names = c("dbh", "diameter", "diam", "d"),
-      class = c("integer", "numeric"),
+      class_in = c("integer", "numeric"),
+      class_out = "numeric",
       mult = dbh_mult,
       fail_if_missing = FALSE # scrap column if not available
     )
@@ -183,32 +186,22 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       data = inv_source,
       which = height,
       names = c("height", "h", "height_m"),
-      class = c("integer", "numeric"),
+      class_in = c("integer", "numeric"),
+      class_out = "numeric",
       mult = height_mult,
       alternative = NULL,
       fail_if_missing = FALSE # scrap column if not available
     )
     # message about used coordinate vectors
     if(verbose){
+      # get original column names
+      orig <- sapply(inv_out, function(x) ifelse(
+        is.null(attr(x, "original_column")),
+        "automatically generated", attr(x, "original_column")))
+
       message(
         "The following columns were used to create the inventory dataset:\n",
-        # this is absolutely hacky and ugly and should be replaced by something
-        # more sensible ASAP. I just wanted a working version before I go to bed.
-        paste(
-          sapply(1:ncol(inv_out), function(i)
-            paste0(names(inv_out)[i], "\t---\t",
-                   names(inv_source)[
-                     apply(
-                       inv_source, 2, function(x)
-                         is.logical(
-                           all.equal(as.vector(x), inv_out[,i])
-                         )
-                     )
-                   ]
-            )
-          ), collapse = "\n"
-        )
-      )
+        paste0(names(inv_out), "\t---\t", orig, "\n"))
     }
   }
 
@@ -225,7 +218,8 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     data,                  # dataset
     which,                 # column to be picked
     names,                 # allowed variable names
-    class = NULL,          # class vector for validation
+    class_in = NULL,       # vector of allowed classes for validation
+    class_out = NULL,      # output class
     mult = NULL,           # multiplier for unit conversion (NULL: no change)
     alternative = NULL,    # alternative value if column not available
     fail_if_missing = TRUE # if column it missing, fail (TRUE) or remove
@@ -236,7 +230,10 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
                                       " in dataset.")
     out <- data[[which]]
   } else { # try to identify correct column
-    matches <- tolower(names(data)) %in% names
+    # get cleaned column names
+    clean_names <- tolower(gsub("[^A-Za-z0-9_.]", "", names(data)))
+    # find matching columns
+    matches <- clean_names %in% names
     if (sum(matches) > 1){
       stop("More than one variable found with a name ",
            "that is a variation of '", paste(names, collapse = ", "), "'" )
@@ -262,18 +259,22 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     }
   }
   # validate class and break if needed
-  if(!is.null(class)){
-    if (!inherits(out, class)) {
+  if(!is.null(class_in)){
+    if (!inherits(out, class_in)) {
       stop(
         "Variable identified as ", names[1]," ('", which, "') ",
         "not of required class (",
-        paste(class, collapse = " / "),
+        paste(class_out, collapse = " / "),
         ")"
       )
     }
   }
   # perform unit conversion if needed
   if (!is.null(mult)) out <- out * mult
+  # convert to output class
+  if (!is.null(class_out)) class(out) <- class_out
+  # define attributes
+  attr(out, "original_column") <- which
   # return output
   return(out)
 }

@@ -41,8 +41,8 @@ identify the dbh from the data.}
 
 \item{height}{character of length 1 or name of the variable in \code{inv_source}
 containing the height of the tree (by default in m, but   can be defined
-via \code{h_unit}). If \code{NULL} (default), the function tries to identify the dbh
-from the data.}
+via \code{heigh_unit}). If \code{NULL} (default), the function tries to identify the
+height from the data.}
 
 \item{id}{character of length 1 or name of the variable in \code{inv_source}
 containing a unique tree ID. If \code{NULL} (default), the function tries to
@@ -86,7 +86,8 @@ the function by default takes the columns named "X" and "Y" (or "x" and
 "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any
 capitalization) as size-related variables. The coordinates are taken from
 columns named "id", "tree_id", "treeID" or "tree.id" (in any
-capitalization).
+capitalization). All special characters besides "." and "_" are stripped
+from the column names before matching.
 
 If no columns with coordinates can be identified, the function fails with
 an error. If no ID column is available, the function assigns a unique
