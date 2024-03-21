@@ -7,7 +7,7 @@
 plot_target(inv, radius = NULL)
 }
 \arguments{
-\item{inv}{object of class\code{compete_inv} or \code{target_inv}.}
+\item{inv}{object of class \code{compete_inv} or \code{target_inv}.}
 
 \item{radius}{numeric of length 1, Search radius (in m) around target tree
 wherein all neighboring trees are classified as competitors. Only needed

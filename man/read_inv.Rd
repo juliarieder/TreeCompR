@@ -31,8 +31,8 @@ containing the x coordinates of the tree in m. If \code{NULL} (default),
 the function tries to identify the x coordinate from the data.}
 
 \item{y}{character of length 1 or name of the variable in \code{inv_source}
-containing the y coordinates of the tree in meters. If \code{NULL} (default), the
-function tries to identify the y coordinate from the data.}
+containing the y coordinates of the tree in meters. If \code{NULL} (default),
+the function tries to identify the y coordinate from the data.}
 
 \item{dbh}{character of length 1 or name of the variable in \code{inv_source}
 containing the diameter at breast height of the tree (by default in cm, but
@@ -73,7 +73,7 @@ at breast height (\code{dbh}, in cm) and tree height (\code{height}, in m) if
 available.
 }
 \description{
-Read point cloud sourced from a file path or an object that
+Read inventory table sourced from a file path or an object that
 inherits from class data.frame.
 }
 \details{
@@ -84,7 +84,7 @@ If provided with tabular data without explicitly specified variable names,
 the function by default takes the columns named "X" and "Y" (or "x" and
 "y") to be the tree coordinates, and looks for columns named "height",
 "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any
-capitalization) as size-related variables. The coordinates are taken from
+capitalization) as size-related variables. The tree ids are taken from
 columns named "id", "tree_id", "treeID" or "tree.id" (in any
 capitalization). All special characters besides "." and "_" are stripped
 from the column names before matching.
@@ -101,8 +101,9 @@ taking their GPS coordinates manually in the field).
 \dontrun{
 # prepare inventory table for compete_inv()
 inv <- fread(path = "path/to/table.csv")
+#specify the units of parameters within your input
 inv_table <- read_inv(inv, dbh_unit = "cm", height_unit = "m")
-# Read inventory table from directory
+# Read inventory table directly from directory
 inv_table <- read_inv(inv_source = "path/to/table.csv", dbh_unit = "cm",
 height_unit = "m")
 }

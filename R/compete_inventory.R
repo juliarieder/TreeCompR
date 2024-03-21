@@ -1,8 +1,8 @@
 #' Quantify size- and distance-dependent competition using inventory data
 #' @description
-#' 'compete_inv()' returns a specific distance-height-dependent or
-#' distance-dbh-dependent competition index (or group of indices) for all trees
-#' within a forest plot or specified target trees.
+#' 'compete_inv()' returns a specific distance-height-dependent or distance-
+#' dbh-dependent competition index (or group of indices) for all trees within a
+#' forest plot or specified target trees.
 #'
 #' @param inv_source either an object of class `target_inv`, or any object that
 #'   can be imported by [read_inv()] (in this case, `x`, `y`, `id`,
@@ -119,8 +119,24 @@
 #'
 #' @examples
 #' \dontrun{
+#' # Quantify the Hegyi index for specified target trees with search radius 10m
 #' CI <- compete_inv("path/to/invtable.csv",
 #'   "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi")
+#'
+#' # Quantify the Braathe index for specified target trees with search radius
+#' 10m and adjust
+#' CI <- compete_inv("path/to/invtable.csv",
+#'   "path/to/target_trees.csv", radius = 10, method = "CI_Braathe")
+#'
+#' # Specify the units of dbh or height of your input data
+#' CI <- compete_inv("path/to/invtable.csv",
+#'   "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi",
+#'   dbh_unit = "m", height_unit = "m")
+#'
+#' # Quantify all available indices for all trees within the plot that are one
+#' search radius away from plot edge
+#' CI <- compete_inv("path/to/invtable.csv", target_source = "buff_edge",
+#'         radius = 12, method = "all")
 #' }
 compete_inv <- function(inv_source, target_source, radius,
                         method = c("all", "CI_Hegyi", "CI_Braathe",

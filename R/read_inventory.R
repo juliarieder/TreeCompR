@@ -1,6 +1,6 @@
 #' @title Read forest inventory data
 #'
-#' @description Read point cloud sourced from a file path or an object that
+#' @description Read inventory table sourced from a file path or an object that
 #'   inherits from class data.frame.
 #'
 #' @param inv_source object that inherits from class data.frame, or character
@@ -12,8 +12,8 @@
 #'   containing the x coordinates of the tree in m. If `NULL` (default),
 #'   the function tries to identify the x coordinate from the data.
 #' @param y character of length 1 or name of the variable in `inv_source`
-#'   containing the y coordinates of the tree in meters. If `NULL` (default), the
-#'   function tries to identify the y coordinate from the data.
+#'   containing the y coordinates of the tree in meters. If `NULL` (default),
+#'   the function tries to identify the y coordinate from the data.
 #' @param dbh character of length 1 or name of the variable in `inv_source`
 #'   containing the diameter at breast height of the tree (by default in cm, but
 #'   can be defined via `dbh_unit`). If `NULL` (default), the function tries to
@@ -46,7 +46,7 @@
 #'   the function by default takes the columns named "X" and "Y" (or "x" and
 #'   "y") to be the tree coordinates, and looks for columns named "height",
 #'   "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any
-#'   capitalization) as size-related variables. The coordinates are taken from
+#'   capitalization) as size-related variables. The tree ids are taken from
 #'   columns named "id", "tree_id", "treeID" or "tree.id" (in any
 #'   capitalization). All special characters besides "." and "_" are stripped
 #'   from the column names before matching.
@@ -69,8 +69,9 @@
 #' \dontrun{
 #' # prepare inventory table for compete_inv()
 #' inv <- fread(path = "path/to/table.csv")
+#' #specify the units of parameters within your input
 #' inv_table <- read_inv(inv, dbh_unit = "cm", height_unit = "m")
-#' # Read inventory table from directory
+#' # Read inventory table directly from directory
 #' inv_table <- read_inv(inv_source = "path/to/table.csv", dbh_unit = "cm",
 #' height_unit = "m")
 #' }
