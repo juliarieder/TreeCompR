@@ -20,5 +20,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Julia S. Rieder \email{julia.rieder@uni-wuerzburg.de} (\href{https://orcid.org/0000-0001-7233-0488}{ORCID})
 
+Authors:
+\itemize{
+  \item Roman M. Link \email{roman.link@plant-ecology.de} (\href{https://orcid.org/0000-0003-0588-3757}{ORCID})
+}
+
 }
 \keyword{internal}

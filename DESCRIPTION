@@ -5,7 +5,7 @@ Authors@R: c(
     person("Julia S.", "Rieder", , "julia.rieder@uni-wuerzburg.de", 
            role = c("aut", "cre"), comment = c(ORCID = "0000-0001-7233-0488")),
     person("Roman M.", "Link", , "roman.link@plant-ecology.de", 
-           role = c("aut", "cre"), comment = c(ORCID = "0000-0003-0588-3757"))
+           role = c("aut"), comment = c(ORCID = "0000-0003-0588-3757"))
     )
 Description: Quantify individual tree competition using inventory data or point clouds.
 License: MIT + file LICENSE
