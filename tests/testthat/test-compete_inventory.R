@@ -18,7 +18,7 @@ test_that("Indices work for two different forest_inv datasets", {
       dbh_unit = "m",
       height_unit = "m",
       verbose = FALSE
-      )
+    )
   })
 
   # compute RK1
@@ -121,7 +121,6 @@ test_that("Indices work for two different forest_inv datasets", {
 
 
 test_that("Indices work for two file paths", {
-
   expect_no_error(
     compete_inv(
       inv_source = test_path("testdata", "inventory.csv"),
@@ -131,7 +130,6 @@ test_that("Indices work for two file paths", {
       dbh_unit = "m",
       verbose = FALSE)
   )
-
 })
 
 test_that("Indices work for other types of target determination", {
@@ -174,8 +172,41 @@ test_that("Indices work for other types of target determination", {
       dbh_unit = "m",
       verbose = FALSE)$CI_RK1
   )
+
+  # try if it works with methods specified by character-strings
+  expect_no_error(compete_inv(
+    inv_source = plot,
+    target_source = "exclude_edge",
+    radius = 10,
+    method = "all",
+    dbh_unit = "m",
+    verbose = FALSE)
+    )
+  expect_no_error(compete_inv(
+    inv_source = plot,
+    target_source = "buff_edge",
+    radius = 10,
+    method = "all",
+    dbh_unit = "m",
+    verbose = FALSE)
+  )
+  expect_warning(compete_inv(
+    inv_source = plot,
+    target_source = "all",
+    radius = 10,
+    method = "all",
+    dbh_unit = "m",
+    verbose = FALSE)
+  )
 })
 
+test_that("Function works on target_inv objects", {
+  expect_no_error({
+    plot <- read_inv(test_path("testdata", "inventory.csv"), verbose = FALSE)
+    targets <- define_target(plot,target_source = "buff_edge", radius = 10)
+    CI <- compete_inv(inv_source = targets, radius = 10, method = "all")
+  })
+})
 
 # remove plot output
 suppressWarnings(x <- file.remove(test_path("Rplots.pdf")))

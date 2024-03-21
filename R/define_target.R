@@ -275,7 +275,7 @@ plot_target <- function(inv, radius = NULL) {
     conc <-  sf::st_polygon(
       list(
         concaveman::concaveman(
-          cbind(inv$x, inv$y),
+          coords,
           length_threshold = 2 * radius)
       )
     )
@@ -382,7 +382,7 @@ print.target_inv <- function(x, ...){
       character = "character vector",
       logical   = "logical vector",
       exclude_edge = "excluding edge",
-      buff_edge = "excluding buffer around edge"
+      buff_edge = "buffer around edge"
     )[ attr(x, "target_type")]
   )
   # print header

@@ -8,8 +8,9 @@
 #'   can be imported by [read_inv()] (in this case, `x`, `y`, `id`,
 #'   `dbh`, and/or `height` can be specified as in this function -- see the
 #'   corresponding documentation for details).
-#'   If provided with a `target_inv` object, the function overrides further
-#'   arguments passed to [read_inv()] and [define_target()].
+#'   If provided with a `target_inv` object, the function ignores
+#'   `target_source` and overrides further arguments passed to [read_inv()] and
+#'   [define_target()].
 #' @param target_source  one of the following:
 #'   1. a path to an any object that can be imported by [read_inv()] (in this
 #'   case, column specifications have to be the same as in `inv_source` - if
@@ -184,12 +185,15 @@ compete_inv <- function(inv_source, target_source, radius,
     # define target trees
     inv <- define_target(inv = inv, target_source = target_source,
                          radius = radius, tol = tol, verbose = verbose)
-  } else { # warn if radii are different
-    if (attr(inv, "target_method") %in% c("buff_edge", "exclude_edge",
+  } else {
+    # if inv_source is a target_inv object, use it as inv directly
+    inv <- inv_source
+    # warn if radii are different
+    if (attr(inv, "target_type") %in% c("buff_edge", "exclude_edge",
                                           "inventory")){
       if(attr(inv, "spatial_radius") != radius){
         warning("Radius used to determine target trees / filter surrounding",
-        "trees differs from search radius for competition indices.")
+                "trees differs from search radius for competition indices.")
       }
     }
   }
@@ -266,7 +270,7 @@ compete_inv <- function(inv_source, target_source, radius,
   # compute RK3 index for all target trees
   if("CI_RK3" %in% method){
     out$CI_RK3 <- rowSums(trees_in_radius * (neighbor_height > focal_height) *
-        atan(inv_distance * neighbor_height))
+                            atan(inv_distance * neighbor_height))
   }
   # compute RK4 index for all target trees
   if("CI_RK4" %in% method){
@@ -276,6 +280,8 @@ compete_inv <- function(inv_source, target_source, radius,
   # add radius and method as attributes
   attr(out, "radius") <- radius
   attr(out, "method") <- method
+  # pass on target type from original inventory
+  attr(out, "target_type") <- attr(inv, "target_type")
   # add tree coordinates as attributes
   attr(out, "target_trees") <- as.matrix(inv[inv$target, c("x", "y")])
   attr(out, "edge_trees") <- as.matrix(inv[!inv$target, c("x", "y")])
@@ -299,14 +305,14 @@ print.compete_inv <- function(x, ...){
       character = "character vector",
       logical   = "logical vector",
       exclude_edge = "excluding edge",
-      buff_edge = "excluding buffer around edge"
+      buff_edge = "buffer around edge"
     )[ attr(x, "target_type")]
   )
   # print header
   cat("---------------------------------------------------------------------",
       "\n'compete_inv' class inventory with distance-based competition indices",
       "\nCollection of data for", nrow(x),"target and",
-        nrow(attr(x, "edge_trees")), "edge trees.",
+      nrow(attr(x, "edge_trees")), "edge trees.",
       "\nSource of target trees:",target, "\t Search radius:", attr(x, "radius"),
       "\n---------------------------------------------------------------------\n"
   )

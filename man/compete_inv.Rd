@@ -27,8 +27,9 @@ compete_inv(
 can be imported by \code{\link[=read_inv]{read_inv()}} (in this case, \code{x}, \code{y}, \code{id},
 \code{dbh}, and/or \code{height} can be specified as in this function -- see the
 corresponding documentation for details).
-If provided with a \code{target_inv} object, the function overrides further
-arguments passed to \code{\link[=read_inv]{read_inv()}} and \code{\link[=define_target]{define_target()}}.}
+If provided with a \code{target_inv} object, the function ignores
+\code{target_source} and overrides further arguments passed to \code{\link[=read_inv]{read_inv()}} and
+\code{\link[=define_target]{define_target()}}.}
 
 \item{target_source}{one of the following:
 \enumerate{
