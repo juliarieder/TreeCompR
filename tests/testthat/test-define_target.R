@@ -112,11 +112,11 @@ test_that("define_target works for methods specified as character strings", {
   expect_warning({
     test_inv <- read_inv(test_path("testdata", "inventory.csv"),
                          sep = ";", dec = ".", verbose = FALSE)
-    test6 <- define_target(inv = test_inv, target_source = "all")
+    test6 <- define_target(inv = test_inv, target_source = "all_trees")
     },
     "Defining all trees as target trees is rarely a good idea.")
   # test if type is passed on
-  expect_equal(attr(test6, "target_type"), "all trees")
+  expect_equal(attr(test6, "target_type"), "all_trees")
 
   # test if target can be defined by removing only edge trees
   expect_no_error({

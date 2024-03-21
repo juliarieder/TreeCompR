@@ -51,7 +51,7 @@ test_that("Indices work for two different forest_inv datasets", {
       inv_source = plot,
       target_source = target,
       radius = 10,
-      method = "all",
+      method = "all_methods",
       dbh_unit = "m",
       height_unit = "m",
       verbose = FALSE)
@@ -101,7 +101,7 @@ test_that("Indices work for two different forest_inv datasets", {
       inv_source = plot,
       target_source = target,
       radius = 10,
-      method = "all",
+      method = "all_methods",
       dbh_unit = "m",
       height_unit = "m",
       verbose = FALSE)
@@ -126,7 +126,7 @@ test_that("Indices work for two file paths", {
       inv_source = test_path("testdata", "inventory.csv"),
       target_source = test_path("testdata", "inventory.csv"),
       radius = 10,
-      method = "all",
+      method = "all_methods",
       dbh_unit = "m",
       verbose = FALSE)
   )
@@ -143,7 +143,7 @@ test_that("Indices work for other types of target determination", {
       inv_source = plot,
       target_source = target$id,
       radius = 10,
-      method = "all",
+      method = "all_methods",
       dbh_unit = "m",
       verbose = FALSE)
   )
@@ -155,7 +155,7 @@ test_that("Indices work for other types of target determination", {
       inv_source = plot,
       target_source = plot$id %in% target$id,
       radius = 10,
-      method = "all",
+      method = "all_methods",
       dbh_unit = "m",
       verbose = FALSE)$CI_Hegyi
   )
@@ -168,7 +168,7 @@ test_that("Indices work for other types of target determination", {
       inv_source = plot,
       target_source = target,
       radius = 10,
-      method = "all",
+      method = "all_methods",
       dbh_unit = "m",
       verbose = FALSE)$CI_RK1
   )
@@ -178,7 +178,7 @@ test_that("Indices work for other types of target determination", {
     inv_source = plot,
     target_source = "exclude_edge",
     radius = 10,
-    method = "all",
+    method = "all_methods",
     dbh_unit = "m",
     verbose = FALSE)
     )
@@ -186,15 +186,15 @@ test_that("Indices work for other types of target determination", {
     inv_source = plot,
     target_source = "buff_edge",
     radius = 10,
-    method = "all",
+    method = "all_methods",
     dbh_unit = "m",
     verbose = FALSE)
   )
   expect_warning(compete_inv(
     inv_source = plot,
-    target_source = "all",
+    target_source = "all_trees",
     radius = 10,
-    method = "all",
+    method = "all_methods",
     dbh_unit = "m",
     verbose = FALSE)
   )
@@ -204,7 +204,8 @@ test_that("Function works on target_inv objects", {
   expect_no_error({
     plot <- read_inv(test_path("testdata", "inventory.csv"), verbose = FALSE)
     targets <- define_target(plot,target_source = "buff_edge", radius = 10)
-    CI <- compete_inv(inv_source = targets, radius = 10, method = "all")
+    CI <- compete_inv(inv_source = targets, radius = 10,
+                      method = "all_methods")
   })
 })
 
