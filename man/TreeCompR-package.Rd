@@ -18,7 +18,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Julia Rieder \email{julia.rieder@uni-wuerzburg.de} (\href{https://orcid.org/0000-0001-7233-0488}{ORCID})
+\strong{Maintainer}: Julia S. Rieder \email{julia.rieder@uni-wuerzburg.de} (\href{https://orcid.org/0000-0001-7233-0488}{ORCID})
 
 }
 \keyword{internal}

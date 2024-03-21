@@ -81,7 +81,7 @@ of trees is usually an issue!
 \examples{
 \dontrun{
 # red inventory
-inv    <- read_inv("path/to/invtable.csv")
+inv <- read_inv("path/to/invtable.csv")
 # target trees defined by a buffer around the plot edges
 target <- define_target(inv, target_source = "buff_edge", radius = 10)
 }

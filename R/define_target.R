@@ -65,7 +65,7 @@
 #' @examples
 #' \dontrun{
 #' # red inventory
-#' inv    <- read_inv("path/to/invtable.csv")
+#' inv <- read_inv("path/to/invtable.csv")
 #' # target trees defined by a buffer around the plot edges
 #' target <- define_target(inv, target_source = "buff_edge", radius = 10)
 #' }
@@ -196,7 +196,7 @@ define_target <- function(inv, target_source, radius = 10,
 #' of the `compete_inv` function to inspect the spatial positions of the
 #' target trees.
 #'
-#' @param inv object of class`compete_inv` or `target_inv`.
+#' @param inv object of class `compete_inv` or `target_inv`.
 #' @param radius numeric of length 1, Search radius (in m) around target tree
 #'   wherein all neighboring trees are classified as competitors. Only needed
 #'   for `target_inv` objects in methods that are not radius dependent (i.e.,
