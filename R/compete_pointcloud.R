@@ -42,7 +42,7 @@
 #'   print any progress). Defaults to "full".
 #' @param ... additional arguments passed on to [data.table::fread()]
 #'
-#' @return data frame with tree ID and of log of counted voxels of neighborhood
+#' @return data frame with tree ID and counted voxels of neighborhood
 #'   point cloud that reach into the cone/cylinder spanned over/around target
 #'   tree.
 #'

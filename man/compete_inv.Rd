@@ -68,8 +68,8 @@ containing the x coordinates of the tree in m. If \code{NULL} (default),
 the function tries to identify the x coordinate from the data.}
 
 \item{y}{character of length 1 or name of the variable in \code{inv_source}
-containing the y coordinates of the tree in meters. If \code{NULL} (default), the
-function tries to identify the y coordinate from the data.}
+containing the y coordinates of the tree in meters. If \code{NULL} (default),
+the function tries to identify the y coordinate from the data.}
 
 \item{dbh}{character of length 1 or name of the variable in \code{inv_source}
 containing the diameter at breast height of the tree (by default in cm, but
@@ -113,9 +113,9 @@ invetory data, target tree specifications and or more competition indices
 depending on chosen method.
 }
 \description{
-'compete_inv()' returns a specific distance-height-dependent or
-distance-dbh-dependent competition index (or group of indices) for all trees
-within a forest plot or specified target trees.
+'compete_inv()' returns a specific distance-height-dependent or distance-
+dbh-dependent competition index (or group of indices) for all trees within a
+forest plot or specified target trees.
 }
 \details{
 Using an inventory table to easily quantify distance-dependent tree
@@ -194,7 +194,23 @@ Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 
 \examples{
 \dontrun{
+# Quantify the Hegyi index for specified target trees with search radius 10m
 CI <- compete_inv("path/to/invtable.csv",
   "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi")
+
+# Quantify the Braathe index for specified target trees with search radius
+10m and adjust
+CI <- compete_inv("path/to/invtable.csv",
+  "path/to/target_trees.csv", radius = 10, method = "CI_Braathe")
+
+# Specify the units of dbh or height of your input data
+CI <- compete_inv("path/to/invtable.csv",
+  "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi",
+  dbh_unit = "m", height_unit = "m")
+
+# Quantify all available indices for all trees within the plot that are one
+search radius away from plot edge
+CI <- compete_inv("path/to/invtable.csv", target_source = "buff_edge",
+        radius = 12, method = "all")
 }
 }

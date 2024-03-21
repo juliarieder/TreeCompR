@@ -49,5 +49,7 @@ numeric, the function fails with an error.
 tree <- read_pc(pc_source = "path/to/tree_point_cloud.txt")
 # Read a tree point cloud in las or laz format
 tree <- read_pc(pc_source = "path/to/tree_point_cloud.las")
+#if point cloud is already loaded as dataframe tree_df
+tree <- read_pc(tree_df)
 }
 }

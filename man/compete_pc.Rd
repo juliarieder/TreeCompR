@@ -71,7 +71,7 @@ print any progress). Defaults to "full".}
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
-data frame with tree ID and of log of counted voxels of neighborhood
+data frame with tree ID and counted voxels of neighborhood
 point cloud that reach into the cone/cylinder spanned over/around target
 tree.
 }
