@@ -27,18 +27,18 @@
 #'   5. a character vector of length 1 defining the method by which the target
 #'   trees should be determined. Allowed are `"buff_edge"` for excluding all
 #'   trees that are at least one search radius from the forest edge,
-#'   `"exclude_edge"` for only excluding edge trees or `"all"` for including
-#'   all trees of the dataset (which is hardly ever a good idea unless all
-#'   trees in the entire forest are in the dataset). The standard is
+#'   `"exclude_edge"` for only excluding edge trees or `"all_trees"` for
+#'   including all trees of the dataset (which is hardly ever a good idea
+#'   unless all trees in the entire forest are in the dataset). The standard is
 #'   `"buff_edge"`. See [define_target()] for details.
 #' @param radius numeric of length 1. Search radius (in m) around the target
 #'   tree. All neighboring trees within this radius are classified as
 #'   competitors.
 #' @param method character string assigning the method for quantifying
-#'   competition. dbh-distance-dependent methods are "CI_Hegyi", "CI_RK1",
-#'   and "CI_RK2".Height-distance-dependent methods are "CI_Braathe", "CI_RK3",
-#'   "CI_RK4". "all" can be specified to compute all the indices that can be
-#'   calculated with the available data.
+#'   competition. dbh-distance-dependent methods are `"CI_Hegyi"`, `"CI_RK1"`,
+#'   and `"CI_RK2"`. Height-distance-dependent methods are `"CI_Braathe"`,
+#'   `"CI_RK3"`, and `"CI_RK4"`. `"all_methods"` can be specified to compute
+#'   all the indices that can be calculated with the available data.
 #' @param tol numeric of length 1. Tolerance for the match with the tree
 #'   coordinates. If coordinates are measured in the field with GPS, but
 #'   `inv_source` contains x and y coordinates from a larger number of trees
@@ -136,10 +136,10 @@
 #' # Quantify all available indices for all trees within the plot that are one
 #' search radius away from plot edge
 #' CI <- compete_inv("path/to/invtable.csv", target_source = "buff_edge",
-#'         radius = 12, method = "all")
+#'         radius = 12, method = "all_methods")
 #' }
 compete_inv <- function(inv_source, target_source, radius,
-                        method = c("all", "CI_Hegyi", "CI_Braathe",
+                        method = c("all_methods", "CI_Hegyi", "CI_Braathe",
                                    "CI_RK1", "CI_RK2", "CI_RK3", "CI_RK4"),
                         x = NULL, y = NULL,
                         dbh = NULL, height = NULL, id = NULL,
@@ -219,8 +219,8 @@ compete_inv <- function(inv_source, target_source, radius,
     stop("Dataset contains duplicate coordinates. ",
          "Please revise tree positions.")
   }
-  # define methods to calculate if method == "all"
-  if (method == "all"){
+  # define methods to calculate if method == "all_methods"
+  if (method == "all_methods"){
     # preallocate empty vector
     method <- vector("character")
     # get names with available data

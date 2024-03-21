@@ -22,9 +22,9 @@
 #'   4. a character vector of length 1 defining the method by which the target
 #'   trees should be determined. Allowed are `"buff_edge"` for excluding all
 #'   trees that are at least one search radius from the forest edge,
-#'   `"exclude_edge"` for only excluding edge trees or `"all"` for including
-#'   all trees of the dataset (which is hardly ever a good idea unless all
-#'   trees in the entire forest are in the dataset). The standard is
+#'   `"exclude_edge"` for only excluding edge trees or `"all_trees"` for
+#'   including all trees of the dataset (which is hardly ever a good idea unless
+#'   all trees in the entire forest are in the dataset). The standard is
 #'   `"buff_edge"`. See below for details.
 #' @param radius numeric of length 1, Search radius (in m) around target tree
 #'   wherein all neighboring trees are classified as competitors. Only used if
@@ -115,11 +115,11 @@ define_target <- function(inv, target_source, radius = 10,
           # keep information about source
           target_type <- target_source
         } else {
-          if (target_source == "all"){
+          if (target_source == "all_trees"){
             # define all trees as target trees and send a warning
             inv$target <- TRUE
             # keep information about source
-            target_type <- "all trees"
+            target_type <- target_source
             warning(
               "Defining all trees as target trees is rarely a good idea.",
               " Unless your forest inventory contains all trees in the",
@@ -201,7 +201,7 @@ define_target <- function(inv, target_source, radius = 10,
 #'   wherein all neighboring trees are classified as competitors. Only needed
 #'   for `target_inv` objects in methods that are not radius dependent (i.e.,
 #'   in cases where `target_source` defined by a character or logical vector or
-#'   in cases where `target_source = "all"`).
+#'   in cases where `target_source = "all_trees"`).
 #'
 #' @details The function creates a plot of the trees in the forest inventory
 #'   dataset where the target trees and the surrounding search radii are

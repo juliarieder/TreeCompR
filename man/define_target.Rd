@@ -26,9 +26,9 @@ computational load.
 \item a character vector of length 1 defining the method by which the target
 trees should be determined. Allowed are \code{"buff_edge"} for excluding all
 trees that are at least one search radius from the forest edge,
-\code{"exclude_edge"} for only excluding edge trees or \code{"all"} for including
-all trees of the dataset (which is hardly ever a good idea unless all
-trees in the entire forest are in the dataset). The standard is
+\code{"exclude_edge"} for only excluding edge trees or \code{"all_trees"} for
+including all trees of the dataset (which is hardly ever a good idea unless
+all trees in the entire forest are in the dataset). The standard is
 \code{"buff_edge"}. See below for details.
 }}
 

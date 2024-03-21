@@ -9,7 +9,8 @@ compete_inv(
   inv_source,
   target_source,
   radius,
-  method = c("all", "CI_Hegyi", "CI_Braathe", "CI_RK1", "CI_RK2", "CI_RK3", "CI_RK4"),
+  method = c("all_methods", "CI_Hegyi", "CI_Braathe", "CI_RK1", "CI_RK2", "CI_RK3",
+    "CI_RK4"),
   x = NULL,
   y = NULL,
   dbh = NULL,
@@ -48,9 +49,9 @@ scanning dataset).
 \item a character vector of length 1 defining the method by which the target
 trees should be determined. Allowed are \code{"buff_edge"} for excluding all
 trees that are at least one search radius from the forest edge,
-\code{"exclude_edge"} for only excluding edge trees or \code{"all"} for including
-all trees of the dataset (which is hardly ever a good idea unless all
-trees in the entire forest are in the dataset). The standard is
+\code{"exclude_edge"} for only excluding edge trees or \code{"all_trees"} for
+including all trees of the dataset (which is hardly ever a good idea
+unless all trees in the entire forest are in the dataset). The standard is
 \code{"buff_edge"}. See \code{\link[=define_target]{define_target()}} for details.
 }}
 
@@ -59,10 +60,10 @@ tree. All neighboring trees within this radius are classified as
 competitors.}
 
 \item{method}{character string assigning the method for quantifying
-competition. dbh-distance-dependent methods are "CI_Hegyi", "CI_RK1",
-and "CI_RK2".Height-distance-dependent methods are "CI_Braathe", "CI_RK3",
-"CI_RK4". "all" can be specified to compute all the indices that can be
-calculated with the available data.}
+competition. dbh-distance-dependent methods are \code{"CI_Hegyi"}, \code{"CI_RK1"},
+and \code{"CI_RK2"}. Height-distance-dependent methods are \code{"CI_Braathe"},
+\code{"CI_RK3"}, and \code{"CI_RK4"}. \code{"all_methods"} can be specified to compute
+all the indices that can be calculated with the available data.}
 
 \item{x}{character of length 1 or name of the variable in \code{inv_source}
 containing the x coordinates of the tree in m. If \code{NULL} (default),
@@ -212,6 +213,6 @@ CI <- compete_inv("path/to/invtable.csv",
 # Quantify all available indices for all trees within the plot that are one
 search radius away from plot edge
 CI <- compete_inv("path/to/invtable.csv", target_source = "buff_edge",
-        radius = 12, method = "all")
+        radius = 12, method = "all_methods")
 }
 }

@@ -13,7 +13,7 @@ plot_target(inv, radius = NULL)
 wherein all neighboring trees are classified as competitors. Only needed
 for \code{target_inv} objects in methods that are not radius dependent (i.e.,
 in cases where \code{target_source} defined by a character or logical vector or
-in cases where \code{target_source = "all"}).}
+in cases where \code{target_source = "all_trees"}).}
 }
 \value{
 A plot of the spatial arrangement of target trees.
