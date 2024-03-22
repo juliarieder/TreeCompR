@@ -38,7 +38,7 @@ TreeCompR can read point clouds or inventory tables and quantifies tree competit
 
 LiDAR point clouds can be used directly to quantify the competition exerted by neighboring trees on the target tree. For this purpose, the target tree for which the competition is to be determined should be segmented beforehand. Since it is crucial whether a part of the point cloud is classified as "competing" or as part of the target tree itself, a manual segmentation (e.g. in CloudCompare) is most accurate.
 
-<img src="../man/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="900">
+<img src="../man/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700">
 
 # Example
 
@@ -71,6 +71,10 @@ Distance-dependent competition indices can be quantified using `compete_inv()`
 ## check or define target trees: read inventory file, define targets, plot results
 plot <- read_inv("../tests/testthat/testdata/inventory.csv", verbose = FALSE)
 targets <- define_target(plot,target_source = "buff_edge", radius = 10)
+```
+
+```{r, fig1, fig.height= 3, fig.width=6}
+## plot the positions of the target trees and trees at the border
 plot_target(targets)
 ```
 

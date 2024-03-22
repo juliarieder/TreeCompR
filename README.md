@@ -30,7 +30,7 @@ You can install the development version of TreeCompR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("juliarieder/TreeCompR")
+devtools::install_github("juliarieder/TreeCompR", dependencies = TRUE, build_vignettes = TRUE)
 ```
 
 ## Overview
@@ -115,10 +115,14 @@ Distance-dependent competition indices can be quantified using
 ## check or define target trees: read inventory file, define targets, plot results
 plot <- read_inv("tests/testthat/testdata/inventory.csv", verbose = FALSE)
 targets <- define_target(plot,target_source = "buff_edge", radius = 10)
+```
+
+``` r
+## plot the positions of the target trees and trees at the border
 plot_target(targets)
 ```
 
-<img src="man/figures/README-example3-1.png" width="100%" />
+<img src="man/figures/README-fig1-1.png" width="100%" />
 
 ``` r
 ## insert path to inventory table or insert dataframe object
@@ -128,7 +132,7 @@ compete_inv(inv_source = "tests/testthat/testdata/inventory.csv",
 #> --------------------------------------------------------------------- 
 #> 'compete_inv' class inventory with distance-based competition indices 
 #> Collection of data for 1 target and 47 edge trees. 
-#> Source of target trees: excluding buffer around edge      Search radius: 10 
+#> Source of target trees: buffer around edge    Search radius: 10 
 #> ---------------------------------------------------------------------
 #>    id     x      y   dbh CI_Hegyi CI_RK1 CI_RK2
 #> 44 48 0.102 -0.494 0.244     4.39   1.07   1.58
