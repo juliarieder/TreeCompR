@@ -209,6 +209,68 @@ test_that("Function works on target_inv objects", {
   })
 })
 
+
+test_that("Function works with manual column specifications", {
+  # specification with quoted names
+  expect_no_error(
+    test1 <- compete_inv(
+      inv_source = test_path("testdata", "inventory1.csv"),
+      target_source = "buff_edge",
+      id = "TreeID",
+      x = "X",
+      y = "Y",
+      dbh = "DiaBrHgt",
+      radius = 10,
+      method = "all_methods",
+      dbh_unit = "m",
+      verbose = FALSE)
+  )
+  # specification with unquoted names
+  expect_equal(
+    test1,
+    compete_inv(
+      inv_source = test_path("testdata", "inventory1.csv"),
+      target_source = "buff_edge",
+      id = TreeID,
+      x = X,
+      y = Y,
+      dbh = DiaBrHgt,
+      radius = 10,
+      method = "all_methods",
+      dbh_unit = "m",
+      verbose = FALSE)
+  )
+  # specification with mixed  names
+  expect_equal(
+    test1,
+    compete_inv(
+      inv_source = test_path("testdata", "inventory.csv"),
+      target_source = "buff_edge",
+      id = TreeID,
+      x = "X",
+      y = Y,
+      dbh = "DiaBrHgt",
+      radius = 10,
+      method = "all_methods",
+      dbh_unit = "m",
+      verbose = FALSE)
+  )
+  # specification with mixed and partially unspecified names
+  expect_equal(
+    test1,
+    compete_inv(
+      inv_source = test_path("testdata", "inventory.csv"),
+      target_source = "buff_edge",
+      id = TreeID,
+      x = "DiaBrHgt",
+      radius = 10,
+      method = "all_methods",
+      dbh_unit = "m",
+      verbose = FALSE)
+  )
+})
+
+
 # remove plot output
 suppressWarnings(x <- file.remove(test_path("Rplots.pdf")))
 
