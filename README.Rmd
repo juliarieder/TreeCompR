@@ -29,7 +29,7 @@ You can install the development version of TreeCompR from [GitHub](https://githu
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("juliarieder/TreeCompR", dependencies = TRUE, build_vignettes = TRUE)
+#devtools::install_github("", dependencies = TRUE, build_vignettes = TRUE)
 ```
 ## Overview
 
