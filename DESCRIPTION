@@ -1,5 +1,5 @@
 Package: TreeCompR
-Title: Quantifying individual tree competition
+Title: Tree Competition Indices For Inventory Data And 3D Point Clouds
 Version: 0.0.0.9000
 Authors@R: c(
     person("Julia S.", "Rieder", , "julia.rieder@uni-wuerzburg.de", 

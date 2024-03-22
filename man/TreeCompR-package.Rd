@@ -4,7 +4,7 @@
 \name{TreeCompR-package}
 \alias{TreeCompR}
 \alias{TreeCompR-package}
-\title{TreeCompR: Quantifying individual tree competition}
+\title{TreeCompR: Tree Competition Indices For Inventory Data And 3D Point Clouds}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 

@@ -7,7 +7,7 @@
 
 <img src="man/figures/logo.png" height="180" alt="Hexsticker" style="float: right;">
 R Package for calculating distance-dependent or point cloud-based
-individual Tree Competition
+individual tree competition indices
 
 <!-- badges: end -->
 
