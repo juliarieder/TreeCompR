@@ -244,7 +244,7 @@ test_that("Function works with manual column specifications", {
   expect_equal(
     test1,
     compete_inv(
-      inv_source = test_path("testdata", "inventory.csv"),
+      inv_source = test_path("testdata", "inventory1.csv"),
       target_source = "buff_edge",
       id = TreeID,
       x = "X",
@@ -259,18 +259,13 @@ test_that("Function works with manual column specifications", {
   expect_equal(
     test1,
     compete_inv(
-      inv_source = test_path("testdata", "inventory.csv"),
+      inv_source = test_path("testdata", "inventory1.csv"),
       target_source = "buff_edge",
       id = TreeID,
-      x = "DiaBrHgt",
+      dbh = "DiaBrHgt",
       radius = 10,
       method = "all_methods",
       dbh_unit = "m",
       verbose = FALSE)
   )
 })
-
-
-# remove plot output
-suppressWarnings(x <- file.remove(test_path("Rplots.pdf")))
-

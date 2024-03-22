@@ -147,7 +147,3 @@ test_that("define_target works for methods specified as character strings", {
   expect_output(print(test8), "'target_inv' class inventory dataset")
 
 })
-
-# remove plot output
-suppressWarnings(x <- file.remove(test_path("Rplots.pdf")))
-
