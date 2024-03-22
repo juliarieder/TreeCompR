@@ -300,12 +300,12 @@ plot_target <- function(inv, radius = NULL) {
   # plot legend
   if (nrow(leg) == 3){ # plot without lty when no lines are involved
     with(leg, legend(x = max(coords[,1]) + diff(range(coords[,1]))/3,
-                     y = max(range(coords[,2])),
+                     y = max(coords[,2]),
                      pch = pch,  col = col, pt.cex = cex,
                      legend = label, bty = "n", y.intersp = 1.5))
   } else{ # plot with lty if lines are involved
-    with(leg, legend(x = max(coords[,1]) + diff(range(coords[,1]))/3,
-                     y = max(range(coords[,2])),
+    with(leg, legend(x = max(coords[,1]) + diff(range(coords[,1]))/4,
+                     y = max(coords[,2]) + diff(range(coords[,1]))/4,
                      pch = pch, lty = lty, col = col, pt.cex = cex,
                      legend = label, bty = "n", y.intersp = 1.5))
   }
