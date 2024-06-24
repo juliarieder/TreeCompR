@@ -1,0 +1,103 @@
+---
+title: "ALS_inventory"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ALS_inventory}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+Workflow for deriving size-distance-dependent competition indizes from ALS data
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+Airborne Laser Scanning is a powerful tool for forest management and research, offering accurate large-scale data. To quantify competition on the invidual tree level, first the ALS point cloud needs to be pre-processed. For using the data in TreeCompR, we need to segment the trees and derive an inventory table. We used publicly available laser scanning datasets from the [Bavarian Agency for Digitisation, High-Speed Internet and Surveying](https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=laserdaten). The package [`lidR`](https://CRAN.R-project.org/package=lidR) is a great option to load,inspect and process your ALS data and to segment individual trees. Check out the [lidRbook](https://r-lidar.github.io/lidRbook/) for their very nice detailed workflows and examples. 
+```{r setup, message=FALSE, warning=FALSE}
+library(lidR)
+library(TreeCompR)
+```
+
+## Read the point cloud
+The `lidR` package can read various data formats. Read in the raw ALS point cloud. Here we show the example data from the lidR package:
+
+```{r,echo=FALSE,message=FALSE,warning=FALSE}
+r3dDefaults = rgl::r3dDefaults
+m = structure(c(0.921, -0.146, 0.362, 0, 0.386, 0.482, -0.787, 0, 
+                -0.06, 0.864, 0.5, 0, 0, 0, 0, 1), .Dim = c(4L, 4L))
+r3dDefaults$FOV = 50
+r3dDefaults$userMatrix = m
+r3dDefaults$zoom = 0.75
+
+knitr::opts_chunk$set(
+  comment =  "#>", 
+  collapse = TRUE,
+  fig.align = "center")
+
+library(sf)
+library(ggplot2)
+
+LASfile <- system.file("extdata", "Megaplot.laz", package="lidR")
+las <- readLAS(LASfile)
+chm <- rasterize_canopy(las, 0.5, pitfree(subcircle = 0.2))
+
+options(crayon.enabled = TRUE)
+rgl::setupKnitr(autoprint = TRUE)
+old_hooks <- fansi::set_knit_hooks(knitr::knit_hooks, which = c("output", "message", "error"))
+
+```
+```r
+las <- readLAS("files.las")
+#print a summary
+print(las)
+```
+Maybe just load xyz to save memory, in case you have a lot of parameters stored in your data, by using the optional parameter `select` within `readLAS()`.
+
+```r
+las <- readLAS("file.las", select = "xyz")  # load XYZ only
+```
+And it is always good to check and validate your data using the `las_check()` function.
+```{r check-las}
+las_check(las)
+```
+
+## Plot your data
+```r
+plot(las)
+```
+```{r plot-las, echo = FALSE, rgl = TRUE, fig.width = 4, fig.height = 3}
+plot(las, size = 3, bg = "white", legend = TRUE)
+```
+Please note, there are various options on individual tree segmentations (e.g. based on the [point cloud](https://r-lidar.github.io/lidRbook/itd-its.html#its-cloud) or [canopy height model](https://r-lidar.github.io/lidRbook/itd-its.html#its-chm)). Be aware, that based on your own data, you might need to test the approaches and the results and check visually, if the results are realistic.
+
+For a segmentation based on CHM, first the CHM needs to be generated:
+```{r}
+# create CHM raster from point cloud with 0.5 m resolution (adjust values if needed)
+chm_p2r_05 <- rasterize_canopy(las, 0.5, p2r(subcircle = 0.2), pkg = "terra")
+
+# Post-processing median filter
+kernel <- matrix(1,3,3)
+chm_p2r_05_smoothed <- terra::focal(chm_p2r_05, w = kernel, fun = median, na.rm = TRUE)
+
+#locate tree tops
+ttops_chm_p2r_05_smoothed <- locate_trees(chm_p2r_05_smoothed, lmf(5))
+```
+```{r plot-chm, fig.height=10, fig.width=7}
+col <- height.colors(50)
+plot(chm_p2r_05_smoothed, main = "CHM P2R 0.5 smoothed", col = col); plot(sf::st_geometry(ttops_chm_p2r_05_smoothed), add = T, pch =3)
+```
+
+## Segment the trees
+```{r plot-las-its, rgl = TRUE, fig.width = 5, fig.height = 4, warning = FALSE}
+algo <- dalponte2016(chm_p2r_05_smoothed, ttops_chm_p2r_05_smoothed)
+las <- segment_trees(las, algo) # segment point cloud
+plot(las, bg = "white", size = 4, color = "treeID") # visualize trees
+```
+Get crown metrics:
+
+```{r plot-tree-hulls-its, fig.height=4, fig.width=4}
+crowns <- crown_metrics(las, func = .stdtreemetrics, geom = "convex")
+plot(crowns["convhull_area"], main = "Crown area (convex hull)")
+```
