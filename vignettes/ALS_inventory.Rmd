@@ -115,7 +115,7 @@ inventory <- trees %>%
 print(inventory)
 ```
 validate the inventory table with `read_inv()` and define target trees (automatically) with `define_targets()` where trees at the edge of the plot or dataset (1 search radius away from plot edge) are automatically excluded for calculating CIs. 
-```{r read-inv, fig.height= 3, fig.width=6}
+```{r read-inv, fig.height= 4, fig.width=7}
 inv_trees <- read_inv(inventory, height = Z, height_unit = "m")
 targets_buff <- define_target(inv_trees, target_source = "buff_edge", radius = 10)
 plot_target(targets_buff)
