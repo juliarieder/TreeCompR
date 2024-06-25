@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-
+For extracting information on tree level from close-range laser scanning (TLS or MLS), you can use the [`TreeLS`](https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2) package. We will show a workflow on how to implement the output of TreeLS within TreeCompR.
 ```{r setup, message=FALSE,warning=FALSE}
 library(TreeCompR)
 library(TreeLS)
@@ -31,7 +31,7 @@ library(TreeLS)
     inv$dbh <- (inv$Radius *2)
 ```
 
-## Use tree information within TreeCompR
+## Use extracted tree information within TreeCompR
 
 ```{r calculate-CI, fig.height= 4, fig.width=7}
 inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")

@@ -23,18 +23,13 @@ library(TreeCompR)
 ## Read the point cloud
 The `lidR` package can read various data formats. Read in the raw ALS point cloud. Here we show the example data from the lidR package:
 
-```{r,echo=FALSE,message=FALSE,warning=FALSE}
+```{r,echo=FALSE, message=FALSE, warning=FALSE}
 r3dDefaults = rgl::r3dDefaults
 m = structure(c(0.921, -0.146, 0.362, 0, 0.386, 0.482, -0.787, 0, 
                 -0.06, 0.864, 0.5, 0, 0, 0, 0, 1), .Dim = c(4L, 4L))
 r3dDefaults$FOV = 50
 r3dDefaults$userMatrix = m
 r3dDefaults$zoom = 0.75
-
-knitr::opts_chunk$set(
-  comment =  "#>", 
-  collapse = TRUE,
-  fig.align = "center")
 
 library(sf)
 library(ggplot2)
@@ -122,5 +117,33 @@ plot_target(targets_buff)
 ```
 Now you can calculate the tree competition (size-distance-dependent) for your trees.
 ```{r calc-CI}
+compete_inv(inv_source = inv_trees, target_source = "buff_edge", radius = 10, method = "all")
+```
+
+## Other options to pre-process the ALS point clouds
+There are other packages available, e.g. the [`itcSegment`](https://rdrr.io/cran/itcSegment/) package. Within their function `itcLiDARallo()`, 
+trees are being segmented based on typical allometric relations that can be defined beforehand.
+```{r itclidar, echo = TRUE, eval=FALSE}
+library(itcSegment)
+
+# create a lookup table with common height-crown diameter-relations (example from itcSegment)
+lut <- data.frame(
+  H = c(2, 10, 15, 20, 25, 30),
+  CD = c(0.5, 1, 2, 3, 4, 5))
+
+#create a digital terrain model
+dtm <- grid_terrain(las = las, res = 0.5, algorithm = knnidw(k=10L, p=2))
+plot(dtm)
+#normalize the height of the las data by terrain
+nlas <- las - dtm
+
+# segment the trees (ajust epsg according to your coordinate reference system)
+se<-itcLiDARallo(nlas$X,nlas$Y,nlas$Z,epsg=32632,lut=lut)
+summary(se)
+plot(se,axes=T)
+
+#validate the output in TreeCompR
+inv_trees <- read_inv(se, height = Height_m, height_unit = "m")
+#quantify tree competition (adjust radius)
 compete_inv(inv_source = inv_trees, target_source = "buff_edge", radius = 10, method = "all")
 ```
