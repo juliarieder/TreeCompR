@@ -64,10 +64,18 @@
 #'
 #' @examples
 #' \dontrun{
-#' # red inventory
+#' # read inventory
 #' inv <- read_inv("path/to/invtable.csv")
+#' #or just validate your already loaded inventory data
+#' #e.g.extracted from lidR package
+#' inv <- read_inv(inventory, height = Z, height_unit = "m")
+#' # or from itcSegment (itcLiDARallo)
+#' inv <- read_inv(inventory, height = Height_m, height_unit = "m")
 #' # target trees defined by a buffer around the plot edges
 #' target <- define_target(inv, target_source = "buff_edge", radius = 10)
+#' #or if your trees are definitely at a forest edge
+#' #(and not just at the edge of your dataset) you can include all trees
+#' target <- define_target(inv, target_source = "all_trees", radius = 10)
 #' }
 #'
 define_target <- function(inv, target_source, radius = 10,
