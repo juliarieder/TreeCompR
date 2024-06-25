@@ -101,3 +101,26 @@ Get crown metrics:
 crowns <- crown_metrics(las, func = .stdtreemetrics, geom = "convex")
 plot(crowns["convhull_area"], main = "Crown area (convex hull)")
 ```
+```{r plot-trees, fig.height=4, fig.width=4}
+trees <- crown_metrics(las, func = .stdtreemetrics, geom = "point")
+plot(trees["Z"], main = "Tree heights", pch = 16)
+```
+## Integration into TreeCompR
+Extract a inventory table from the crown data:
+```{r print-inventory, message=FALSE, warning=FALSE}
+library(dplyr)
+inventory <- trees %>%
+  mutate(x = st_coordinates(.)[,1], y = st_coordinates(.)[,2]) %>%
+  st_set_geometry(NULL)
+print(inventory)
+```
+validate the inventory table with `read_inv()` and define target trees (automatically) with `define_targets()` where trees at the edge of the plot or dataset (1 search radius away from plot edge) are automatically excluded for calculating CIs. 
+```{r read-inv, fig.height= 3, fig.width=6}
+inv_trees <- read_inv(inventory, height = Z, height_unit = "m")
+targets_buff <- define_target(inv_trees, target_source = "buff_edge", radius = 10)
+plot_target(targets_buff)
+```
+Now you can calculate the tree competition (size-distance-dependent) for your trees.
+```{r calc-CI}
+compete_inv(inv_source = inv_trees, target_source = "buff_edge", radius = 10, method = "all")
+```
