@@ -14,14 +14,14 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-Airborne Laser Scanning is a powerful tool for forest management and research, offering accurate large-scale data. To quantify competition on the invidual tree level, first the ALS point cloud needs to be pre-processed. For using the data in TreeCompR, we need to segment the trees and derive an inventory table. We used publicly available laser scanning datasets from the [Bavarian Agency for Digitisation, High-Speed Internet and Surveying](https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=laserdaten). The package [`lidR`](https://CRAN.R-project.org/package=lidR) is a great option to load,inspect and process your ALS data and to segment individual trees. Check out the [lidRbook](https://r-lidar.github.io/lidRbook/) for their very nice detailed workflows and examples. 
+Airborne Laser Scanning is a powerful tool for forest management and research, offering accurate large-scale data. To quantify competition on the individual tree level, first the ALS point cloud needs to be pre-processed. For using the data in TreeCompR, we need to segment the trees and derive an inventory table. The package [`lidR`](https://CRAN.R-project.org/package=lidR) is a great option to load,inspect and process your ALS data and to segment individual trees. Check out the [lidRbook](https://r-lidar.github.io/lidRbook/) for their very nice detailed workflows and examples. 
 ```{r setup, message=FALSE, warning=FALSE}
 library(lidR)
 library(TreeCompR)
 ```
 
 ## Read the point cloud
-The `lidR` package can read various data formats. Read in the raw ALS point cloud. Here we show the example data from the lidR package:
+The `lidR` package can read various data formats. Read in the raw ALS point cloud. Here we show the example data from the lidR package.
 
 ```{r,echo=FALSE, message=FALSE, warning=FALSE}
 r3dDefaults = rgl::r3dDefaults
@@ -38,23 +38,25 @@ LASfile <- system.file("extdata", "Megaplot.laz", package="lidR")
 las <- readLAS(LASfile)
 chm <- rasterize_canopy(las, 0.5, pitfree(subcircle = 0.2))
 
+
 options(crayon.enabled = TRUE)
 rgl::setupKnitr(autoprint = TRUE)
-old_hooks <- fansi::set_knit_hooks(knitr::knit_hooks, which = c("output", "message", "error"))
-
+    
 ```
+
 ```r
 las <- readLAS("files.las")
 #print a summary
 print(las)
 ```
+
 Maybe just load xyz to save memory, in case you have a lot of parameters stored in your data, by using the optional parameter `select` within `readLAS()`.
 
 ```r
 las <- readLAS("file.las", select = "xyz")  # load XYZ only
 ```
 And it is always good to check and validate your data using the `las_check()` function.
-```{r check-las}
+```r
 las_check(las)
 ```
 
@@ -62,7 +64,7 @@ las_check(las)
 ```r
 plot(las)
 ```
-```{r plot-las, echo = FALSE, rgl = TRUE, fig.width = 4, fig.height = 3}
+```{r plot-las, echo = FALSE, rgl = TRUE, fig.width = 5, fig.height = 4}
 plot(las, size = 3, bg = "white", legend = TRUE)
 ```
 
@@ -81,14 +83,14 @@ chm_p2r_05_smoothed <- terra::focal(chm_p2r_05, w = kernel, fun = median, na.rm 
 #locate tree tops
 ttops_chm_p2r_05_smoothed <- locate_trees(chm_p2r_05_smoothed, lmf(5))
 ```
-```{r plot-chm, fig.height=7, fig.width=7}
+```{r plot-chm, fig.height=5, fig.width=5}
 col <- height.colors(50)
 plot(chm_p2r_05_smoothed, main = "CHM P2R 0.5 smoothed", col = col); plot(sf::st_geometry(ttops_chm_p2r_05_smoothed), add = T, pch =3)
 ```
 
 ## Segment the trees
 
-```{r plot-las-its, rgl = TRUE, fig.width = 5, fig.height = 4, warning = FALSE}
+```{r plot-las-its, rgl = TRUE, fig.width = 4, fig.height = 4, warning = FALSE}
 algo <- dalponte2016(chm_p2r_05_smoothed, ttops_chm_p2r_05_smoothed)
 las <- segment_trees(las, algo) # segment point cloud
 plot(las, bg = "white", size = 4, color = "treeID") # visualize trees
@@ -127,7 +129,8 @@ CI <- compete_inv(inv_source = inv_trees, target_source = "buff_edge", radius = 
 ```
 ## plot the results
 
-```{r plot-CI, fig.height= 7, fig.width=8}
+```{r plot-CI, fig.height= 5, fig.width=6}
+library(ggplot2)
 ggplot(CI, aes(x = x, y = y, color = CI_Braathe)) +
   geom_point(size = 2, alpha = 0.7) + # Adjust point size and transparency
   scale_color_gradient(low = "yellow", high = "darkred", name = "CI Braathe") + # Customizing color scale
@@ -141,9 +144,11 @@ ggplot(CI, aes(x = x, y = y, color = CI_Braathe)) +
 
 ## Other options to pre-process the ALS point clouds
 There are other packages available, e.g. the [`itcSegment`](https://rdrr.io/cran/itcSegment/) package. Within their function `itcLiDARallo()`, 
-trees are being segmented based on typical allometric relations that can be defined beforehand.
+trees are being segmented based on typical allometric relations that can be defined beforehand. We also used this approach with the settings below to pre-process the MLS data in our manuscript "TreeCompR: Tree competition indices for inventory data and 3D point clouds". We used publicly available laser scanning datasets from the [Bavarian Agency for Digitisation, High-Speed Internet and Surveying](https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=laserdaten).
+
 ```{r itclidar, echo = TRUE, eval=FALSE}
 library(itcSegment)
+
 
 # create a lookup table with common height-crown diameter-relations (example from itcSegment)
 lut <- data.frame(
@@ -156,7 +161,7 @@ plot(dtm)
 #normalize the height of the las data by terrain
 nlas <- las - dtm
 
-# segment the trees (ajust epsg according to your coordinate reference system)
+# segment the trees (adjust epsg according to your coordinate reference system)
 se<-itcLiDARallo(nlas$X,nlas$Y,nlas$Z,epsg=32632,lut=lut)
 summary(se)
 plot(se,axes=T)
@@ -164,5 +169,5 @@ plot(se,axes=T)
 #validate the output in TreeCompR
 inv_trees <- read_inv(se, height = Height_m, height_unit = "m")
 #quantify tree competition (adjust radius)
-compete_inv(inv_source = inv_trees, target_source = "buff_edge", radius = 10, method = "all")
+compete_inv(inv_source = inv_trees, target_source = "buff_edge", radius = 13.5, method = "all")
 ```
