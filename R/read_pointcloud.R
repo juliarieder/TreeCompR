@@ -4,7 +4,7 @@
 #'   inherits from class data.frame.
 #'
 #' @param pc_source object that inherits from class data.frame, or character
-#'   path to point cloud of individual tree or a whole plot eitherin las/laz
+#'   path to point cloud of individual tree or a whole plot either in las/laz
 #'   format or any file format readable with [data.table::fread()]. If provided
 #'   with a point cloud object in a data.frame, the structure and column names
 #'   are validated and homogenized; else, the function tries to read the point

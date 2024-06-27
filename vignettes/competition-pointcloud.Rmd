@@ -13,14 +13,118 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+## Pre-process the point clouds
+
 Before using the point cloud based approaches with the cone and cylinder method, the trees, for which the competition should be quantified, need to be extracted from the plot. Most accurate this can be done in [CloudCompare](https://www.danielgm.net/cc/). Load your point cloud of the whole plot, and use the function [Segment](https://www.cloudcompare.org/doc/wiki/index.php/Interactive_Segmentation_Tool) to extract the target tree. Make sure to not miss a part or to not include neighbouring trees or their branches, since it is crucial to determine, which parts of the point cloud are neighbourhood and which points belong to the target tree. Take special care at the ground and don't include ground points within your target tree point cloud, otherwise the tree position might be shifted later, since the function takes into account the lowest points. 
 
 <img src="../man/figures/CloudCompare.jpg" alt="Methods Workflow" width="700">
 
 After extracting the target tree, export the point cloud by selecting the file in the DB Tree and click File - Save. Do the same for the whole plot, but first cut the point cloud to your area of interest. Best way to do so: set top view and use the function [Cross Section](https://www.cloudcompare.org/doc/wiki/index.php/Cross_Section) to clip your point cloud. Make sure, that your target tree is not at the plot edge. We used 30x30 m plots. When exporting/saving the point clouds, you can select .las/.laz, .txt, .csv, ... after you click save, you are asked to choose the outout resolution. If you go for custom resolution or coordinate precision, make sure that you choose the same for both the target tree and neighbourhood cloud!
 
-Once that is done, you can use TreeCompR.
+## Quantify Competition
+
+Once you have the two point clouds, you can use TreeCompR. Read and validate your point clouds (both the target tree and the neighbourhood). 
+<img src="../man/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700">
+Select the method competition method (comp_method) "cylinder" or "cone" or "both". Also the position of the center of the cone or cylinder can be "set" either to crown position ("crown_pos") or base position ("base_pos"). Usually the tree position is calculated by using the lowest points of a tree and take the mean or median, but if the tree is not growing straight, and we want to identify (crown-)competition, we think it is useful to go for the medoid of the crown (crown center). If you want to use the base position, there are additional parameters that you can adjust, as the h_xy (height in m over stem base where position xy should be calculated from) or z_min (minimum number of points in the lowermost 0.1 m of the tree to calculate base position of the tree).
+Read more on the methods themselves or the settings and sensitivity in [Seidel et al., 2015](https://doi.org/10.1016/j.foreco.2014.10.020), [Metz et al., 2013](https://www.sciencedirect.com/science/article/pii/S0378112713005410) or the original KKL index by [Pretzsch et al., 2002](https://www.sciencedirect.com/science/article/pii/S0378112702000476). 
 
 ```{r setup}
 library(TreeCompR)
+
+CI <- compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt", 
+                tree_source = "../tests/testthat/testdata/tree.txt", 
+                comp_method = "both", # calculate CI in cylinder and cone
+                center_position = "crown_pos", #center for cone and cylinder
+                cyl_r = 4, #radius in m
+                h_cone = 0.6, #set height where the cone starts 
+                #to open in relation to tree height (0.6 = 60 % of tree height)
+                print_progress = "some" #get some information during processing
+                )
+```
+
+As a result you get a dataframe, that you can save or use for further statistical analysis. It contains the name of the tree or ID (filename), tree height, which center_position was used, the CI value(s) and the most important parameter settings.
+```{r result-pc}
+CI
+```
+
+If you want to use the same neighbourhood again, because your have more than one target tree within that plot, you do not need to read the point cloud from file everytime. Read it once with `read_pc()` and use it again. You can also load the target tree outside the `compete_pc()` function.
+
+```{r neighbour}
+neighbours <- read_pc("../tests/testthat/testdata/neighborhood.txt")
+tree <- read_pc("../tests/testthat/testdata/tree.txt")
+
+CI <- compete_pc(forest_source = neighbours, 
+                tree_source = tree, 
+                comp_method = "both", # calculate CI in cylinder and cone
+                center_position = "crown_pos", #center for cone and cylinder
+                cyl_r = 4, #radius in m
+                h_cone = 0.6, #set height where the cone starts 
+                #to open in relation to tree height (0.6 = 60 % of tree height)
+                print_progress = "full" #get full information during processing
+                )
+```
+
+
+# batch-processing
+If your study consists of a lot of target trees and surrounding plots, it can be useful to create a lookup table and run the function for all of your trees. Here is an example, how this lookup-table could look like:
+```{r lut, echo=FALSE, message=FALSE, warning=FALSE}
+# Define the base paths
+neighborhood_path <- "/path/to/neighborhood/"
+trees_path <- "/path/to/trees/"
+
+# Create example TreeIDs
+TreeIDs <- paste0("Tree_", 1:5)
+
+# Create example file paths
+neighborhood_files <- paste0(neighborhood_path, "neighborhood_", 1:5, ".las")
+tree_files <- paste0(trees_path, "tree_", 1:5, ".las")
+
+# Create the lookup table as a data frame
+lookup_table <- data.frame(
+  TreeID = TreeIDs,
+  forest_source = neighborhood_files,
+  tree_source = tree_files,
+  stringsAsFactors = FALSE
+)
+
+
+```
+
+```{r lookup, echo = TRUE, eval=FALSE}
+
+# Define the base paths
+neighborhood_path <- "/path/to/neighborhood/"
+trees_path <- "/path/to/trees/"
+
+# List files in the neighborhood and tree folders
+neighborhood_files <- list.files(neighborhood_path, full.names = TRUE, pattern = "\\.las$")
+tree_files <- list.files(trees_path, full.names = TRUE, pattern = "\\.las$")
+
+# Create example TreeIDs
+# Assuming the same number of neighborhood and tree files, and each tree has a corresponding neighborhood file
+TreeIDs <- paste0("Tree_", seq_along(neighborhood_files))
+
+# Create the lookup table as a data frame
+lookup_table <- data.frame(
+  TreeID = TreeIDs,
+  forest_source = neighborhood_files,
+  tree_source = tree_files,
+  stringsAsFactors = FALSE
+)
+```
+```{r print lut}
+# Print the lookup table
+print(lookup_table)
+```
+```{r batch, echo = TRUE, eval=FALSE}
+#calculate both methods at the same time
+library(dplyr)
+lookup <- lookup_table %>% select(forest_source, tree_source)
+#define parameter settings within the lookup table
+lookup_cone50_cyl5 <- lookup %>% mutate(comp_method = "both", center_position = "crown_pos", cyl_r = 5, h_cone = 0.5, z_min = 100, h_xy = 0.3, print_progress = "some")
+#use pmap (alternative to lapply) to loop over your table
+lookup_results_cone50_cyl5 <- lookup_cone50_cyl5 %>% purrr::pmap(compete_pc)
+
+#re-structure results from list to dataframe
+results <- as.data.frame(do.call(rbind, lookup_results_cone50_cyl5))
 ```
