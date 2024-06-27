@@ -123,9 +123,10 @@ inv_trees <- read_inv(inventory, height = Z, height_unit = "m")
 targets_buff <- define_target(inv_trees, target_source = "buff_edge", radius = 10)
 plot_target(targets_buff)
 ```
-Now you can calculate the tree competition (size-distance-dependent) for your trees.
+Now you can calculate the tree competition (size-distance-dependent) for your trees. Afterwards you can print your results, save the dataframe or plot the results according to your needs.
 ```{r calc-CI}
 CI <- compete_inv(inv_source = inv_trees, target_source = "buff_edge", radius = 10, method = "all")
+CI
 ```
 ## plot the results
 
