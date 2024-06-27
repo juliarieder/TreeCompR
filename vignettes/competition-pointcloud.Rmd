@@ -1,0 +1,26 @@
+---
+title: "competition-pointcloud"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{competition-pointcloud}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+Before using the point cloud based approaches with the cone and cylinder method, the trees, for which the competition should be quantified, need to be extracted from the plot. Most accurate this can be done in [CloudCompare](https://www.danielgm.net/cc/). Load your point cloud of the whole plot, and use the function [Segment](https://www.cloudcompare.org/doc/wiki/index.php/Interactive_Segmentation_Tool) to extract the target tree. Make sure to not miss a part or to not include neighbouring trees or their branches, since it is crucial to determine, which parts of the point cloud are neighbourhood and which points belong to the target tree. Take special care at the ground and don't include ground points within your target tree point cloud, otherwise the tree position might be shifted later, since the function takes into account the lowest points. 
+
+<img src="../man/figures/CloudCompare.jpg" alt="Methods Workflow" width="700">
+
+After extracting the target tree, export the point cloud by selecting the file in the DB Tree and click File - Save. Do the same for the whole plot, but first cut the point cloud to your area of interest. Best way to do so: set top view and use the function [Cross Section](https://www.cloudcompare.org/doc/wiki/index.php/Cross_Section) to clip your point cloud. Make sure, that your target tree is not at the plot edge. We used 30x30 m plots. When exporting/saving the point clouds, you can select .las/.laz, .txt, .csv, ... after you click save, you are asked to choose the outout resolution. If you go for custom resolution or coordinate precision, make sure that you choose the same for both the target tree and neighbourhood cloud!
+
+Once that is done, you can use TreeCompR.
+
+```{r setup}
+library(TreeCompR)
+```

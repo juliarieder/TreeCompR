@@ -33,7 +33,7 @@ library(TreeLS)
 
 ## Use extracted tree information within TreeCompR
 
-```{r calculate-CI, fig.height= 4, fig.width=7}
+```{r calculate-CI, message=FALSE,warning=FALSE, fig.height= 4, fig.width=7}
 inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")
 targets <- define_target(inv = inventory, target_source = "buff_edge", radius = 2)
 plot_target(targets)
