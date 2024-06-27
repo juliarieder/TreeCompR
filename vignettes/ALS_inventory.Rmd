@@ -1,12 +1,12 @@
 ---
-title: "ALS_inventory"
+title: "ALS competition workflow"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ALS_inventory}
+  %\VignetteIndexEntry{ALS competition workflow}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-Workflow for deriving size-distance-dependent competition indizes from ALS data
+## Workflow for deriving size-distance-dependent competition indizes from ALS data
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
