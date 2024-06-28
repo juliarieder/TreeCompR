@@ -236,15 +236,22 @@ plot_target <- function(inv, radius = NULL) {
   if(inherits(inv, "compete_inv")){
     # get radius from attributes
     radius <- attr(inv, "radius")
-    # get full positions from attributes
+    # get full positions from attributes (with case handling for
+    # target_trees == "all_trees" and other cases without border trees)
     center <- sf::st_multipoint(attr(inv, "target_trees"))
-    border <- sf::st_multipoint(attr(inv, "edge_trees"))
+    border <- NULL
+    if (nrow(attr(inv, "edge_trees")) > 0) {
+      border <- sf::st_multipoint(attr(inv, "edge_trees"))
+    }
   } else {
     # if it is a target_inv object, get coordinates by filtering by col target
     center <- sf::st_multipoint(
       as.matrix(inv[inv$target,c("x", "y")]))
+    border <- NULL
+    if (any(!inv$target)){
     border <-  sf::st_multipoint(
       as.matrix(inv[!inv$target,c("x", "y")]))
+    }
   # check if a spatial radius was defined
   if (is.null(radius)){
     if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")){
@@ -255,7 +262,14 @@ plot_target <- function(inv, radius = NULL) {
   }
   }
   # get full coordinates for both data sources (for plot dimensions)
-  coords <- rbind(as.matrix(center), as.matrix(border))
+  coords <- as.matrix(center)
+  if (!is.null(border)){ # case handling for missing border trees
+    coords <- rbind(coords, as.matrix(border))
+  } else { # warning for datasets where all trees are included
+    warning(
+      "All trees in the dataset are defined as as target trees.")
+  }
+
   # get original graphics parameters
   op <- graphics::par(c("mfrow", "mar"))
   # reset original parameters if function breaks
@@ -269,7 +283,7 @@ plot_target <- function(inv, radius = NULL) {
        ylim = range(coords[,2]) +  c(-radius, radius),
        main = "Plot of tree positions")
   plot(center, pch = 16, add = TRUE)
-  plot(border, pch = 1, add = TRUE)
+  if(!is.null(border)) plot(border, pch = 1, add = TRUE)
   # get subset of legend
   leg <- data.frame(pch = c(16, 1, 16), lty = NA,
                     col = c(1, 1, "grey90"),
