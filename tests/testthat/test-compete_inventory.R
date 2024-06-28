@@ -121,14 +121,15 @@ test_that("Indices work for two different forest_inv datasets", {
 
 
 test_that("Indices work for two file paths", {
-  expect_no_error(
+  expect_warning(
     compete_inv(
       inv_source = test_path("testdata", "inventory.csv"),
       target_source = test_path("testdata", "inventory.csv"),
       radius = 10,
       method = "all_methods",
       dbh_unit = "m",
-      verbose = FALSE)
+      verbose = FALSE),
+    regexp = "Defining all trees as target trees"
   )
 })
 

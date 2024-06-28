@@ -92,7 +92,7 @@ define_target <- function(inv, target_source, radius = 10,
   }
   # check if radius, buffer threshold and tolerance are valid
   if (!(inherits(radius, "numeric") & length(radius) == 1))
-      stop("'radius' should be a numeric of length 1.")
+    stop("'radius' should be a numeric of length 1.")
   if (!(inherits(tol, "numeric") & length(tol) == 1))
     stop("'tol' should be a numeric of length 1.")
 
@@ -128,11 +128,6 @@ define_target <- function(inv, target_source, radius = 10,
             inv$target <- TRUE
             # keep information about source
             target_type <- target_source
-            warning(
-              "Defining all trees as target trees is rarely a good idea.",
-              " Unless your forest inventory contains all trees in the",
-              " forest, this will lead to strong edge effects. Please make",
-              " sure that this is really what you want to do.")
           } else {
             # set single target tree
             inv$target <- inv$id %in% target_source
@@ -170,7 +165,7 @@ define_target <- function(inv, target_source, radius = 10,
         if (any(is.na(closest))){
           warning("No matching coordinates found for the following ",
                   "target tree(s):\n", paste(target_source$id, sep = ", "))
-          }
+        }
         # get target trees
         inv$target <- inv$id %in% inv$id[stats::na.omit(closest)]
         # carry over ID
@@ -183,8 +178,19 @@ define_target <- function(inv, target_source, radius = 10,
     }
   }
   # check if the selection has resulted in any target trees
-  if (!any(inv$target)) warning(
-    "No target trees have been found with the provided specifications.")
+  if (!any(inv$target)){
+    warning("No target trees have been found with the provided specifications.")
+    inv[1,] <- NA
+    inv$id  <- "No target trees found"
+  }
+  # check if the selection has resulted in any edge trees
+  if (!any(!inv$target)){
+    warning(
+      "Defining all trees as target trees is rarely a good idea.",
+      " Unless your forest inventory contains all trees in the",
+      " forest, this will lead to strong edge effects. Please make",
+      " sure that this is really what you want to do.")
+  }
   # update class
   class(inv) <- c("target_inv", class(inv))
   # set attribute for target type
@@ -231,43 +237,48 @@ define_target <- function(inv, target_source, radius = 10,
 #' }
 #'
 plot_target <- function(inv, radius = NULL) {
+  # prepare placeholders for center and border trees
+  center <- border <- NULL
+
   # if provided with compete_inv object, get corresponding target inventory
   # and search radius
   if(inherits(inv, "compete_inv")){
     # get radius from attributes
     radius <- attr(inv, "radius")
     # get full positions from attributes (with case handling for
-    # target_trees == "all_trees" and other cases without border trees)
-    center <- sf::st_multipoint(attr(inv, "target_trees"))
-    border <- NULL
+    # target_trees == "all_trees" + other cases without border or center trees)
+    if (nrow(attr(inv, "edge_trees")) > 0) {
+      center <- sf::st_multipoint(attr(inv, "target_trees"))
+    }
     if (nrow(attr(inv, "edge_trees")) > 0) {
       border <- sf::st_multipoint(attr(inv, "edge_trees"))
     }
   } else {
     # if it is a target_inv object, get coordinates by filtering by col target
-    center <- sf::st_multipoint(
-      as.matrix(inv[inv$target,c("x", "y")]))
-    border <- NULL
+    if (any(inv$target)){
+      center <- sf::st_multipoint(
+        as.matrix(inv[inv$target,c("x", "y")]))
+    }
     if (any(!inv$target)){
-    border <-  sf::st_multipoint(
-      as.matrix(inv[!inv$target,c("x", "y")]))
+      border <-  sf::st_multipoint(
+        as.matrix(inv[!inv$target,c("x", "y")]))
     }
-  # check if a spatial radius was defined
-  if (is.null(radius)){
-    if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")){
-      radius <- attr(inv, "spatial_radius")
-    } else{ # if not, stop with an error
-      stop("'radius' has to be defined for plotting.")
+    # check if a spatial radius was defined
+    if (is.null(radius)){
+      if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")){
+        radius <- attr(inv, "spatial_radius")
+      } else{ # if not, stop with an error
+        stop("'radius' has to be defined for plotting.")
+      }
     }
-  }
   }
   # get full coordinates for both data sources (for plot dimensions)
-  coords <- as.matrix(center)
-  if (!is.null(border)){ # case handling for missing border trees
-    coords <- rbind(coords, as.matrix(border))
-  } else { # warning for datasets where all trees are included
-    warning(
-      "All trees in the dataset are defined as as target trees.")
+  coords <- as.matrix(rbind(border, center))
+  if (is.null(border)){
+    warning("All trees in the dataset are defined as as target trees.")
+  }
+  if (is.null(center)){
+    warning("No target trees have been defined.")
   }
 
   # get original graphics parameters
