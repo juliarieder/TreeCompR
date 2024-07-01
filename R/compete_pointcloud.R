@@ -20,7 +20,7 @@
 #'   for the metroid of the crown projected area and "base_pos" for the stem
 #'   base position as computed by [tree_pos()]. Default value is "crown_pos".
 #' @param tree_name (optional) ID for the tree. If no argument is put, defaults
-#'   to the name of the argument provided as `tree_source`.
+#'   to the name of the argument provided as `tree_source`.x
 #' @param cyl_r (optional) only needed when using comp_method "cylinder";
 #'   numeric value of cylinder radius in m. Default is 5 m.
 #' @param h_cone (optional) only when using comp_method "cone"; numeric value
@@ -37,9 +37,9 @@
 #'   y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 #'   to calculate the stem base position of the target tree. For details see
 #'   [tree_pos()].
-#' @param print_progress character of length 1. Allowed values are "full" (print
-#'   all progress), "some" (only print name of tree object) and "none (do not
-#'   print any progress). Defaults to "full".
+#' @param print_progress character of length 1. Allowed values are "full"
+#'   (print all progress and full output), "some" (only print main details) and
+#'   "none" (do not print any progress). Defaults to "some".
 #' @param ... additional arguments passed on to [data.table::fread()]
 #'
 #' @return data frame with tree ID and counted voxels of neighborhood
@@ -101,7 +101,7 @@ compete_pc <- function(forest_source, tree_source,
                        center_position = c("crown_pos", "base_pos"),
                        tree_name = NULL,
                        cyl_r = 5, h_cone = 0.6, z_min = 100, h_xy = 0.3,
-                       print_progress = c("full", "some", "none"),
+                       print_progress = c("some", "full", "none"),
                        ...){
   # match arguments against the allowed values
   comp_method <- match.arg(comp_method)
@@ -125,7 +125,7 @@ compete_pc <- function(forest_source, tree_source,
                                     tree_name, "-----\n")
 
   # read data for central tree
-  tree <- read_pc(tree_source, verbose = print_progress == "full", ...)
+  tree <- read_pc(tree_source, verbose = print_progress != "none", ...)
   # get position and height of central tree
   position <- tree_pos(tree, z_min = z_min, h_xy = h_xy)
   # get basis position of the cone/cylinder of the analysis according
@@ -134,7 +134,7 @@ compete_pc <- function(forest_source, tree_source,
   h <- position[["height"]]
 
   # read data for neighborhood
-  hood <- read_pc(forest_source, verbose = print_progress == "full", ...)
+  hood <- read_pc(forest_source, verbose = print_progress != "none", ...)
   # remove points in the neighborhood that belong to the central tree
   neighbor <- dplyr::anti_join(hood, tree, by = c("x", "y", "z"))
 
