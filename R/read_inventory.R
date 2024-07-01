@@ -291,22 +291,26 @@ print.forest_inv <- function(x, ...){
       " \n'forest_inv' class inventory dataset: \ncollection of", nrow(x),"observations",
       "\n---------------------------------------\n"
   )
-
+  # create object for printed output
+  out <- x
+  # prepare output
   if (nrow(x) < 6) {
     # if there are almost no observations, print the entire dataset
-    print(as.data.frame(x), digits = 3)
+    print(as.data.frame(out), digits = 3)
   } else {
     # else print beginning and end of the data.frame
-    temp <- x[1,]
+    temp <- out[1,]
     row.names(temp) <- " "
     for(i in 1:ncol(temp)) temp[, i] <- "..."
-    x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
+    out[, sapply(out, is.numeric)] <- round(out[, sapply(out, is.numeric)], 3)
     print(
-      rbind(utils::head(as.data.frame(x), 3),
+      rbind(utils::head(as.data.frame(out), n = 3),
             temp,
-            utils::tail(as.data.frame(x), n = 3)
+            utils::tail(as.data.frame(out), n = 3)
       )
     )
   }
+  # return object invisibly
+  invisible(x)
 }
 

@@ -112,4 +112,6 @@ print.tree_pos <- function(x, ...){
       "Tree height:                    ", x$height, "m\n",
       "------------------------------------------------------------------\n"
   )
+  # return object invisibly
+  invisible(x)
 }

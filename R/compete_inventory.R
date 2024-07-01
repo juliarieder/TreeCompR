@@ -326,31 +326,36 @@ print.compete_inv <- function(x, ...){
       "\n'compete_inv' class inventory with distance-based competition indices",
       "\nCollection of data for", nrow(x),"target and",
       nrow(attr(x, "edge_trees")), "edge trees.",
-      "\nSource of target trees:",target, "\t Search radius:", attr(x, "radius"),
+      "\nSource of target trees:",target, "\t Search radius:",
+      attr(x, "radius"),
       "\n---------------------------------------------------------------------\n"
   )
+  # create object for printed output
+  out <- x
+  # prepare output
   if (ncol(x) >= 10) {
-    x[, 2] <- "..."
-    names(x)[2] <- "..."
-    x[, 3] <- NULL
-
+    out[, 2] <- "..."
+    names(out)[2] <- "..."
+    out[, 3] <- NULL
   }
   if (nrow(x) < 6) {
     # if there are almost no observations, print the entire dataset
-    print(as.data.frame(x), digits = 3)
+    print(as.data.frame(out), digits = 3)
   } else {
     # else print beginning and end of the data.frame
-    temp <- x[1,]
+    temp <- out[1,]
     row.names(temp) <- " "
     for(i in 1:ncol(temp)) temp[, i] <- "..."
-    x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
+    out[, sapply(out, is.numeric)] <- round(out[, sapply(out, is.numeric)], 3)
     print(
-      rbind(utils::head(as.data.frame(x), 3),
+      rbind(utils::head(as.data.frame(out), n = 3),
             temp,
-            utils::tail(as.data.frame(x), n = 3)
+            utils::tail(as.data.frame(out), n = 3)
       )
     )
   }
+  # return object invisibly
+  invisible(x)
 }
 
 
