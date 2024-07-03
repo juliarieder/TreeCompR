@@ -51,6 +51,17 @@ test_that("compete_pc works for .las file tree and .txt file forest point clouds
     5)
 })
 
+test_that("compete_pc works for .ply file tree and .txt file forest point clouds", {
+  expect_equal(
+    length(
+      compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
+                 tree_source = test_path("testdata", "tree.ply"),
+                 comp_method = "cone",
+                 print_progress = "none")
+    ),
+    5)
+})
+
 test_that("Wrong method in compete_pc fails with an error message", {
   expect_error(
     compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),

@@ -3,7 +3,7 @@
 \name{compete_pc}
 \alias{compete_pc}
 \alias{print.compete_pc}
-\title{Quantify Tree Competition from Point Clouds (Cone or cylinder method)}
+\title{Quantify tree competition from point clouds}
 \usage{
 compete_pc(
   forest_source,
@@ -21,15 +21,19 @@ compete_pc(
 }
 \arguments{
 \item{forest_source}{data.frame with neighborhood point cloud or path to file
-of neighborhood point cloud in tabular or las/laz format which is passed on
-to \code{\link[=read_pc]{read_pc()}}. The neighborhood has to include the target tree and its
-neighbors, not height normalized, and can include ground points).
-Coordinates have to be in a Cartesian coordinate system in m!}
+of neighborhood point cloud which is passed onto \code{\link[=read_pc]{read_pc()}}.
+The neighborhood can, but does not have to include the target tree itself,
+should not be height normalized, and can include ground points.
+Coordinates have to be in a Cartesian coordinate system in m. If a path to
+a file is provided, the supported formats are are .las, .laz, .ply as well
+as all formats accepted by \code{\link[data.table:fread]{data.table::fread()}} (.csv, .txt, and others).}
 
 \item{tree_source}{data.frame with target tree point cloud or path to file of
-target tree point cloud in tabular or las/laz format which is passed on to
-\code{\link[=read_pc]{read_pc()}}. Coordinates have to be in a Cartesian coordinate system in m
-and with the same number of decimal places as the neighborhood point cloud.}
+target tree point cloud which is passed on to \code{\link[=read_pc]{read_pc()}}.
+Coordinates have to be in a Cartesian coordinate system in m and with the
+same number of decimal places as the neighborhood point cloud.
+If a path to  a file is provided, the supported formats are are .las, .laz,
+.ply and formats accepted by \code{\link[data.table:fread]{data.table::fread()}}.}
 
 \item{comp_method}{character string of length 1 with competition method.
 Allowed values are "cone" for the cone method, "cylinder" for the cylinder
@@ -68,7 +72,7 @@ to calculate the stem base position of the target tree. For details see
 (print all progress and full output), "some" (only print main details) and
 "none" (do not print any progress). Defaults to "some".}
 
-\item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
+\item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }
 \value{
 data frame with tree ID and counted voxels of neighborhood
@@ -107,6 +111,13 @@ sensitive to the choice of the cylinder radius, so be careful when
 comparing competition indices computed with different values of \code{cyl_r}.
 }
 }
+\section{Note: support of .las, .laz and .ply formats}{
+The the 'lidR' package has to be installed to be able to read in .las/.laz
+files, which are internally processed by \code{\link[lidR:readLAS]{lidR::readTLSLAS()}}.
+Analogously, for point clouds in the .ply format, the 'Rvcg' package is
+required as these are loaded with \code{\link[Rvcg:vcgPlyRead]{Rvcg::vcgPlyRead()}}.
+}
+
 \section{Literature}{
 
 \itemize{

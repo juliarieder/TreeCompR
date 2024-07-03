@@ -9,11 +9,11 @@ read_pc(pc_source, verbose = TRUE, ...)
 }
 \arguments{
 \item{pc_source}{object that inherits from class data.frame, or character
-path to point cloud of individual tree or a whole plot either in las/laz
-format or any file format readable with \code{\link[data.table:fread]{data.table::fread()}}. If provided
-with a point cloud object in a data.frame, the structure and column names
-are validated and homogenized; else, the function tries to read the point
-cloud in the specified path}
+path to point cloud of individual tree or a whole plot either in .las/.laz
+or .ply format, or any file format readable with \code{\link[data.table:fread]{data.table::fread()}}.
+If provided with a point cloud object in a data.frame, the structure and
+column names are validated and homogenized; else, the function tries to
+read the point cloud in the specified path.}
 
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
@@ -22,17 +22,19 @@ printed? Defaults to TRUE.}
 }
 \value{
 object of class c("forest_pc", "data.frame") with x, y and z
-coordinates of the tree or forest point cloud
+coordinates of the tree or forest point cloud.
 }
 \description{
-Read point cloud sourced from a file path or an object that
-inherits from class data.frame.
+Read and validate a point cloud sourced from a file stored on
+disk, or from an object that inherits from class data.frame. Supported
+file formats are .las, .laz, .ply as well as all formats accepted by
+\code{\link[data.table:fread]{data.table::fread()}} (.csv, .txt, and others).
 }
 \details{
-Function for reading and validating point cloud data. Currently, the
-supported formats are las/laz and any formats readable with
-\code{\link[data.table:fread]{data.table::fread()}}. For other formats, please load the point cloud data
-separately and enter the coordinates as a data.frame.
+Function for reading and validating point cloud data. Currently,
+the supported file formats are .las, .laz, .ply, as well as all formats
+accepted by \code{\link[data.table:fread]{data.table::fread()}}. For other formats, please load the
+point cloud data separately and enter the coordinates as a data.frame.
 
 If provided with tabular data (either as a data.frame or via a path to an
 \code{\link[data.table:fread]{data.table::fread()}} readable source), the function by default takes the
@@ -43,6 +45,13 @@ numeric columns and returns a message. If the dataset does not contain
 three numeric columns or one of the columns labeled x, y, and z is not
 numeric, the function fails with an error.
 }
+\section{Note: support of .las, .laz and .ply formats}{
+The the 'lidR' package has to be installed to be able to read in .las/.laz
+files, which are internally processed by \code{\link[lidR:readLAS]{lidR::readTLSLAS()}}.
+Analogously, for point clouds in the .ply format, the 'Rvcg' package is
+required as these are loaded with \code{\link[Rvcg:vcgPlyRead]{Rvcg::vcgPlyRead()}}.
+}
+
 \examples{
 \dontrun{
 # Read a tree point cloud in txt format

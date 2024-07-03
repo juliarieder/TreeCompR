@@ -1,22 +1,23 @@
 #' @title Read trees and neighborhoods from point cloud data.
 #'
-#' @description Read point cloud sourced from a file path or an object that
-#'   inherits from class data.frame.
-#'
+#' @description Read and validate a point cloud sourced from a file stored on
+#'   disk, or from an object that inherits from class data.frame. Supported
+#'   file formats are .las, .laz, .ply as well as all formats accepted by
+#'   [data.table::fread()] (.csv, .txt, and others).
 #' @param pc_source object that inherits from class data.frame, or character
-#'   path to point cloud of individual tree or a whole plot either in las/laz
-#'   format or any file format readable with [data.table::fread()]. If provided
-#'   with a point cloud object in a data.frame, the structure and column names
-#'   are validated and homogenized; else, the function tries to read the point
-#'   cloud in the specified path
+#'   path to point cloud of individual tree or a whole plot either in .las/.laz
+#'   or .ply format, or any file format readable with [data.table::fread()].
+#'   If provided with a point cloud object in a data.frame, the structure and
+#'   column names are validated and homogenized; else, the function tries to
+#'   read the point cloud in the specified path.
 #' @param verbose logical of length 1. Should information about progress be
 #'   printed? Defaults to TRUE.
 #' @param ... additional arguments passed on to [data.table::fread()]
 #'
-#' @details Function for reading and validating point cloud data. Currently, the
-#'   supported formats are las/laz and any formats readable with
-#'   [data.table::fread()]. For other formats, please load the point cloud data
-#'   separately and enter the coordinates as a data.frame.
+#' @details Function for reading and validating point cloud data. Currently,
+#'   the supported file formats are .las, .laz, .ply, as well as all formats
+#'   accepted by [data.table::fread()]. For other formats, please load the
+#'   point cloud data separately and enter the coordinates as a data.frame.
 #'
 #'   If provided with tabular data (either as a data.frame or via a path to an
 #'   [data.table::fread()] readable source), the function by default takes the
@@ -27,8 +28,14 @@
 #'   three numeric columns or one of the columns labeled x, y, and z is not
 #'   numeric, the function fails with an error.
 #'
+#' # Note: support of .las, .laz and .ply formats
+#'   The the 'lidR' package has to be installed to be able to read in .las/.laz
+#'   files, which are internally processed by [lidR::readTLSLAS()].
+#'   Analogously, for point clouds in the .ply format, the 'Rvcg' package is
+#'   required as these are loaded with [Rvcg::vcgPlyRead()].
+#'
 #' @return object of class c("forest_pc", "data.frame") with x, y and z
-#'  coordinates of the tree or forest point cloud
+#'  coordinates of the tree or forest point cloud.
 #' @export
 #'
 #' @examples
@@ -55,22 +62,42 @@ read_pc <- function(pc_source, verbose = TRUE, ...) {
     # treat pc_source as path to file
     path <- pc_source
     # get file extension
-    extension <- utils::tail(
+    extension <- tolower( # allow lower and upper case extensions
+      utils::tail(
       base::strsplit(path, split = ".", fixed = TRUE)[[1]], 1)
+    )
     # load las/laz point cloud
     if (extension %in% c("las", "laz")) {
       # Check if lidR package is installed
       if (requireNamespace("lidR", quietly = TRUE)) {
         # If installed, proceed with the code for *.las files
         las <- lidR::readTLSLAS(path)
-        pc <- data.frame(x = las$X, y = las$Y, z = las$Z) %>%
+        # extract coordinates and validate
+        pc <- data.frame(
+          x = las$X, y = las$Y, z = las$Z) %>%
           .validate_pc(verbose = verbose)
       } else {
         # If not, return an error message about the missing package
         stop("Please install the 'lidR' package",
-             " if you want to use data in las/laz format. \n")
+             " if you want to use data in .las/.laz format. \n")
       }
-    } else {
+      # load las/laz point cloud
+    } else if (extension == "ply") {
+        # Check if lidR package is installed
+        if (requireNamespace("Rvcg", quietly = TRUE)) {
+          # If installed, proceed with the code for *.ply files
+          ply <- Rvcg::vcgPlyRead(path, updateNormals = TRUE, clean = TRUE)
+          # extract coordinates and validate
+
+          pc  <- data.frame(
+            x = ply$vb[1,], y = ply$vb[2,], z = ply$vb[3,]) %>%
+            .validate_pc(verbose = verbose)
+        } else {
+          # If not, return an error message about the missing package
+          stop("Please install the 'Rvcg' package",
+               " if you want to use data in .ply format. \n")
+        }
+      } else {
       # try loading in point cloud with fread
       pc <- try(
         data.table::fread(file = path, data.table = FALSE, ...)
@@ -78,7 +105,7 @@ read_pc <- function(pc_source, verbose = TRUE, ...) {
       if (inherits(pc, "try-error")) {
         # if the file cannot be read, return error message about accepted formats.
         stop("File format cannot be read. ",
-             "Please use point cloud with extension las/laz",
+             "Please use point cloud in .las/.laz or .ply format,",
              "\n or a format readable by data.table::fread().")
       } else{ # else validate and return
         pc <- .validate_pc(pc, verbose = verbose)

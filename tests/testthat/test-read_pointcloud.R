@@ -133,6 +133,37 @@ test_that("reading pc in laz format works", {
 })
 
 
+test_that("reading pc in ply format works", {
+  # try if loading works without error
+  expect_no_error({
+    test_tree <-  read_pc(pc_source = test_path("testdata", "tree.ply"))
+  })
+
+  # test if loaded object has the correct class
+  expect_true(
+    inherits(test_tree, "forest_pc")
+  )
+
+  # test if loaded object has the correct dimensions
+  expect_equal(
+    dim(test_tree),
+    c(255874, 3)
+  )
+
+  # test if loaded object has the correct column names
+  expect_equal(
+    names(test_tree),
+    c("x", "y", "z")
+  )
+
+  # test if the loaded object has the correct values
+  expect_equal(
+    colSums(test_tree),
+    c(x = 205070.26, y = -132578.89, z = 1995800.38)
+  )
+})
+
+
 test_that("tabular point clouds with different types, structures and extensions can be read", {
   # simple csv with named xyz columns is read without message
   expect_no_message({

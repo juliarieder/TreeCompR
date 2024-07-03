@@ -1,16 +1,20 @@
-#' @title Quantify Tree Competition from Point Clouds (Cone or cylinder method)
+#' @title Quantify tree competition from point clouds
 #' @description Counts the voxels of neighboring trees that intersect a
 #'   search cone or search cylinder around the target tree according to Seidel
 #'   et al. (2015) and Metz et al. (2013).
 #' @param forest_source data.frame with neighborhood point cloud or path to file
-#'   of neighborhood point cloud in tabular or las/laz format which is passed on
-#'   to [read_pc()]. The neighborhood has to include the target tree and its
-#'   neighbors, not height normalized, and can include ground points).
-#'   Coordinates have to be in a Cartesian coordinate system in m!
+#'   of neighborhood point cloud which is passed onto [read_pc()].
+#'   The neighborhood can, but does not have to include the target tree itself,
+#'   should not be height normalized, and can include ground points.
+#'   Coordinates have to be in a Cartesian coordinate system in m. If a path to
+#'   a file is provided, the supported formats are are .las, .laz, .ply as well
+#'   as all formats accepted by [data.table::fread()] (.csv, .txt, and others).
 #' @param tree_source data.frame with target tree point cloud or path to file of
-#'   target tree point cloud in tabular or las/laz format which is passed on to
-#'   [read_pc()]. Coordinates have to be in a Cartesian coordinate system in m
-#'   and with the same number of decimal places as the neighborhood point cloud.
+#'   target tree point cloud which is passed on to [read_pc()].
+#'   Coordinates have to be in a Cartesian coordinate system in m and with the
+#'   same number of decimal places as the neighborhood point cloud.
+#'   If a path to  a file is provided, the supported formats are are .las, .laz,
+#'   .ply and formats accepted by [data.table::fread()].
 #' @param comp_method character string of length 1 with competition method.
 #'   Allowed values are "cone" for the cone method, "cylinder" for the cylinder
 #'   method or "both" for both methods. Default is the cone method.
@@ -40,7 +44,7 @@
 #' @param print_progress character of length 1. Allowed values are "full"
 #'   (print all progress and full output), "some" (only print main details) and
 #'   "none" (do not print any progress). Defaults to "some".
-#' @param ... additional arguments passed on to [data.table::fread()]
+#' @param ... additional arguments passed on to [data.table::fread()].
 #'
 #' @return data frame with tree ID and counted voxels of neighborhood
 #'   point cloud that reach into the cone/cylinder spanned over/around target
@@ -66,6 +70,12 @@
 #'   cylinder around the target tree (cf. Seidel et al., 2015). The index is
 #'   sensitive to the choice of the cylinder radius, so be careful when
 #'   comparing competition indices computed with different values of `cyl_r`.
+#'
+#' # Note: support of .las, .laz and .ply formats
+#'   The the 'lidR' package has to be installed to be able to read in .las/.laz
+#'   files, which are internally processed by [lidR::readTLSLAS()].
+#'   Analogously, for point clouds in the .ply format, the 'Rvcg' package is
+#'   required as these are loaded with [Rvcg::vcgPlyRead()].
 #'
 #' @section Literature:
 #' * Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. & Ammer,

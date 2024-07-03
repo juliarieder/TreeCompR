@@ -26,6 +26,7 @@ Imports:
     concaveman
 Suggests: 
     lidR,
+    Rvcg,
     knitr (>= 1.43),
     rmarkdown (>= 2.24),
     testthat (>= 3.0.0)
