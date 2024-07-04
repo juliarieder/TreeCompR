@@ -76,11 +76,7 @@ compete_pc(forest_source = "tests/testthat/testdata/neighborhood.txt",
            comp_method = "cone",
            h_cone = 0.6)
 #> ----- Processing competition indices for: tree -----
-#>  ------------------------------------------------------------------
-#>  Point cloud based competition indices for 'tree' 
-#>  ------------------------------------------------------------------
-#>   target height_target center_position CI_cone h_cone
-#> 1   tree          22.8    crown center   16046    0.6
+#> Cone-based CI = 16046
 #>  ------------------------------------------------------------------
 #>  Point cloud based competition indices for 'tree' 
 #>  ------------------------------------------------------------------
@@ -94,11 +90,7 @@ compete_pc(forest_source = "tests/testthat/testdata/neighborhood.txt",
            tree_source = "tests/testthat/testdata/tree.txt", 
            comp_method = "cylinder", cyl_r = 5)
 #> ----- Processing competition indices for: tree -----
-#>  ------------------------------------------------------------------
-#>  Point cloud based competition indices for 'tree' 
-#>  ------------------------------------------------------------------
-#>   target height_target center_position CI_cyl cyl_r
-#> 1   tree          22.8    crown center 102169     5
+#> Cylinder-based CI = 102169
 #>  ------------------------------------------------------------------
 #>  Point cloud based competition indices for 'tree' 
 #>  ------------------------------------------------------------------
