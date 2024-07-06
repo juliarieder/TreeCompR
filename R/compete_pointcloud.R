@@ -41,6 +41,10 @@
 #'   y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 #'   to calculate the stem base position of the target tree. For details see
 #'   [tree_pos()].
+#' @param res numeric of length 1 defining the resolution of a voxel as passed
+#'   on to [VoxR::vox()]. Defaults to 0.1 (10 cm voxel size). Only change if
+#'   there are good reasons to do so as this is the standard used in Seidel et
+#'   al. (2015) and other papers and the results are strongly scale dependent!
 #' @param print_progress character of length 1. Allowed values are "full"
 #'   (print all progress and full output), "some" (only print main details) and
 #'   "none" (do not print any progress). Defaults to "some".
@@ -57,8 +61,9 @@
 #'   Based on a search cone with an opening angle of 60 degrees,
 #'   by default opening from a basal point situated at 60 % of the
 #'   height of the target tree. The competition index is defined as the number
-#'   of voxels (0.1 m res.) of neighboring trees situated within the cone
-#'   spanned around the target tree (cf. Metz et al 2013; Seidel et al., 2015).
+#'   of voxels of neighboring trees  (by default, with a 0.1 m res.) situated
+#'   within the cone spanned around the target tree (cf. Metz et al 2013;
+#'   Seidel et al., 2015).
 #'   The standard value of `h_cone = 0.6` can be adjusted, for instance if no
 #'   neighbor trees at all intersect the cone of the target tree. However, be
 #'   careful with adjusting this parameter, as competition indices computed with
@@ -66,10 +71,15 @@
 #'   ## Cylinder Method
 #'   Based on a  search cylinder with a pre-defined radius `cyl_r` around the
 #'   target tree (5 m by default). The competition index is defined as the
-#'   number of the voxels (0.1 m res.) of neighboring trees situated within the
-#'   cylinder around the target tree (cf. Seidel et al., 2015). The index is
-#'   sensitive to the choice of the cylinder radius, so be careful when
-#'   comparing competition indices computed with different values of `cyl_r`.
+#'   number of the voxels of neighboring trees  (by default, with a 0.1 m res.)
+#'   situated within the cylinder around the target tree (cf. Seidel et al.,
+#'   2015). The index is sensitive to the choice of the cylinder radius, so be
+#'   careful when comparing competition indices computed with different values
+#'   of `cyl_r`.
+#'
+#'   Both indices are highly sensitive to the voxel resolution, and it is not
+#'   recommended to change `res` from its default value of 0.1 (i.e., 10 cm
+#'   voxel size) unless you have very good reasons to do so.
 #'
 #' # Note: support of .las, .laz and .ply formats
 #'   The the 'lidR' package has to be installed to be able to read in .las/.laz
@@ -111,6 +121,7 @@ compete_pc <- function(forest_source, tree_source,
                        center_position = c("crown_pos", "base_pos"),
                        tree_name = NULL,
                        cyl_r = 5, h_cone = 0.6, z_min = 100, h_xy = 0.3,
+                       res = 0.1,
                        print_progress = c("some", "full", "none"),
                        ...){
   # match arguments against the allowed values
@@ -161,7 +172,12 @@ compete_pc <- function(forest_source, tree_source,
          "clouds have the same number of decimal places?", call. = FALSE)
   } else {
     # voxelize neighborhood data
-    voxel <- neighbor %>% VoxR::vox(res = 0.1)
+    if (res != 0.1) warning(
+      "Creating voxelized dataset with a voxel resolution of res = ", res,
+      "instead of the standard of res = 0.1. ",
+      "Non-standard resolutions are not recommended due to the ",
+      "scale dependence of the indices.")
+    voxel <- neighbor %>% VoxR::vox(res = res)
     # compute competition indices for the cone method
     if (comp_method == "cone" | comp_method == "both") {
       # compute base height of the cone

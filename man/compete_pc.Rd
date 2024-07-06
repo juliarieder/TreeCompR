@@ -15,6 +15,7 @@ compete_pc(
   h_cone = 0.6,
   z_min = 100,
   h_xy = 0.3,
+  res = 0.1,
   print_progress = c("some", "full", "none"),
   ...
 )
@@ -68,6 +69,11 @@ y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 to calculate the stem base position of the target tree. For details see
 \code{\link[=tree_pos]{tree_pos()}}.}
 
+\item{res}{numeric of length 1 defining the resolution of a voxel as passed
+on to \code{\link[VoxR:vox]{VoxR::vox()}}. Defaults to 0.1 (10 cm voxel size). Only change if
+there are good reasons to do so as this is the standard used in Seidel et
+al. (2015) and other papers and the results are strongly scale dependent!}
+
 \item{print_progress}{character of length 1. Allowed values are "full"
 (print all progress and full output), "some" (only print main details) and
 "none" (do not print any progress). Defaults to "some".}
@@ -93,8 +99,9 @@ the target tree.
 Based on a search cone with an opening angle of 60 degrees,
 by default opening from a basal point situated at 60 \% of the
 height of the target tree. The competition index is defined as the number
-of voxels (0.1 m res.) of neighboring trees situated within the cone
-spanned around the target tree (cf. Metz et al 2013; Seidel et al., 2015).
+of voxels of neighboring trees  (by default, with a 0.1 m res.) situated
+within the cone spanned around the target tree (cf. Metz et al 2013;
+Seidel et al., 2015).
 The standard value of \code{h_cone = 0.6} can be adjusted, for instance if no
 neighbor trees at all intersect the cone of the target tree. However, be
 careful with adjusting this parameter, as competition indices computed with
@@ -105,10 +112,15 @@ different \code{h_cone} cannot easily be compared among each other.
 
 Based on a  search cylinder with a pre-defined radius \code{cyl_r} around the
 target tree (5 m by default). The competition index is defined as the
-number of the voxels (0.1 m res.) of neighboring trees situated within the
-cylinder around the target tree (cf. Seidel et al., 2015). The index is
-sensitive to the choice of the cylinder radius, so be careful when
-comparing competition indices computed with different values of \code{cyl_r}.
+number of the voxels of neighboring trees  (by default, with a 0.1 m res.)
+situated within the cylinder around the target tree (cf. Seidel et al.,
+2015). The index is sensitive to the choice of the cylinder radius, so be
+careful when comparing competition indices computed with different values
+of \code{cyl_r}.
+
+Both indices are highly sensitive to the voxel resolution, and it is not
+recommended to change \code{res} from its default value of 0.1 (i.e., 10 cm
+voxel size) unless you have very good reasons to do so.
 }
 }
 \section{Note: support of .las, .laz and .ply formats}{
