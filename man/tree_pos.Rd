@@ -12,15 +12,16 @@ tree_pos(tree, z_min = 100L, h_xy = 0.3, res = 0.1)
 Coordinates have to be in metric system!}
 
 \item{z_min}{integer of length 1 describing the the minimum number of points
-needed in the lowermost 0.1 m Z layer to consider it part of the tree.
-Default is 100.}
+needed in the lowermost 1 voxel depth Z layer to consider it part of the
+tree. Default is 100. If changing the voxel resolution (res) from the
+default value of 0.1, different settings may be necessary.}
 
 \item{h_xy}{numeric of length 1 describing the height range in m over the
 stem base over which the x and y positions are used to calculate the x and
 y coordinates of the stem base. Default is 0.3 m.}
 
-\item{res}{res numeric of length 1 defining the resolution of a voxel as passed
-on to \code{\link[VoxR:vox]{VoxR::vox()}}. Defaults to 0.1 (10 cm voxel size).}
+\item{res}{res numeric of length 1 defining the resolution of a voxel as
+passed on to \code{\link[VoxR:vox]{VoxR::vox()}}. Defaults to 0.1 (10 cm voxel size).}
 }
 \value{
 object of class "tree_pos" containing the following components:

@@ -15,25 +15,29 @@ compete_pc(
   h_cone = 0.6,
   z_min = 100,
   h_xy = 0.3,
+  acc_digits = 2,
   res = 0.1,
   print_progress = c("some", "full", "none"),
+  override_pos_check = FALSE,
   ...
 )
 }
 \arguments{
-\item{forest_source}{data.frame with neighborhood point cloud or path to file
-of neighborhood point cloud which is passed onto \code{\link[=read_pc]{read_pc()}}.
-The neighborhood can, but does not have to include the target tree itself,
-should not be height normalized, and can include ground points.
-Coordinates have to be in a Cartesian coordinate system in m. If a path to
-a file is provided, the supported formats are are .las, .laz, .ply as well
-as all formats accepted by \code{\link[data.table:fread]{data.table::fread()}} (.csv, .txt, and others).}
+\item{forest_source}{path to file of neighborhood point cloud or data.frame
+with point cloud data which are passed on to \code{\link[=read_pc]{read_pc()}}, or object of
+class forest_pc as created with \code{\link[=read_pc]{read_pc()}}. The neighborhood can, but does
+not have to include the target tree itself, should not be height
+normalized, and can include ground points.
+Coordinates have to be in a Cartesian coordinate system in m.
+For paths to source files, the supported formats are are .las, .laz, .ply
+as well as all formats accepted by \code{\link[data.table:fread]{data.table::fread()}} (.csv, .txt, and
+others).}
 
-\item{tree_source}{data.frame with target tree point cloud or path to file of
-target tree point cloud which is passed on to \code{\link[=read_pc]{read_pc()}}.
-Coordinates have to be in a Cartesian coordinate system in m and with the
-same number of decimal places as the neighborhood point cloud.
-If a path to  a file is provided, the supported formats are are .las, .laz,
+\item{tree_source}{path to file of the point cloud of the segmented target,
+tree or data.frame  with point cloud data which are passed on to \code{\link[=read_pc]{read_pc()}}, or object of class
+forest_pc as created with \code{\link[=read_pc]{read_pc()}}.
+Coordinates have to be in the same coordinate system as \code{forest_source}.
+For paths to source files, the supported formats are are .las, .laz,
 .ply and formats accepted by \code{\link[data.table:fread]{data.table::fread()}}.}
 
 \item{comp_method}{character string of length 1 with competition method.
@@ -47,7 +51,7 @@ for the metroid of the crown projected area and "base_pos" for the stem
 base position as computed by \code{\link[=tree_pos]{tree_pos()}}. Default value is "crown_pos".}
 
 \item{tree_name}{(optional) ID for the tree. If no argument is put, defaults
-to the name of the argument provided as \code{tree_source}.x}
+to the name of the argument provided as \code{tree_source}.}
 
 \item{cyl_r}{(optional) only needed when using comp_method "cylinder";
 numeric value of cylinder radius in m. Default is 5 m.}
@@ -59,15 +63,23 @@ cone opens in 50 or 60 \% of target tree's height, respectively. Default is
 0.6 as proposed by Seidel et al. (2015).}
 
 \item{z_min}{integer of length 1 describing the minimum number of points
-needed in the lowermost 0.1 m Z layer to consider it part of the target
-tree. Default is 100. Used to calculate the stem base position of the
-target tree. For details see \code{\link[=tree_pos]{tree_pos()}}.}
+needed in the lowermost 1 voxel depth Z layer to consider it part of the
+target tree. Default is 100. If changing the voxel resolution (\code{res}) from
+the default value of 0.1, different settings may be necessary.  Used to
+calculate the stem base position of the target tree. For details see
+\code{\link[=tree_pos]{tree_pos()}}.}
 
 \item{h_xy}{numeric of length 1 describing the height range in m over the
 stem base over which the x and y positions are used to calculate the x and
 y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 to calculate the stem base position of the target tree. For details see
 \code{\link[=tree_pos]{tree_pos()}}.}
+
+\item{acc_digits}{integer of length 1 defining the number of digits of
+accuracy of the point cloud measurements. Data will be rounded internally
+to this value to speed up calculations and avoid problems with joining tree
+and neighborhood data resulting from numeric accuracy. Defaults to 2
+(round to 2 digits after the decimal point).}
 
 \item{res}{numeric of length 1 defining the resolution of a voxel as passed
 on to \code{\link[VoxR:vox]{VoxR::vox()}}. Defaults to 0.1 (10 cm voxel size). Only change if
@@ -77,6 +89,11 @@ al. (2015) and other papers and the results are strongly scale dependent!}
 \item{print_progress}{character of length 1. Allowed values are "full"
 (print all progress and full output), "some" (only print main details) and
 "none" (do not print any progress). Defaults to "some".}
+
+\item{override_pos_check}{logical: should the function test if the target
+tree is actually situated within the neighborhood? Defaults to FALSE. Only
+change if you have very good reasons to do so, e.g., when computing the
+competition for a tree situated at the edge of a forest stand.}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }
