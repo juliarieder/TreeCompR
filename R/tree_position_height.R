@@ -11,6 +11,8 @@
 #' @param h_xy numeric of length 1 describing the height range in m over the
 #'   stem base over which the x and y positions are used to calculate the x and
 #'   y coordinates of the stem base. Default is 0.3 m.
+#' @param res res numeric of length 1 defining the resolution of a voxel as passed
+#'   on to [VoxR::vox()]. Defaults to 0.1 (10 cm voxel size).
 #'
 #' @details Calculates the stem base position, metroid of the crown projected
 #'   area and height of a tree from a data.frame with  a point cloud as created
@@ -57,13 +59,13 @@
 #' pos <- tree_pos(tree)
 #' pos
 #' }
-tree_pos <- function(tree, z_min = 100L, h_xy = 0.3){
+tree_pos <- function(tree, z_min = 100L, h_xy = 0.3, res = 0.1){
   # get name of object for output
   tree_name <- deparse(substitute(tree))
   # ensure consistency of tree object
   tree <- .validate_pc(tree)
   # voxelize tree
-  tree_v <- VoxR::vox(tree, res = 0.1)
+  tree_v <- VoxR::vox(tree, res = res)
   # get basal z position
   ztab <- tapply(tree_v$npts, tree_v$z, sum)
   # get first height where there are at least z_min points

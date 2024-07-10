@@ -5,7 +5,7 @@
 \alias{print.tree_pos}
 \title{Position and Height of a Tree from Point Cloud}
 \usage{
-tree_pos(tree, z_min = 100L, h_xy = 0.3)
+tree_pos(tree, z_min = 100L, h_xy = 0.3, res = 0.1)
 }
 \arguments{
 \item{tree}{tree_pc or data.frame (x, y, z) of the tree point cloud.
@@ -18,6 +18,9 @@ Default is 100.}
 \item{h_xy}{numeric of length 1 describing the height range in m over the
 stem base over which the x and y positions are used to calculate the x and
 y coordinates of the stem base. Default is 0.3 m.}
+
+\item{res}{res numeric of length 1 defining the resolution of a voxel as passed
+on to \code{\link[VoxR:vox]{VoxR::vox()}}. Defaults to 0.1 (10 cm voxel size).}
 }
 \value{
 object of class "tree_pos" containing the following components:
