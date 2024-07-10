@@ -6,13 +6,14 @@
 #' @param tree tree_pc or data.frame (x, y, z) of the tree point cloud.
 #'   Coordinates have to be in metric system!
 #' @param z_min integer of length 1 describing the the minimum number of points
-#'   needed in the lowermost 0.1 m Z layer to consider it part of the tree.
-#'   Default is 100.
+#'   needed in the lowermost 1 voxel depth Z layer to consider it part of the
+#'   tree. Default is 100. If changing the voxel resolution (res) from the
+#'   default value of 0.1, different settings may be necessary.
 #' @param h_xy numeric of length 1 describing the height range in m over the
 #'   stem base over which the x and y positions are used to calculate the x and
 #'   y coordinates of the stem base. Default is 0.3 m.
-#' @param res res numeric of length 1 defining the resolution of a voxel as passed
-#'   on to [VoxR::vox()]. Defaults to 0.1 (10 cm voxel size).
+#' @param res res numeric of length 1 defining the resolution of a voxel as
+#'   passed on to [VoxR::vox()]. Defaults to 0.1 (10 cm voxel size).
 #'
 #' @details Calculates the stem base position, metroid of the crown projected
 #'   area and height of a tree from a data.frame with  a point cloud as created
