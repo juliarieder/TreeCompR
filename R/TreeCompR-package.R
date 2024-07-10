@@ -20,3 +20,10 @@
 #' @importFrom VoxR vox
 ## usethis namespace: end
 NULL
+
+
+#' @keywords internal
+#' internal function for better wrapping of long messages, warnings and errors
+.wr <- function(..., call){
+  paste(strwrap(paste(...), prefix = "", initial = ""), collapse = "\n")
+}

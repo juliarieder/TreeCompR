@@ -223,11 +223,14 @@ compete_pc <- function(forest_source, tree_source,
   # check if the tree is part of this neighborhood
   if (!(pos["x"] %inrange% range(hood$x) && pos["y"] %inrange% range(hood$y))){
     if (!override_pos_check){
-      stop("The basis coordinates of the tree are outside the x and y range ",
-           "of the neighborhood. The tree may not situated in this plot!",
-           "Please check the raw data for mismatch in the coordinates. \n\n",
-           "If this is desired because you for instance want to compute the ",
-           "CI for an edge tree, set override_pos_check = TRUE.")
+      stop(
+        .wr(
+          "The basis coordinates of the tree are outside the x and y range",
+          "of the neighborhood. The tree may not situated in this plot!",
+          "Please check the raw data for mismatch in the coordinates. \n\n",
+          "If this is desired because you for instance want to compute the",
+          "CI for an edge tree, set override_pos_check = TRUE.")
+      )
     }
   }
 
@@ -272,10 +275,12 @@ compete_pc <- function(forest_source, tree_source,
 
   # voxelize neighborhood data
   if (res != 0.1) warning(
-    "Creating voxelized dataset with a voxel resolution of res = ", res,
-    "instead of the standard of res = 0.1. ",
-    "Non-standard resolutions are not recommended due to the ",
-    "scale dependence of the indices.")
+    .wr(
+      "Creating voxelized dataset with a voxel resolution of res =", res,
+      "instead of the standard of res = 0.1.",
+      "Non-standard resolutions are not recommended due to the",
+      "scale dependence of the indices.")
+  )
   voxel <- VoxR::vox(neighbor, res = res)
   # compute competition indices for the cone method
   if (comp_method == "cone" | comp_method == "both") {

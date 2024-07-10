@@ -103,23 +103,29 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
                          dbh_unit = dbh_unit, height_unit = height_unit,
                          verbose = verbose)
   } else if (!(is.character(inv_source) && length(inv_source) == 1)){
-    stop("Format of inv_source not recognized.\n",
-         " Please provide a data.frame or a path to a source file.\n")
+    stop(.wr(
+      "Format of inv_source not recognized.",
+      " Please provide a data.frame or a path to a source file.")
+    )
   } else if(!file.exists(inv_source)){
-    stop("File", inv_source,
-         "does not exist. \nPlease check path to point cloud file.")
+    stop(.wr(
+      "File", inv_source,
+      "does not exist. Please check path to source file.")
+    )
   } else {
     # treat tree_source as path to file
     path <- inv_source
-    # try loading in point cloud with fread
+    # try loading inventory with fread
     inv <- try(
       data.table::fread(file = path, data.table = FALSE, ...)
     )
     if (inherits(inv, "try-error")) {
       # if the file cannot be read, return error message about accepted formats.
-      stop("File format cannot be read. Please use a format readable ",
-           "by data.table::fread() or provide the necessary decimal separators,",
-           " field separators etc. for reading.")
+      stop(.wr(
+        "File format cannot be read. Please use a format readable",
+        "by data.table::fread() or provide the necessary decimal separators,",
+        "field separators etc. for reading.")
+      )
     } else{ # else validate and return
       inv <- .validate_inv(inv, x = x, y = y,
                            dbh = dbh, height = height, id = id,
@@ -133,7 +139,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 
 
 #' @keywords internal
-#' internal function for the validation of point cloud data
+#' internal function for the validation of forest inventory data
 .validate_inv <- function(inv_source, x = NULL, y = NULL,
                           dbh = NULL, height = NULL, id = NULL,
                           dbh_unit, height_unit,

@@ -117,7 +117,7 @@ If this is not the case, it is possible to provide arguments to pass on to
 that function, to load the datasets separately with custom settings with
 \code{\link[=read_pc]{read_pc()}} or loading them with external functions and pass them to
 \code{\link[=compete_pc]{compete_pc()}} as any kind of object inheriting from \code{data.frame} (such as
-base R data.frames, tibbles, data.tables etc).#'
+base R data.frames, tibbles, data.tables etc).
 \subsection{Cone Method}{
 
 Based on a search cone with an opening angle of 60 degrees,

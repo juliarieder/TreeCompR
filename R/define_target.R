@@ -82,13 +82,15 @@ define_target <- function(inv, target_source, radius = 10,
                           tol = 1, verbose = TRUE) {
   # validate class of inventory
   if(!inherits(inv, "forest_inv")){
-    stop("Please supply forest inventory data in the forest_inv format",
-         "as created with read_inv().")
+    stop(.wr("Please supply forest inventory data in the forest_inv format",
+             "as created with read_inv()."))
   }
   # check if forest inventory contains the required variables
   if(ncol(inv) < 4){
-    stop("To calculate competition indices, at least one of 'dbh' or 'height'",
-         "are required. Please check data structure in 'inv'.")
+    stop(
+      .wr("To calculate competition indices, at least one of 'dbh' or 'height'",
+          "are required. Please check data structure in 'inv'.")
+    )
   }
   # check if radius, buffer threshold and tolerance are valid
   if (!(inherits(radius, "numeric") & length(radius) == 1))
@@ -107,8 +109,10 @@ define_target <- function(inv, target_source, radius = 10,
       # keep information about source
       target_type <- "logical"
     } else {
-      stop("If 'target_source' is a logical vector, its length has to match ",
-           "the number of rows of 'inv.'")
+      stop(.wr(
+        "If 'target_source' is a logical vector, its length has to match ",
+        "the number of rows of 'inv.'")
+      )
     }
   } else{
     if (is.character(target_source)){
@@ -153,8 +157,10 @@ define_target <- function(inv, target_source, radius = 10,
           inv$y <= max(target_source$y) + radius + tol
         # message if dataset was modified
         if (any(!inside) && verbose) message(
-          sum(!inside), " trees outside the competitive zone around the target",
-          " trees were removed. ", sum(inside), " trees remain.")
+          .wr(
+          sum(!inside), "trees outside the competitive zone around the target",
+          " trees were removed.", sum(inside), "trees remain.")
+        )
         # filter out trees outside of radius
         inv <- inv[inside, ]
         # get matching coordinates
@@ -186,10 +192,12 @@ define_target <- function(inv, target_source, radius = 10,
   # check if the selection has resulted in any edge trees
   if (!any(!inv$target)){
     warning(
+      .wr(
       "Defining all trees as target trees is rarely a good idea.",
-      " Unless your forest inventory contains all trees in the",
-      " forest, this will lead to strong edge effects. Please make",
-      " sure that this is really what you want to do.")
+      "Unless your forest inventory contains all trees in the",
+      "forest, this will lead to strong edge effects. Please make",
+      "sure that this is really what you want to do.")
+    )
   }
   # update class
   class(inv) <- c("target_inv", class(inv))

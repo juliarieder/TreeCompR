@@ -77,11 +77,16 @@ read_pc <- function(pc_source, verbose = TRUE,
     pc <- .validate_pc(pc_source, verbose = verbose,
                        xlim = xlim, ylim = ylim, zlim = zlim)
   } else if (!(is.character(pc_source) && length(pc_source) == 1)){
-    stop("Format of pc_source not recognized.\n",
-         " Please provide a data.frame or a path to a source file.\n")
+    stop(
+      .wr("Format of pc_source not recognized.",
+          "Please provide a data.frame or a path to a source file."
+      )
+    )
   } else if(!file.exists(pc_source)){
-    stop("File", pc_source,
-         "does not exist. \nPlease check path to point cloud file.")
+    stop(
+      .wr("File", pc_source,
+          "does not exist. Please check path to point cloud file.")
+    )
   } else {
     # treat pc_source as path to file
     path <- pc_source
@@ -102,8 +107,10 @@ read_pc <- function(pc_source, verbose = TRUE,
                        xlim = xlim, ylim = ylim, zlim = zlim)
       } else {
         # If not, return an error message about the missing package
-        stop("Please install the 'lidR' package",
-             " if you want to use data in .las/.laz format. \n")
+        stop(
+          .wr("Please install the 'lidR' package",
+              "if you want to use data in .las/.laz format.")
+        )
       }
       # load las/laz point cloud
     } else if (extension == "ply") {
@@ -118,8 +125,10 @@ read_pc <- function(pc_source, verbose = TRUE,
                        xlim = xlim, ylim = ylim, zlim = zlim)
       } else {
         # If not, return an error message about the missing package
-        stop("Please install the 'Rvcg' package",
-             " if you want to use data in .ply format. \n")
+        stop(
+          .wr("Please install the 'Rvcg' package",
+              "if you want to use data in .ply format.")
+        )
       }
     } else {
       # try loading in point cloud with fread
@@ -128,9 +137,11 @@ read_pc <- function(pc_source, verbose = TRUE,
       )
       if (inherits(pc, "try-error")) {
         # if the file cannot be read, return error message about accepted formats.
-        stop("File format cannot be read. ",
-             "Please use point cloud in .las/.laz or .ply format,",
-             "\n or a format readable by data.table::fread().")
+        stop(
+          .wr("File format cannot be read.",
+              "Please use point cloud in .las/.laz or .ply format,",
+              "or a format readable by data.table::fread().")
+        )
       } else{ # else validate and return
         pc <- .validate_pc(pc, verbose = verbose,
                            xlim = xlim, ylim = ylim, zlim = zlim)
@@ -157,26 +168,33 @@ read_pc <- function(pc_source, verbose = TRUE,
       pc <- subset(pc, select = c("x", "y", "z"))
       # test if any of the columns has the wrong class
       if (!all(sapply(pc, is.numeric))){
-        stop("One or more of the coordinate vectors x, y, z",
-             " is not numeric.\nPlease check raw data.")
+        stop(
+          .wr("One or more of the coordinate vectors x, y, z",
+              " is not numeric.\nPlease check raw data.")
+        )
       }
     } else{ # else, use the first three numeric columns
       # get numeric columns
       nums <- which(sapply(pc, is.numeric))
       # warn if there are not enough numeric columns
       if (length(nums) < 3){
-        stop("Point cloud dataset contains less than 3 numeric coordinate ",
-             "vectors.\n Please check raw data.")
+        stop(
+          .wr("Point cloud dataset contains less than 3 numeric coordinate",
+              "vectors. Please check raw data.")
+        )
       } else {
         # get first three numeric columns
         pc <- subset(pc, select = nums[1:3])
         # message about used coordinate vectors
         if(verbose){
           message(
-            "No named coordinates. Columns ",
-            paste(names(pc), collapse = ", "),
-            " (no. ", paste(nums[1:3], collapse = ", "),
-            " in raw data)\n   used as x, y, z coordinates, respectively.")
+            .wr(
+              "No named coordinates. Columns ",
+              paste(names(pc), collapse = ", "),
+              " (no. ", paste(nums[1:3], collapse = ", "),
+              " in raw data) used as x, y, z coordinates, respectively."
+            )
+          )
         }
         # adjust names
         names(pc) <- c("x", "y", "z")

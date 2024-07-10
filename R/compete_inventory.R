@@ -205,16 +205,18 @@ compete_inv <- function(inv_source, target_source, radius,
     if (attr(inv, "target_type") %in% c("buff_edge", "exclude_edge",
                                           "inventory")){
       if(attr(inv, "spatial_radius") != radius){
-        warning("Radius used to determine target trees / filter surrounding",
+        warning(
+          .wr("Radius used to determine target trees / filter surrounding",
                 "trees differs from search radius for competition indices.")
+        )
       }
     }
   }
   # test if there are any duplicated coordinates (resulting in 0 distance -->
   # singularity in inverse distance weighting)
   if (any(duplicated(inv[,c("x", "y")]))) {
-    stop("Dataset contains duplicate coordinates. ",
-         "Please revise tree positions.")
+    stop(.wr("Dataset contains duplicate coordinates. ",
+         "Please revise tree positions."))
   }
   # define methods to calculate if method == "all_methods"
   if (method == "all_methods"){
