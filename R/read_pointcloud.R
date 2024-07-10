@@ -62,12 +62,27 @@
 #'
 #' @examples
 #' \dontrun{
+##' # Read a tree point cloud in las or laz format
+#' tree <- read_pc(pc_source = "path/to/tree_point_cloud.las")
+#'
+#' # Read a tree point cloud in ply format
+#' tree <- read_pc(pc_source = "path/to/tree_point_cloud.ply")
+#'
 #' # Read a tree point cloud in txt format
 #' tree <- read_pc(pc_source = "path/to/tree_point_cloud.txt")
-#' # Read a tree point cloud in las or laz format
-#' tree <- read_pc(pc_source = "path/to/tree_point_cloud.las")
-#' #if point cloud is already loaded as dataframe tree_df
+#'
+#' # Read a tree point cloud in csv format with non-standard separators
+#' tree <- read_pc(pc_source = "path/to/tree_point_cloud.txt",
+#'   dec = ",", sep = ";")
+#'
+#' # Read a forest point cloud in a specified range around a target tree of
+#' # known position (+- 5 m around the origin)
+#' neighborhood <- read_pc(pc_source = "path/to/forest_point_cloud.las",
+#'   xlim = c(-5, 5), ylim = c(-5, 5))
+#'
+#' # Convert a point cloud already loaded as a data.frame into forest_pc format
 #' tree <- read_pc(tree_df)
+#'
 #' }
 read_pc <- function(pc_source, verbose = TRUE,
                     xlim = NULL, ylim = NULL, zlim = NULL, ...) {
