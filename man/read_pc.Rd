@@ -5,7 +5,7 @@
 \alias{print.forest_pc}
 \title{Read trees and neighborhoods from point cloud data.}
 \usage{
-read_pc(pc_source, verbose = TRUE, ...)
+read_pc(pc_source, verbose = TRUE, xlim = NULL, ylim = NULL, zlim = NULL, ...)
 }
 \arguments{
 \item{pc_source}{object that inherits from class data.frame, or character
@@ -18,11 +18,32 @@ read the point cloud in the specified path.}
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
 
+\item{xlim}{(optional) numeric vector of defining the range of x coordinates.
+Can be a vector of length 2 with the minimum and maximum x value, or a
+vector of arbitrary length (in this case \code{\link[base:range]{base::range()}} is used to
+constrain the x values to its range). This can be useful to for the
+memory-efficient handling of very large point cloud objects. Defaults to
+NULL (use full range of x coordinates).}
+
+\item{ylim}{(optional) numeric vector of defining the range of y coordinates.
+Can be a vector of length 2 with the minimum and maximum y value, or a
+vector of arbitrary length (in this case \code{\link[base:range]{base::range()}} is used to
+constrain the y values to its range). This can be useful to for the
+memory-efficient handling of very large point cloud objects. Defaults to
+NULL (use full range of y coordinates).}
+
+\item{zlim}{(optional) numeric vector of defining the range of z coordinates.
+Can be a vector of length 2 with the minimum and maximum z value, or a
+vector of arbitrary length (in this case \code{\link[base:range]{base::range()}} is used to
+constrain the z values to its range). This can be useful to for the
+memory-efficient handling of very large point cloud objects. Defaults to
+NULL (use full range of z coordinates).}
+
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
-object of class c("forest_pc", "data.frame") with x, y and z
-coordinates of the tree or forest point cloud.
+object of class c("forest_pc", "data.table", "data.frame") with x, y
+and z coordinates of the tree or forest point cloud.
 }
 \description{
 Read and validate a point cloud sourced from a file stored on
@@ -44,6 +65,10 @@ If no columns with matching names are available, it takes the first three
 numeric columns and returns a message. If the dataset does not contain
 three numeric columns or one of the columns labeled x, y, and z is not
 numeric, the function fails with an error.
+
+The xlim, ylim and zlim arguments are used internally in \code{\link[=compete_pc]{compete_pc()}} to
+filter the neighborhood dataset to a relevant range around the target tree
+to speed up calculations.
 }
 \section{Note: support of .las, .laz and .ply formats}{
 The the 'lidR' package has to be installed to be able to read in .las/.laz
