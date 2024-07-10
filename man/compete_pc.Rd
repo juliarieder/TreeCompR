@@ -110,7 +110,14 @@ et al. (2015) and Metz et al. (2013).
 \details{
 \code{compete_pc()} computes competition indices based on voxel counts of
 neighbor trees that intersect a search cone or search cylinder around
-the target tree.
+the target tree. In most cases, the function \code{\link[=read_pc]{read_pc()}} that is called
+internally should be able to automatically identify the columns with the
+coordinates of the point clouds when provided with non-standard file types.
+If this is not the case, it is possible to provide arguments to pass on to
+that function, to load the datasets separately with custom settings with
+\code{\link[=read_pc]{read_pc()}} or loading them with external functions and pass them to
+\code{\link[=compete_pc]{compete_pc()}} as any kind of object inheriting from \code{data.frame} (such as
+base R data.frames, tibbles, data.tables etc).#'
 \subsection{Cone Method}{
 
 Based on a search cone with an opening angle of 60 degrees,
@@ -138,6 +145,20 @@ of \code{cyl_r}.
 Both indices are highly sensitive to the voxel resolution, and it is not
 recommended to change \code{res} from its default value of 0.1 (i.e., 10 cm
 voxel size) unless you have very good reasons to do so.
+
+If calculating competition indices for single trees that each have an
+accompanying point cloud of their immediate neighborhood, using the file
+paths to these datasets as a \code{tree_source} / \code{neighbor_source} will be
+computationally efficient. However, when calculating indices for several
+trees belonging to the same neighborhood, it may be faster to load the
+neighborhood outside \code{\link[=compete_pc]{compete_pc()}} a single time using the \code{\link[=read_pc]{read_pc()}}
+function and then passing it to \code{\link[=compete_pc]{compete_pc()}} as a \code{forest_pc} object as
+this reduces the computational overhead due to loading the point cloud
+into the memory.
+If the source files are very large, this may still lead to memory problems
+especially on machines with low RAM capacity.In such cases, it may make
+more sense to split up the data set into smaller chunks outside R to
+reduce the memory load.
 }
 }
 \section{Note: support of .las, .laz and .ply formats}{
@@ -168,14 +189,41 @@ http://dx.doi.org/10.1016/j.foreco.2014.10.020
 
 \examples{
 \dontrun{
-# Quantify crown competition for a single tree within a plot using cone
-# method
-CI_cone <- compete_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
+# Due to the large required datasets it is not possible to provide running
+# examples, but we hope that these example uses are helpful
+
+# Quantifying crown competition for a single tree using the cone method
+CI_cone <- compete_pc("path/to/forest_pc.las", "path/to/tree_pc.las",
                           "cone", h_cone = 0.5)
 
-# Quantify competition for a single tree within a plot using cylinder
-# method with radius 4 m
-CI_cyl <- compete_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
+# Competition for a single tree using the cylinder method with 4 m radius
+CI_cyl <- compete_pc("path/to/forest_pc.ply", "path/to/tree_pc.ply",
 "cylinder", cyl_r = 4)
+
+# Quantifying competition for a single tree using both methods
+CI_cyl <- compete_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
+"cylinder", cyl_r = 4, h_cone = 0.6)
+
+# Loading a large neighborhood outside compete_pc() to reuse the data for
+# several target trees
+
+# load neighborhood
+neigh <- read_pc("path/to/forest_pc.las")
+
+# get paths to trees
+tree_paths <- list.files("folder_with_trees/")
+
+# map over paths to get competition indices for all trees
+library(tidyverse) # for purrr() and bind_rows()
+CI_data <- map(
+  tree_paths,
+  ~compete_pc(
+      forest_source = neigh,
+      tree_source = file.path("folder_with_trees", .x),
+      tree_name = .x,
+      method = "cone"
+      )
+    ) \%>\%
+    bind_rows()
 }
 }
