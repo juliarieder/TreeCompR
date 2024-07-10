@@ -62,7 +62,8 @@ test_that("compete_pc works for .txt file point clouds", {
 })
 
 
-test_that("compete_pc works for .las file tree and .txt file forest point clouds", {
+test_that(
+  "compete_pc works for .las file tree and .txt file forest point clouds", {
   expect_equal(
     length(
       compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
@@ -89,17 +90,19 @@ test_that("Wrong method in compete_pc fails with an error message", {
     compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
                tree_source = test_path("testdata", "tree.txt"),
                comp_method = "clyinder", cyl_r = 4,
-               print_progress = "none")
+               print_progress = "none"),
+    "should be one of"
   )
 })
 
-test_that("compete_pc works for .txt file point clouds with customized radius", {
+test_that("compete_pc works for .txt file point clouds with customized radius",{
   # loading works
   expect_no_error({
-    test <- compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
-                       tree_source = test_path("testdata", "tree.txt"),
-                       comp_method = "cylinder", cyl_r = 3,
-                       print_progress = "none")
+    test <- compete_pc(
+      forest_source = test_path("testdata", "neighborhood.txt"),
+      tree_source = test_path("testdata", "tree.txt"),
+      comp_method = "cylinder", cyl_r = 3,
+      print_progress = "none")
   })
 
   # Output is printed correctly
@@ -114,3 +117,28 @@ test_that("compete_pc works for .txt file point clouds with customized radius", 
   expect_equal(test$cyl_r, 3)
 })
 
+
+test_that("Position checks work as intended",{
+  # loading works
+  expect_no_error({
+    tree <- read_pc(
+       test_path("testdata", "tree.txt"), verbose = FALSE)
+    hood <- read_pc(
+      test_path("testdata", "neighborhood.txt"), verbose = FALSE)
+  })
+
+  # compete_pc works as intended with the regular data
+  expect_no_error({compete_pc(hood, tree, "cone", print_progress = "none")})
+
+  # compete_pc fails when the tree is situated in the wrong place
+  expect_error({
+    tree$x <- tree$x + 100
+    compete_pc(hood, tree, "cone", print_progress = "none")},
+    "The basis coordinates")
+
+  # compete_pc works when the position check is overridden, but the result is 0
+  expect_equal({
+    compete_pc(hood, tree, "cone", print_progress = "none",
+               override_pos_check = TRUE)$CI_cone},
+   0)
+})

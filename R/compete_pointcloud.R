@@ -2,18 +2,20 @@
 #' @description Counts the voxels of neighboring trees that intersect a
 #'   search cone or search cylinder around the target tree according to Seidel
 #'   et al. (2015) and Metz et al. (2013).
-#' @param forest_source data.frame with neighborhood point cloud or path to file
-#'   of neighborhood point cloud which is passed onto [read_pc()].
-#'   The neighborhood can, but does not have to include the target tree itself,
-#'   should not be height normalized, and can include ground points.
-#'   Coordinates have to be in a Cartesian coordinate system in m. If a path to
-#'   a file is provided, the supported formats are are .las, .laz, .ply as well
-#'   as all formats accepted by [data.table::fread()] (.csv, .txt, and others).
-#' @param tree_source data.frame with target tree point cloud or path to file of
-#'   target tree point cloud which is passed on to [read_pc()].
-#'   Coordinates have to be in a Cartesian coordinate system in m and with the
-#'   same number of decimal places as the neighborhood point cloud.
-#'   If a path to  a file is provided, the supported formats are are .las, .laz,
+#' @param forest_source path to file of neighborhood point cloud or data.frame
+#'   with point cloud data which are passed on to [read_pc()], or object of
+#'   class forest_pc as created with [read_pc()]. The neighborhood can, but does
+#'   not have to include the target tree itself, should not be height
+#'   normalized, and can include ground points.
+#'   Coordinates have to be in a Cartesian coordinate system in m.
+#'   For paths to source files, the supported formats are are .las, .laz, .ply
+#'   as well as all formats accepted by [data.table::fread()] (.csv, .txt, and
+#'   others).
+#' @param tree_source path to file of the point cloud of the segmented target,
+#'   tree or data.frame  with point cloud data which are passed on to [read_pc()], or object of class
+#'   forest_pc as created with [read_pc()].
+#'   Coordinates have to be in the same coordinate system as `forest_source`.
+#'   For paths to source files, the supported formats are are .las, .laz,
 #'   .ply and formats accepted by [data.table::fread()].
 #' @param comp_method character string of length 1 with competition method.
 #'   Allowed values are "cone" for the cone method, "cylinder" for the cylinder
@@ -24,7 +26,7 @@
 #'   for the metroid of the crown projected area and "base_pos" for the stem
 #'   base position as computed by [tree_pos()]. Default value is "crown_pos".
 #' @param tree_name (optional) ID for the tree. If no argument is put, defaults
-#'   to the name of the argument provided as `tree_source`.x
+#'   to the name of the argument provided as `tree_source`.
 #' @param cyl_r (optional) only needed when using comp_method "cylinder";
 #'   numeric value of cylinder radius in m. Default is 5 m.
 #' @param h_cone (optional) only when using comp_method "cone"; numeric value
@@ -33,9 +35,16 @@
 #'   cone opens in 50 or 60 % of target tree's height, respectively. Default is
 #'   0.6 as proposed by Seidel et al. (2015).
 #' @param z_min integer of length 1 describing the minimum number of points
-#'   needed in the lowermost 0.1 m Z layer to consider it part of the target
-#'   tree. Default is 100. Used to calculate the stem base position of the
-#'   target tree. For details see [tree_pos()].
+#'   needed in the lowermost 1 voxel depth Z layer to consider it part of the
+#'   target tree. Default is 100. If changing the voxel resolution (`res`) from
+#'   the default value of 0.1, different settings may be necessary.  Used to
+#'   calculate the stem base position of the target tree. For details see
+#'   [tree_pos()].
+#' @param acc_digits integer of length 1 defining the number of digits of
+#'   accuracy of the point cloud measurements. Data will be rounded internally
+#'   to this value to speed up calculations and avoid problems with joining tree
+#'   and neighborhood data resulting from numeric accuracy. Defaults to 2
+#'   (round to 2 digits after the decimal point).
 #' @param h_xy numeric of length 1 describing the height range in m over the
 #'   stem base over which the x and y positions are used to calculate the x and
 #'   y coordinates of the stem base of the target tree. Default is 0.3 m. Used
@@ -48,6 +57,10 @@
 #' @param print_progress character of length 1. Allowed values are "full"
 #'   (print all progress and full output), "some" (only print main details) and
 #'   "none" (do not print any progress). Defaults to "some".
+#' @param override_pos_check logical: should the function test if the target
+#'   tree is actually situated within the neighborhood? Defaults to FALSE. Only
+#'   change if you have very good reasons to do so, e.g., when computing the
+#'   competition for a tree situated at the edge of a forest stand.
 #' @param ... additional arguments passed on to [data.table::fread()].
 #'
 #' @return data frame with tree ID and counted voxels of neighborhood
@@ -121,8 +134,9 @@ compete_pc <- function(forest_source, tree_source,
                        center_position = c("crown_pos", "base_pos"),
                        tree_name = NULL,
                        cyl_r = 5, h_cone = 0.6, z_min = 100, h_xy = 0.3,
-                       res = 0.1,
+                       acc_digits = 2, res = 0.1,
                        print_progress = c("some", "full", "none"),
+                       override_pos_check = FALSE,
                        ...){
   # match arguments against the allowed values
   comp_method <- match.arg(comp_method)
@@ -142,22 +156,63 @@ compete_pc <- function(forest_source, tree_source,
     }
   }
   # print progress
-  if (print_progress != "none") cat("----- Processing competition indices for:",
-                                    tree_name, "-----\n")
-
+  if (print_progress != "none"){
+    cat("----- Processing competition indices for:", tree_name, "-----\n")
+  }
   # read data for central tree
   tree <- read_pc(tree_source, verbose = print_progress != "none", ...)
   # get position and height of central tree
-  position <- tree_pos(tree, z_min = z_min, h_xy = h_xy)
-  # get basis position of the cone/cylinder of the analysis according
+  position <- tree_pos(tree, z_min = z_min, h_xy = h_xy, res = res)
+  # get basis position of the cone/cylinder
   pos <- position[[center_position]]
   #  extract height of central tree
   h <- position[["height"]]
 
   # read data for neighborhood
   hood <- read_pc(forest_source, verbose = print_progress != "none", ...)
+
+  # check if the tree is part of this neighborhood
+  if (!(pos["x"] %inrange% range(hood$x) && pos["y"] %inrange% range(hood$y))){
+    if (!override_pos_check){
+      stop("The basis coordinates of the tree are outside the x and y range ",
+           "of the neighborhood. The tree may not situated in this plot!",
+           "Please check the raw data for mismatch in the coordinates. \n\n",
+           "If this is desired because you for instance want to compute the ",
+           "CI for an edge tree, set override_pos_check = TRUE.")
+    }
+  }
+
+  # define filters for relevant ranges in the neighborhood
+  if (comp_method == "cylinder"){
+    xlim <- pos["x"] + c(-1, +1) * (cyl_r + res)
+    ylim <- pos["y"] + c(-1, +1) * (cyl_r + res)
+    zlim <- NULL
+  }
+  if (comp_method == "cone"){
+    # radius of search cone at highest point in the dataset
+    cone_r <- tan(pi / 6) * (max(hood$z) - pos["z"] - h_cone * h)
+    xlim <- pos["x"] + c(-1, +1) * (cone_r + res)
+    ylim <- pos["y"] + c(-1, +1) * (cone_r + res)
+    zlim <- c(h * h_cone + pos["z"] - res, Inf)
+  }
+  if (comp_method == "both"){
+    # radius of search cone at highest point in the dataset
+    cone_r <- tan(pi / 6) * (max(hood$z) - pos["z"] - h_cone * h)
+    xlim <- pos["x"] + c(-1, +1) * (max(cone_r, cyl_r) + res)
+    ylim <- pos["y"] + c(-1, +1) * (max(cone_r, cyl_r) + res)
+    zlim <- NULL
+  }
+  # remove values outside the relevant range (in separate step)
+  hood <- TreeCompR:::.validate_pc(hood, xlim = xlim, ylim = ylim, zlim = zlim)
+
+  # round neighborhood and tree to the specified digits of accuracy
+  # (in two steps to perform anti_join with integers: much faster)
+  for (i in 1:3){
+    hood[[i]] <- as.integer(Rfast::Round(hood[[i]] * 10 ^ acc_digits))
+    tree[[i]] <- as.integer(Rfast::Round(tree[[i]] * 10 ^ acc_digits))
+  }
   # remove points in the neighborhood that belong to the central tree
-  neighbor <- dplyr::anti_join(hood, tree, by = c("x", "y", "z"))
+  neighbor <- hood[!tree, on = c("x", "y", "z")] / (10 ^ acc_digits)
 
   # prepare data.frame for results
   results <- data.frame(
@@ -166,52 +221,35 @@ compete_pc <- function(forest_source, tree_source,
     center_position = ifelse(
       center_position == "base_pos", "base", "crown center"))
 
-  # check if the tree is part of this neighborhood
-  if (nrow(hood) == nrow(neighbor)) {
-    stop("Tree is not situated in this plot! Do the input point",
-         "clouds have the same number of decimal places?", call. = FALSE)
-  } else {
-    # voxelize neighborhood data
-    if (res != 0.1) warning(
-      "Creating voxelized dataset with a voxel resolution of res = ", res,
-      "instead of the standard of res = 0.1. ",
-      "Non-standard resolutions are not recommended due to the ",
-      "scale dependence of the indices.")
-    voxel <- neighbor %>% VoxR::vox(res = res)
-    # compute competition indices for the cone method
-    if (comp_method == "cone" | comp_method == "both") {
-      # compute base height of the cone
-      cone_h <- h_cone * h
-      # filter voxels that are inside the cone
-      voxel1 <- voxel %>%
-        # remove voxels below critical height
-        dplyr::filter(z - pos["z"] >= cone_h) %>%
-        # compute cone radius (assuming an opening angle of pi / 3)
-        dplyr::mutate(r_cone = abs(tan(pi / 6) * (z - pos["z"] - cone_h))) %>%
-        # compute distance from tree position
-        dplyr::mutate(dist = sqrt((x - pos["x"]) ^ 2 + (y - pos["y"]) ^ 2)) %>%
-        # remove voxels outside of the cone
-        dplyr::filter(dist <= r_cone)
-      # get number of voxels inside the cone
-      nvoxel_cone <- nrow(voxel1)
-      # compute results
-      results$CI_cone <- nvoxel_cone
-      results$h_cone  <- h_cone
-    }
-    if (comp_method == "cylinder" | comp_method == "both"){
-      # filter voxels that are inside the cylinder
-      voxel2 <- voxel %>%
-        # compute distance from central position
-        dplyr::mutate(dist = sqrt((x - pos["x"]) ^ 2 + (y - pos["y"]) ^ 2)) %>%
-        # remove voxels outside the cylinder
-        dplyr::filter(dist <= cyl_r)
-      # get number of voxels inside the cylinder
-      nvoxel_cyl <- nrow(voxel2)
-      # compute results
-      results$CI_cyl <- nvoxel_cyl
-      results$cyl_r <- cyl_r
-    }
+  # voxelize neighborhood data
+  if (res != 0.1) warning(
+    "Creating voxelized dataset with a voxel resolution of res = ", res,
+    "instead of the standard of res = 0.1. ",
+    "Non-standard resolutions are not recommended due to the ",
+    "scale dependence of the indices.")
+  voxel <- VoxR::vox(neighbor, res = res)
+  # compute competition indices for the cone method
+  if (comp_method == "cone" | comp_method == "both") {
+    # compute base height of the cone
+    cone_h <- h_cone * h
+    # remove voxels below critical height
+    voxel1 <- voxel[z - pos["z"] >= cone_h, ]
+    # compute cone radius (assuming an opening angle of pi / 3)
+    voxel1 <- voxel1[, let(
+      r_cone = abs(tan(pi / 6) * (z - pos["z"] - cone_h)),
+      dist = sqrt((x - pos["x"]) ^ 2 + (y - pos["y"]) ^ 2))]
+    # append voxel count inside the cone and cone height to results
+    results$CI_cone <- with(voxel1, sum(dist <= r_cone))
+    results$h_cone  <- h_cone
   }
+  if (comp_method == "cylinder" | comp_method == "both"){
+    # compute distance from central position
+    voxel2 <- voxel[, dist :=  sqrt((x - pos["x"]) ^ 2 + (y - pos["y"]) ^ 2)]
+    # append voxel count inside the cylinder and cylinder radius to results
+    results$CI_cyl <- with(voxel2, sum(dist <= cyl_r))
+    results$cyl_r <- cyl_r
+  }
+
   # remove row.names of results for proper printing
   row.names(results) <- NULL
   # set class of results
