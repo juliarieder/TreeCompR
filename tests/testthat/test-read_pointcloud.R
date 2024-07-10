@@ -38,7 +38,7 @@ test_that("reading a tree point cloud in txt format works", {
 })
 
 
-test_that("reading pc in txt format works", {
+test_that("reading neighborhood in txt format works", {
   # try if loading works without error
   expect_message({ # message expected due to unnamed dataset
     test_tree <-  read_pc(pc_source = test_path("testdata", "neighborhood.txt"))
@@ -128,8 +128,6 @@ test_that("reading pc in laz format works", {
     colSums(test_tree),
     c(x = 205070.26, y = -132578.89, z = 1995800.38)
   )
-
-
 })
 
 
@@ -163,71 +161,86 @@ test_that("reading pc in ply format works", {
   )
 })
 
-
-test_that("tabular point clouds with different types, structures and extensions can be read", {
-  # simple csv with named xyz columns is read without message
-  expect_no_message({
-    tinytree1 <- read_pc(test_path("testdata", "tinytree1.csv"))
+test_that("reading point clouds with filters works", {
+  # try if loading works without error
+  expect_no_error({
+    test_tree <-  read_pc(pc_source = test_path("testdata", "tree.las"),
+                          xlim = c(0,Inf), ylim = c(0, Inf), zlim = c(0, 17))
   })
 
-  # csv with different field and decimal separator can be read
-  expect_equal(
-    tinytree1,
-    read_pc(test_path("testdata", "tinytree2.csv"),
-            dec = ",", sep = ";")
-  )
-
-  # csv with different field and decimal separator and a first column of class
-  # character can be read
-  expect_equal(
-    tinytree1,
-    read_pc(test_path("testdata", "tinytree3.csv"),
-            dec = ",", sep = ";")
-  )
-
-  # tabstop delimited txt with d a first column of class character and wrongly
-  # labeled columns can be read (resulting in a message)
-  expect_message({
-    tinytree4 <- read_pc(test_path("testdata", "tinytree4.txt"),
-                         sep = "\t")
-  })
-  expect_equal(tinytree1, tinytree4)
-
-  # messages are correctly suppressed with verbose = FALSE
-  expect_no_message({
-    read_pc(test_path("testdata", "tinytree4.txt"),
-            sep = "\t", verbose = FALSE)
-  })
-
-  # standard csv with different order (x, z, y) is read correctly
-  expect_equal(
-    tinytree1,
-    read_pc(test_path("testdata", "tinytree5.csv"))
-  )
-
-  # trees can be loaded and validated if provided as data.frames
-  expect_equal(
-    tinytree1,
-    read.table(
-      test_path("testdata", "tinytree4.txt"),
-      header = TRUE) %>%
-      read_pc(verbose = FALSE)
-  )
-
-  # an error is thrown if columns are missing
-  expect_error(
-    read_pc(as.data.frame(tinytree1[,-1])),
-    regexp = "Point cloud dataset contains less than 3"
-  )
-
-  # an error is thrown if the data are characters
-  expect_error({
-    test <- as.data.frame(tinytree1)
-    test$x <- as.character(test$x)
-    read_pc(test)},
-    regexp = "One or more of the coordinate vectors x, y, z is not numeric"
-  )
+  # test if values are in the specified bounds
+  expect_gte(min(test_tree$x), 0)
+  expect_gte(min(test_tree$y), 0)
+  expect_gte(min(test_tree$z), 0)
+  expect_lte(max(test_tree$z), 17)
 })
+
+
+test_that(
+  "tabular pcs w/ different types, structures and extensions can be read", {
+    # simple csv with named xyz columns is read without message
+    expect_no_message({
+      tinytree1 <- read_pc(test_path("testdata", "tinytree1.csv"))
+    })
+
+    # csv with different field and decimal separator can be read
+    expect_equal(
+      tinytree1,
+      read_pc(test_path("testdata", "tinytree2.csv"),
+              dec = ",", sep = ";")
+    )
+
+    # csv with different field and decimal separator and a first column of class
+    # character can be read
+    expect_equal(
+      tinytree1,
+      read_pc(test_path("testdata", "tinytree3.csv"),
+              dec = ",", sep = ";")
+    )
+
+    # tabstop delimited txt with d a first column of class character and wrongly
+    # labeled columns can be read (resulting in a message)
+    expect_message({
+      tinytree4 <- read_pc(test_path("testdata", "tinytree4.txt"),
+                           sep = "\t")
+    })
+    expect_equal(tinytree1, tinytree4)
+
+    # messages are correctly suppressed with verbose = FALSE
+    expect_no_message({
+      read_pc(test_path("testdata", "tinytree4.txt"),
+              sep = "\t", verbose = FALSE)
+    })
+
+    # standard csv with different order (x, z, y) is read correctly
+    expect_equal(
+      tinytree1,
+      read_pc(test_path("testdata", "tinytree5.csv"))
+    )
+
+    # trees can be loaded and validated if provided as data.frames
+    expect_equal(
+      tinytree1,
+      read.table(
+        test_path("testdata", "tinytree4.txt"),
+        header = TRUE) %>%
+        read_pc(verbose = FALSE)
+    )
+
+    # an error is thrown if columns are missing
+    expect_error(
+      read_pc(as.data.frame(tinytree1[,-1])),
+      regexp = "Point cloud dataset contains less than 3"
+    )
+
+    # an error is thrown if the data are characters
+    expect_error({
+      test <- as.data.frame(tinytree1)
+      test$x <- as.character(test$x)
+      read_pc(test)},
+      regexp = "One or more of the coordinate vectors x, y, z is not numeric"
+    )
+  })
 
 test_that("print method for forest_pc objects works", {
   # simple csv with named xyz columns is read without message
