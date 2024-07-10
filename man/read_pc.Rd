@@ -93,7 +93,7 @@ tree <- read_pc(pc_source = "path/to/tree_point_cloud.txt",
   dec = ",", sep = ";")
 
 # Read a forest point cloud in a specified range around a target tree of
-# known position
+# known position (+- 5 m around the origin)
 neighborhood <- read_pc(pc_source = "path/to/forest_point_cloud.las",
   xlim = c(-5, 5), ylim = c(-5, 5))
 

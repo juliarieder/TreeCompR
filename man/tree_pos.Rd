@@ -5,7 +5,7 @@
 \alias{print.tree_pos}
 \title{Position and Height of a Tree from Point Cloud}
 \usage{
-tree_pos(tree, z_min = 100L, h_xy = 0.3, res = 0.1)
+tree_pos(tree, z_min = 100L, h_xy = 0.3, res = 0.1, tree_name = NULL)
 }
 \arguments{
 \item{tree}{tree_pc or data.frame (x, y, z) of the tree point cloud.
@@ -22,6 +22,10 @@ y coordinates of the stem base. Default is 0.3 m.}
 
 \item{res}{res numeric of length 1 defining the resolution of a voxel as
 passed on to \code{\link[VoxR:vox]{VoxR::vox()}}. Defaults to 0.1 (10 cm voxel size).}
+
+\item{tree_name}{character vector of length 1 with the name of the tree as
+returned with the output object. Defaults to NULL (take name from \code{tree}
+argument).}
 }
 \value{
 object of class "tree_pos" containing the following components:
@@ -33,7 +37,8 @@ coordinates of the central point of the crown projected
 area and the z position of the stem base identified as
 above.}
 \item{height}{numeric of length one containing the tree height in m.}
-\item{tree_name}{name of the object used as the "tree" argument.}
+\item{tree_name}{name of the object used as the "tree" argument, or name
+specified by the user.}
 }
 }
 \description{

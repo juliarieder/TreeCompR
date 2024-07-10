@@ -14,6 +14,9 @@
 #'   y coordinates of the stem base. Default is 0.3 m.
 #' @param res res numeric of length 1 defining the resolution of a voxel as
 #'   passed on to [VoxR::vox()]. Defaults to 0.1 (10 cm voxel size).
+#' @param tree_name character vector of length 1 with the name of the tree as
+#'   returned with the output object. Defaults to NULL (take name from `tree`
+#'   argument).
 #'
 #' @details Calculates the stem base position, metroid of the crown projected
 #'   area and height of a tree from a data.frame with  a point cloud as created
@@ -55,7 +58,8 @@
 #'                      area and the z position of the stem base identified as
 #'                      above.}
 #'     \item{height}{numeric of length one containing the tree height in m.}
-#'     \item{tree_name}{name of the object used as the "tree" argument.}
+#'     \item{tree_name}{name of the object used as the "tree" argument, or name
+#'     specified by the user.}
 #'   }
 #'
 #' @export
@@ -68,9 +72,12 @@
 #' pos <- tree_pos(tree)
 #' pos
 #' }
-tree_pos <- function(tree, z_min = 100L, h_xy = 0.3, res = 0.1){
+tree_pos <- function(tree, z_min = 100L, h_xy = 0.3, res = 0.1,
+                     tree_name = NULL){
   # get name of object for output
-  tree_name <- deparse(substitute(tree))
+  if (is.null(tree_name)) tree_name <- deparse(substitute(tree))
+  if (length(tree_name) > 1)
+    stop("tree_name has to be a character vector of length 1.")
   # ensure consistency of tree object
   tree <- .validate_pc(tree)
   # voxelize tree
@@ -114,13 +121,13 @@ print.tree_pos <- function(x, ...){
       "Computed tree position information for ",
       paste0("'", x$tree_name, "'"), "\n",
       "------------------------------------------------------------------\n",
-      "Tree base position:              (", paste(
+      "Tree base position:             (", paste(
         paste(c("x", "y", "z"), "=",
               round(x$base_pos, 1)), collapse = ", "),")\n",
-      "Metroid of crown projected area: (", paste(
+      "Center of crown projected area: (", paste(
         paste(c("x", "y", "z"), "=",
               round(x$crown_pos, 1)), collapse = ", "),")\n",
-      "Tree height:                    ", x$height, "m\n",
+      "Tree height:                   ", x$height, "m\n",
       "------------------------------------------------------------------\n"
   )
   # return object invisibly
