@@ -4,7 +4,7 @@
 ## usethis namespace: start
 #' @import dplyr
 #' @importFrom concaveman concaveman
-#' @importFrom data.table fread
+#' @importFrom data.table fread %inrange%
 #' @importFrom magrittr %>%
 #' @importFrom Rfast Round Table
 #' @importFrom rlang .data
