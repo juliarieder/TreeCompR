@@ -8,9 +8,10 @@
 read_pc(pc_source, verbose = TRUE, xlim = NULL, ylim = NULL, zlim = NULL, ...)
 }
 \arguments{
-\item{pc_source}{object that inherits from class data.frame, or character
-path to point cloud of individual tree or a whole plot either in .las/.laz
-or .ply format, or any file format readable with \code{\link[data.table:fread]{data.table::fread()}}.
+\item{pc_source}{object that inherits from class data.frame,  or LAS object,
+or character string with path to point cloud of individual tree or a whole
+plot either in .las/.laz or .ply format, or any file format readable with
+\code{\link[data.table:fread]{data.table::fread()}}.
 If provided with a point cloud object in a data.frame, the structure and
 column names are validated and homogenized; else, the function tries to
 read the point cloud in the specified path.}
@@ -47,9 +48,10 @@ and z coordinates of the tree or forest point cloud.
 }
 \description{
 Read and validate a point cloud sourced from a file stored on
-disk, or from an object that inherits from class data.frame. Supported
-file formats are .las, .laz, .ply as well as all formats accepted by
-\code{\link[data.table:fread]{data.table::fread()}} (.csv, .txt, and others).
+disk, or from an object that inherits from class data.frame, or a LAS
+object from the lidR package (\link[lidR:LAS-class]{lidR::LAS}).
+Supported file formats are .las, .laz, .ply as well as all formats
+accepted by \code{\link[data.table:fread]{data.table::fread()}} (.csv, .txt, and others).
 }
 \details{
 Function for reading and validating point cloud data. Currently,
