@@ -14,12 +14,12 @@ knitr::opts_chunk$set(
 )
 ```
 For extracting information on tree level from close-range laser scanning (TLS or MLS), you can use the [`TreeLS`](https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2) package. We will show a workflow on how to implement the output of TreeLS within TreeCompR.
-```{r setup, message=FALSE,warning=FALSE}
+```{r setup, message=FALSE,warning=FALSE, eval = FALSE}
 library(TreeCompR)
 library(TreeLS)
 ```
 
-```{r segment-TLS}
+```{r segment-TLS, eval = FALSE}
     file <- system.file("extdata", "pine_plot.laz", package="TreeLS")
     tls <- readTLS(file)
     tls_norm <- tlsNormalize(tls, keep_ground = F)
@@ -33,7 +33,7 @@ library(TreeLS)
 
 ## Use extracted tree information within TreeCompR
 
-```{r calculate-CI, message=FALSE,warning=FALSE, fig.height= 4, fig.width=7}
+```{r calculate-CI, message=FALSE,warning=FALSE, fig.height= 4, fig.width=7, eval = FALSE}
 inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")
 targets <- define_target(inv = inventory, target_source = "buff_edge", radius = 2)
 plot_target(targets)
