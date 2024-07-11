@@ -1,12 +1,14 @@
 #' @title Read trees and neighborhoods from point cloud data.
 #'
 #' @description Read and validate a point cloud sourced from a file stored on
-#'   disk, or from an object that inherits from class data.frame. Supported
-#'   file formats are .las, .laz, .ply as well as all formats accepted by
-#'   [data.table::fread()] (.csv, .txt, and others).
-#' @param pc_source object that inherits from class data.frame, or character
-#'   path to point cloud of individual tree or a whole plot either in .las/.laz
-#'   or .ply format, or any file format readable with [data.table::fread()].
+#'   disk, or from an object that inherits from class data.frame, or a LAS
+#'   object from the lidR package ([lidR::LAS-class]).
+#'   Supported file formats are .las, .laz, .ply as well as all formats
+#'   accepted by [data.table::fread()] (.csv, .txt, and others).
+#' @param pc_source object that inherits from class data.frame,  or LAS object,
+#'   or character string with path to point cloud of individual tree or a whole
+#'   plot either in .las/.laz or .ply format, or any file format readable with
+#'   [data.table::fread()].
 #'   If provided with a point cloud object in a data.frame, the structure and
 #'   column names are validated and homogenized; else, the function tries to
 #'   read the point cloud in the specified path.
@@ -87,6 +89,10 @@
 read_pc <- function(pc_source, verbose = TRUE,
                     xlim = NULL, ylim = NULL, zlim = NULL, ...) {
   . <- NULL
+  # if pc_source is a LAS object from the lidR package, extract data slot
+  if(inherits(pc_source, "LAS")) {
+    pc_source <- pc_source@data
+  }
   # check class of source dataset
   if (inherits(pc_source, "data.frame")){
     pc <- .validate_pc(pc_source, verbose = verbose,

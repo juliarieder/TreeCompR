@@ -64,17 +64,29 @@ test_that("compete_pc works for .txt file point clouds", {
 
 test_that(
   "compete_pc works for .las file tree and .txt file forest point clouds", {
-  expect_equal(
-    length(
-      compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
-                 tree_source = test_path("testdata", "tree.las"),
-                 comp_method = "cone",
-                 print_progress = "none")
-    ),
+    # load inside compete_pc
+  expect_equal({
+    test1 <- compete_pc(
+      forest_source = test_path("testdata", "neighborhood.txt"),
+                       tree_source = test_path("testdata", "tree.las"),
+                       comp_method = "cone",
+                       print_progress = "none")
+    length(test1)},
     5)
+    # load outside as LAS
+    expect_equal({
+      tree <- lidR::readTLSLAS(test_path("testdata", "tree.las"))
+      test1 <- compete_pc(
+        forest_source = test_path("testdata", "neighborhood.txt"),
+                          tree_source = tree,
+                          comp_method = "cone",
+                          print_progress = "none")
+      length(test1)},
+      5)
 })
 
-test_that("compete_pc works for .ply file tree and .txt file forest point clouds", {
+test_that(
+  "compete_pc works for .ply file tree and .txt file forest point clouds", {
   expect_equal(
     length(
       compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),

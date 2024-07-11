@@ -24,18 +24,19 @@ compete_pc(
 }
 \arguments{
 \item{forest_source}{path to file of neighborhood point cloud or data.frame
-with point cloud data which are passed on to \code{\link[=read_pc]{read_pc()}}, or object of
-class forest_pc as created with \code{\link[=read_pc]{read_pc()}}. The neighborhood can, but does
-not have to include the target tree itself, should not be height
-normalized, and can include ground points.
-Coordinates have to be in a Cartesian coordinate system in m.
+or LAS object (see \link[lidR:LAS-class]{lidR::LAS}) with point cloud data which are
+passed on to \code{\link[=read_pc]{read_pc()}}, or object of class forest_pc as created with
+\code{\link[=read_pc]{read_pc()}}. The neighborhood can, but does not have to include the target
+tree itself, should not be height normalized, and can include ground
+points. Coordinates have to be in a Cartesian coordinate system in m.
 For paths to source files, the supported formats are are .las, .laz, .ply
 as well as all formats accepted by \code{\link[data.table:fread]{data.table::fread()}} (.csv, .txt, and
 others).}
 
 \item{tree_source}{path to file of the point cloud of the segmented target,
-tree or data.frame  with point cloud data which are passed on to \code{\link[=read_pc]{read_pc()}}, or object of class
-forest_pc as created with \code{\link[=read_pc]{read_pc()}}.
+tree or data.frame or LAS object (see \link[lidR:LAS-class]{lidR::LAS}) with point cloud
+data which are passed on to \code{\link[=read_pc]{read_pc()}}, or object of class forest_pc
+as created with \code{\link[=read_pc]{read_pc()}}.
 Coordinates have to be in the same coordinate system as \code{forest_source}.
 For paths to source files, the supported formats are are .las, .laz,
 .ply and formats accepted by \code{\link[data.table:fread]{data.table::fread()}}.}
@@ -151,12 +152,14 @@ accompanying point cloud of their immediate neighborhood, using the file
 paths to these datasets as a \code{tree_source} / \code{neighbor_source} will be
 computationally efficient. However, when calculating indices for several
 trees belonging to the same neighborhood, it may be faster to load the
-neighborhood outside \code{\link[=compete_pc]{compete_pc()}} a single time using the \code{\link[=read_pc]{read_pc()}}
-function and then passing it to \code{\link[=compete_pc]{compete_pc()}} as a \code{forest_pc} object as
-this reduces the computational overhead due to loading the point cloud
-into the memory.
+neighborhood outside \code{\link[=compete_pc]{compete_pc()}} a single time using \code{\link[=read_pc]{read_pc()}} and
+then passing it to \code{\link[=compete_pc]{compete_pc()}} as a \code{forest_pc} object as this reduces
+the computational overhead due to loading the point cloud into the memory.
+In such cases, it may also make sense to load and process the forest point
+cloud as an LAS object (see \link[lidR:LAS-class]{lidR::LAS}) and process it outside of
+\code{TreeCompR} before analysis.
 If the source files are very large, this may still lead to memory problems
-especially on machines with low RAM capacity.In such cases, it may make
+especially on machines with low RAM capacity. In such cases, it may make
 more sense to split up the data set into smaller chunks outside R to
 reduce the memory load.
 }

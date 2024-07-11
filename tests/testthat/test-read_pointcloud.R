@@ -75,6 +75,13 @@ test_that("reading pc in las format works", {
     test_tree <-  read_pc(pc_source = test_path("testdata", "tree.las"))
   })
 
+  # same output when loading outside of TreeCompR
+  expect_equal({
+    test <- lidR::readTLSLAS(test_path("testdata", "tree.las"))
+    read_pc(test)
+  }, test_tree)
+
+
   # test if loaded object has the correct class
   expect_true(
     inherits(test_tree, "forest_pc")
