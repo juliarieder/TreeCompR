@@ -226,7 +226,7 @@ compete_pc <- function(forest_source, tree_source,
       stop(
         .wr(
           "The basis coordinates of the tree are outside the x and y range",
-          "of the neighborhood. The tree may not situated in this plot!",
+          "of the neighborhood. The tree may not be situated in this plot!",
           "Please check the raw data for mismatch in the coordinates. \n\n",
           "If this is desired because you for instance want to compute the",
           "CI for an edge tree, set override_pos_check = TRUE.")
@@ -264,6 +264,7 @@ compete_pc <- function(forest_source, tree_source,
     tree[[i]] <- as.integer(Rfast::Round(tree[[i]] * 10 ^ acc_digits))
   }
   # remove points in the neighborhood that belong to the central tree
+  # (data.table version of anti_join)
   neighbor <- hood[!tree, on = c("x", "y", "z")] / (10 ^ acc_digits)
 
   # prepare data.frame for results
@@ -289,7 +290,7 @@ compete_pc <- function(forest_source, tree_source,
     # remove voxels below critical height
     voxel1 <- voxel[z - pos["z"] >= cone_h, ]
     # compute cone radius (assuming an opening angle of pi / 3)
-    voxel1 <- voxel1[, let(
+    voxel1 <- voxel1[, `:=`(
       r_cone = abs(tan(pi / 6) * (z - pos["z"] - cone_h)),
       dist = sqrt((x - pos["x"]) ^ 2 + (y - pos["y"]) ^ 2))]
     # append voxel count inside the cone and cone height to results
@@ -298,7 +299,8 @@ compete_pc <- function(forest_source, tree_source,
   }
   if (comp_method == "cylinder" | comp_method == "both"){
     # compute distance from central position
-    voxel2 <- voxel[, dist :=  sqrt((x - pos["x"]) ^ 2 + (y - pos["y"]) ^ 2)]
+    voxel2 <- voxel[, `:=`(dist = sqrt((x - pos["x"]) ^ 2 +
+                                        (y - pos["y"]) ^ 2))]
     # append voxel count inside the cylinder and cylinder radius to results
     results$CI_cyl <- with(voxel2, sum(dist <= cyl_r))
     results$cyl_r <- cyl_r
