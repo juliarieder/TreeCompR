@@ -45,7 +45,7 @@ LiDAR point clouds can be used directly to quantify the competition exerted by n
 This is how to quantify the competition with `compete_pc()` for one target tree using the cone method 
 (cone spanned in 60 % of target tree's height) or cylinder method with 5 m radius:
 
-```{r example1, message=FALSE, warning=FALSE}
+```{r example1, message=FALSE, warning=FALSE, eval=FALSE}
 library(TreeCompR)
 ## insert path to point cloud of the forest plot and to the target tree point cloud
 compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt", 
@@ -54,7 +54,7 @@ compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt",
            h_cone = 0.6)
 ```
 
-```{r example2, message=FALSE, warning=FALSE}
+```{r example2, message=FALSE, warning=FALSE, eval=FALSE}
 ## or the cylinder method with radius 5 m
 compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt", 
            tree_source = "../tests/testthat/testdata/tree.txt", 
@@ -67,21 +67,21 @@ compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt",
 
 Distance-dependent competition indices can be quantified using `compete_inv()`
 
-```{r example3, message=FALSE, warning=FALSE}
+```{r example3, message=FALSE, warning=FALSE, eval=FALSE}
 ## check or define target trees: read inventory file, define targets, plot results
 plot <- read_inv("../tests/testthat/testdata/inventory.csv", verbose = FALSE)
 targets <- define_target(plot,target_source = "buff_edge", radius = 10)
 ```
 
-```{r, fig1, fig.height= 3, fig.width=6}
+```{r, fig1, fig.height= 3, fig.width=6, eval=FALSE}
 ## plot the positions of the target trees and trees at the border
 plot_target(targets)
 ```
-
-```{r example4, message=FALSE, warning=FALSE}
+<img src="../man/figures/README-example3-1.png" alt="plot_trees" width="700">
+```{r example4, message=FALSE, warning=FALSE, eval=FALSE}
 ## insert path to inventory table or insert dataframe object
-compete_inv(inv_source = "../tests/testthat/testdata/inventory.csv",
-            target_source = "buff_edge",
+compete_inv(inv_source = plot,
+            target_source = targets,
             radius = 10, method = "all")
 
 ```

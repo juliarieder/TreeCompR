@@ -28,7 +28,7 @@ Once you have the two point clouds, you can use TreeCompR. Read and validate you
 Select the method competition method (comp_method) "cylinder" or "cone" or "both". Also the position of the center of the cone or cylinder can be "set" either to crown position ("crown_pos") or base position ("base_pos"). Usually the tree position is calculated by using the lowest points of a tree and take the mean or median, but if the tree is not growing straight, and we want to identify (crown-)competition, we think it is useful to go for the medoid of the crown (crown center). If you want to use the base position, there are additional parameters that you can adjust, as the h_xy (height in m over stem base where position xy should be calculated from) or z_min (minimum number of points in the lowermost 0.1 m of the tree to calculate base position of the tree).
 Read more on the methods themselves or the settings and sensitivity in [Seidel et al., 2015](https://doi.org/10.1016/j.foreco.2014.10.020), [Metz et al., 2013](https://www.sciencedirect.com/science/article/pii/S0378112713005410) or the original KKL index by [Pretzsch et al., 2002](https://www.sciencedirect.com/science/article/pii/S0378112702000476). 
 
-```{r setup}
+```{r setup, message=FALSE, warning=FALSE, eval=FALSE}
 library(TreeCompR)
 
 CI <- compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt", 
@@ -43,13 +43,10 @@ CI <- compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt",
 ```
 
 The result is a data frame that you can save or use for further statistical analysis. It contains the name or ID (filename) of the tree, the height of the tree, the center_position used, the CI value(s) and the main parameter settings.
-```{r result-pc}
-CI
-```
 
 If you want to use the same neighbourhood again, because you have more than one target tree within that plot, you do not need to read the point cloud from the file each time. Read it once with `read_pc()` and use it again. You can also load the target tree outside the `compete_pc()` function.
 
-```{r neighbour}
+```{r neighbour, warning=FALSE, eval=FALSE}
 neighbours <- read_pc("../tests/testthat/testdata/neighborhood.txt")
 tree <- read_pc("../tests/testthat/testdata/tree.txt")
 
