@@ -13,6 +13,7 @@ Quantify individual tree competition using inventory data or point clouds.
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://juliarieder.github.io/TreeCompR/}
   \item Report bugs at \url{https://github.com/juliarieder/TreeCompR/issues}
 }
 

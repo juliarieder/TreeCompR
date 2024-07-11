@@ -33,3 +33,4 @@ Suggests:
 BugReports: https://github.com/juliarieder/TreeCompR/issues
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+URL: https://juliarieder.github.io/TreeCompR/

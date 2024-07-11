@@ -3,7 +3,7 @@
 .RData
 .Ruserdata
 inst/doc
-docs
 /doc/
 /Meta/
 /tests/testthat/Rplots.pdf
+docs
