@@ -26,6 +26,8 @@ Imports:
     concaveman
 Suggests: 
     lidR,
+    TreeLS,
+    ggplot2,
     Rvcg,
     knitr (>= 1.43),
     rmarkdown (>= 2.24),
