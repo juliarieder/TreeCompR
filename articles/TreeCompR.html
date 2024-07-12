@@ -41,7 +41,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/ALS_inventory.html">ALS competition workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">competition-pointcloud</a></li>
+    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">Quantify competition from point clouds</a></li>
     <li><a class="dropdown-item" href="../articles/TLS_inventory.html">TLS competition workflow</a></li>
   </ul>
 </li>
@@ -146,7 +146,7 @@ a manual segmentation (e.g. in CloudCompare) is most accurate.</p>
 m radius:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
-<span><span class="co">## insert path to point cloud of the forest plot and to the target tree point cloud</span></span>
+<span><span class="co">## insert path to point cloud of the forest plot and to the target tree </span></span>
 <span><span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/neighborhood.txt"</span>, </span>
 <span>           tree_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/tree.txt"</span>, </span>
 <span>           comp_method <span class="op">=</span> <span class="st">"cone"</span>,</span>
@@ -162,7 +162,7 @@ m radius:</p>
 <p>Distance-dependent competition indices can be quantified using
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## check or define target trees: read inventory file, define targets, plot results</span></span>
+<code class="sourceCode R"><span><span class="co">## check or define target trees: read inventory file and define targets</span></span>
 <span><span class="va">plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="st">"../tests/testthat/testdata/inventory.csv"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span><span class="va">plot</span>,target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">

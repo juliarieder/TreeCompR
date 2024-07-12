@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>competition-pointcloud • TreeCompR</title>
+<title>Quantify competition from point clouds • TreeCompR</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="competition-pointcloud">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Quantify competition from point clouds">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -41,7 +41,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/ALS_inventory.html">ALS competition workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">competition-pointcloud</a></li>
+    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">Quantify competition from point clouds</a></li>
     <li><a class="dropdown-item" href="../articles/TLS_inventory.html">TLS competition workflow</a></li>
   </ul>
 </li>
@@ -63,7 +63,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>competition-pointcloud</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Quantify competition from point clouds</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/juliarieder/TreeCompR/blob/development/vignettes/competition-pointcloud.Rmd" class="external-link"><code>vignettes/competition-pointcloud.Rmd</code></a></small>
@@ -72,9 +72,9 @@
 
     
     
-<div class="section level3">
-<h3 id="pre-process-the-point-clouds">Pre-process the point clouds<a class="anchor" aria-label="anchor" href="#pre-process-the-point-clouds"></a>
-</h3>
+<div class="section level2">
+<h2 id="pre-process-the-point-clouds">Pre-process the point clouds<a class="anchor" aria-label="anchor" href="#pre-process-the-point-clouds"></a>
+</h2>
 <p>Before using the cone and cylinder point cloud approaches, the trees
 for which competition is to be quantified must be extracted from the
 plot. The most accurate way to do this is with <a href="https://www.danielgm.net/cc/" class="external-link">CloudCompare</a>. Load your point
@@ -99,18 +99,18 @@ will be asked to select the output resolution. If you choose a custom
 resolution or coordinate accuracy, make sure you choose the same for the
 target tree and the neighbourhood cloud!</p>
 </div>
-<div class="section level3">
-<h3 id="quantify-competition">Quantify Competition<a class="anchor" aria-label="anchor" href="#quantify-competition"></a>
-</h3>
+<div class="section level2">
+<h2 id="quantify-competition-with-treecompr">Quantify Competition with TreeCompR<a class="anchor" aria-label="anchor" href="#quantify-competition-with-treecompr"></a>
+</h2>
 <p>Once you have the two point clouds, you can use TreeCompR. Read and
 validate your point clouds (both the target tree and the neighbourhood).
-<img src="../reference/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700">
-Select the method competition method (comp_method) “cylinder” or “cone”
-or “both”. Also the position of the center of the cone or cylinder can
-be “set” either to crown position (“crown_pos”) or base position
-(“base_pos”). Usually the tree position is calculated by using the
-lowest points of a tree and take the mean or median, but if the tree is
-not growing straight, and we want to identify (crown-)competition, we
+<img src="../reference/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700"></p>
+<p>Select the method competition method (comp_method) “cylinder” or
+“cone” or “both”. Also the position of the center of the cone or
+cylinder can be “set” either to crown position (“crown_pos”) or base
+position (“base_pos”). Usually the tree position is calculated by using
+the lowest points of a tree and take the mean or median, but if the tree
+is not growing straight, and we want to identify (crown-)competition, we
 think it is useful to go for the medoid of the crown (crown center). If
 you want to use the base position, there are additional parameters that
 you can adjust, as the h_xy (height in m over stem base where position
@@ -157,7 +157,7 @@ tree outside the <code><a href="../reference/compete_pc.html">compete_pc()</a></
 <span>                <span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="batch-processing">batch-processing<a class="anchor" aria-label="anchor" href="#batch-processing"></a>
+<h2 id="example-for-batch-processing">Example for batch-processing<a class="anchor" aria-label="anchor" href="#example-for-batch-processing"></a>
 </h2>
 <p>If your study consists of many target trees and surrounding plots, it
 may be useful to create a lookup table and run the function for all your
@@ -169,11 +169,13 @@ trees. Here is an example of what this lookup table might look like:</p>
 <span><span class="va">trees_path</span> <span class="op">&lt;-</span> <span class="st">"/path/to/trees/"</span></span>
 <span></span>
 <span><span class="co"># List files in the neighborhood and tree folders</span></span>
-<span><span class="va">neighborhood_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">neighborhood_path</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span>, pattern <span class="op">=</span> <span class="st">"\\.las$"</span><span class="op">)</span></span>
+<span><span class="va">neighborhood_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">neighborhood_path</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>                                 pattern <span class="op">=</span> <span class="st">"\\.las$"</span><span class="op">)</span></span>
 <span><span class="va">tree_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">trees_path</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span>, pattern <span class="op">=</span> <span class="st">"\\.las$"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create TreeIDs if needed</span></span>
-<span><span class="co"># Assuming the same number of neighborhood and tree files, and each tree has a corresponding neighborhood file</span></span>
+<span><span class="co"># Assuming the same number of neighborhood and tree files, </span></span>
+<span><span class="co">#and each tree has a corresponding neighborhood file</span></span>
 <span><span class="va">TreeIDs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Tree_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">neighborhood_files</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Create the lookup table as a data frame</span></span>
@@ -197,7 +199,11 @@ trees. Here is an example of what this lookup table might look like:</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="va">lookup</span> <span class="op">&lt;-</span> <span class="va">lookup_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">forest_source</span>, <span class="va">tree_source</span><span class="op">)</span></span>
 <span><span class="co">#define parameter settings within the lookup table</span></span>
-<span><span class="va">lookup_cone50_cyl5</span> <span class="op">&lt;-</span> <span class="va">lookup</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>comp_method <span class="op">=</span> <span class="st">"both"</span>, center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, cyl_r <span class="op">=</span> <span class="fl">5</span>, h_cone <span class="op">=</span> <span class="fl">0.5</span>, z_min <span class="op">=</span> <span class="fl">100</span>, h_xy <span class="op">=</span> <span class="fl">0.3</span>, print_progress <span class="op">=</span> <span class="st">"some"</span><span class="op">)</span></span>
+<span><span class="va">lookup_cone50_cyl5</span> <span class="op">&lt;-</span> <span class="va">lookup</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>comp_method <span class="op">=</span> <span class="st">"both"</span>, </span>
+<span>                                               center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, </span>
+<span>                                               cyl_r <span class="op">=</span> <span class="fl">5</span>, h_cone <span class="op">=</span> <span class="fl">0.5</span>, </span>
+<span>                                               z_min <span class="op">=</span> <span class="fl">100</span>, h_xy <span class="op">=</span> <span class="fl">0.3</span>, </span>
+<span>                                               print_progress <span class="op">=</span> <span class="st">"some"</span><span class="op">)</span></span>
 <span><span class="co">#use pmap (alternative to lapply) to loop over your table</span></span>
 <span><span class="va">lookup_results_cone50_cyl5</span> <span class="op">&lt;-</span> <span class="va">lookup_cone50_cyl5</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pmap.html" class="external-link">pmap</a></span><span class="op">(</span><span class="va">compete_pc</span><span class="op">)</span></span>
 <span></span>
