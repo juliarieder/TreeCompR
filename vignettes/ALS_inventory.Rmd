@@ -21,31 +21,11 @@ library(TreeCompR)
 ```
 
 ## Read the point cloud
-The `lidR` package can read various data formats. Read in the raw ALS point cloud. Here we show the example data from the lidR package.
-
-```{r,echo=FALSE, message=FALSE, warning=FALSE}
-r3dDefaults = rgl::r3dDefaults
-m = structure(c(0.921, -0.146, 0.362, 0, 0.386, 0.482, -0.787, 0, 
-                -0.06, 0.864, 0.5, 0, 0, 0, 0, 1), .Dim = c(4L, 4L))
-r3dDefaults$FOV = 50
-r3dDefaults$userMatrix = m
-r3dDefaults$zoom = 0.75
-
-library(sf)
-library(ggplot2)
-
-LASfile <- system.file("extdata", "Megaplot.laz", package="lidR")
-las <- readLAS(LASfile)
-chm <- rasterize_canopy(las, 0.5, pitfree(subcircle = 0.2))
-
-
-options(crayon.enabled = TRUE)
-rgl::setupKnitr(autoprint = TRUE)
-    
-```
+The [`lidR`](https://CRAN.R-project.org/package=lidR) package can read various data formats. Read in the raw ALS point cloud. Here we show a workflow with the example data from the lidR package.
 
 ```r
-las <- readLAS("files.las")
+LASfile <- system.file("extdata", "Megaplot.laz", package="lidR")
+las <- readLAS(LASfile)
 #print a summary
 print(las)
 ```
@@ -70,7 +50,7 @@ Please note, there are various options on individual tree segmentations (e.g. ba
 
 For a segmentation based on CHM, first the CHM needs to be generated:
 
-```{r}
+```r
 # create CHM raster from point cloud with 0.5 m resolution (adjust values if needed)
 chm_p2r_05 <- rasterize_canopy(las, 0.5, p2r(subcircle = 0.2), pkg = "terra")
 
@@ -81,68 +61,76 @@ chm_p2r_05_smoothed <- terra::focal(chm_p2r_05, w = kernel, fun = median, na.rm 
 #locate tree tops
 ttops_chm_p2r_05_smoothed <- locate_trees(chm_p2r_05_smoothed, lmf(5))
 ```
-```{r plot-chm, fig.height=5, fig.width=5}
+```r
 col <- height.colors(50)
 plot(chm_p2r_05_smoothed, main = "CHM P2R 0.5 smoothed", col = col); plot(sf::st_geometry(ttops_chm_p2r_05_smoothed), add = T, pch =3)
 ```
+<img src="../man/figures/chm_ttops.jpeg" alt="chm" width="500">
 
 ## Segment the trees
 
-```{r las-its, warning = FALSE}
+```r
 algo <- dalponte2016(chm_p2r_05_smoothed, ttops_chm_p2r_05_smoothed)
 las <- segment_trees(las, algo) # segment point cloud
-```
-```r
 plot(las, bg = "white", size = 4, color = "treeID") # visualize trees
 ```
 <img src="../man/figures/lidR_plot2.jpg" alt="lidR2" width="500">
 
-Get crown metrics:
+## Get crown metrics
 
-```{r plot-tree-hulls-its, fig.height=4, fig.width=4}
+```r
 crowns <- crown_metrics(las, func = .stdtreemetrics, geom = "convex")
 plot(crowns["convhull_area"], main = "Crown area (convex hull)")
 ```
-```{r plot-trees, fig.height=4, fig.width=4}
+<img src="../man/figures/cpa_ALS.jpeg" alt="cpa" width="500">
+
+```r
 trees <- crown_metrics(las, func = .stdtreemetrics, geom = "point")
 plot(trees["Z"], main = "Tree heights", pch = 16)
 ```
+<img src="../man/figures/heights_ALS.jpeg" alt="heights" width="500">
 
 ## Integration into TreeCompR
 Extract a inventory table from the crown data:
 
-```{r print-inventory, message=FALSE, warning=FALSE}
+```r
+library(sf)
 library(dplyr)
 inventory <- trees %>%
   mutate(x = st_coordinates(.)[,1], y = st_coordinates(.)[,2]) %>%
   st_set_geometry(NULL)
-print(inventory)
 ```
 validate the inventory table with `read_inv()` and define target trees (automatically) with `define_targets()` where trees at the edge of the plot or dataset (1 search radius away from plot edge) are automatically excluded for calculating CIs. 
-```{r read-inv, fig.height= 4, fig.width=7}
+
+```r
 inv_trees <- read_inv(inventory, height = Z, height_unit = "m")
 targets_buff <- define_target(inv_trees, target_source = "buff_edge", radius = 10)
 plot_target(targets_buff)
 ```
+<img src="../man/figures/plot_target_ALS.jpeg" alt="targets" width="500">
+
 Now you can calculate the tree competition (size-distance-dependent) for your trees. Afterwards you can print your results, save the dataframe or plot the results according to your needs.
-```{r calc-CI}
-CI <- compete_inv(inv_source = inv_trees, target_source = "buff_edge", radius = 10, method = "all")
-CI
+```r
+CI <- compete_inv(inv_source = inv_trees, target_source = "buff_edge", 
+                  radius = 10, method = "all")
 ```
 ## plot the results
 
-```{r plot-CI, fig.height= 5, fig.width=6}
+```r
 library(ggplot2)
 ggplot(CI, aes(x = x, y = y, color = CI_Braathe)) +
   geom_point(size = 2, alpha = 0.7) + # Adjust point size and transparency
-  scale_color_gradient(low = "yellow", high = "darkred", name = "CI Braathe") + # Customizing color scale
+  scale_color_gradient(low = "yellow", high = "darkred", 
+                       name = "CI Braathe") + # Customizing color scale
   theme_classic() + # Change the theme
-  labs(title = "Competition based on tree heights and distance", x = "X", y = "Y") + # Add title and axis labels
+  labs(title = "Competition based on tree heights and distance", 
+       x = "X", y = "Y") + # Add title and axis labels
   theme(
     plot.title = element_text(hjust = 0.5), # Center the plot title
     legend.position = "right" # Position of the legend
   )
 ```
+<img src="../man/figures/CI_Braathe_ALS.jpeg" alt="CIB" width="500">
 
 ## Other options to pre-process the ALS point clouds
 There are other packages available, e.g. the [`itcSegment`](https://rdrr.io/cran/itcSegment/) package. Within their function `itcLiDARallo()`, 
