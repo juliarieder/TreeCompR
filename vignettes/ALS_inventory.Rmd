@@ -64,9 +64,7 @@ las_check(las)
 ```r
 plot(las)
 ```
-```{r plot-las, echo = FALSE, rgl = TRUE, fig.width = 5, fig.height = 4}
-plot(las, size = 3, bg = "white", legend = TRUE)
-```
+<img src="../man/figures/lidR_plot1.jpg" alt="lidR1" width="500">
 
 Please note, there are various options on individual tree segmentations (e.g. based on the [point cloud](https://r-lidar.github.io/lidRbook/itd-its.html#its-cloud) or [canopy height model](https://r-lidar.github.io/lidRbook/itd-its.html#its-chm)). Be aware, that based on your own data, you might need to test the approaches and the results and check visually, if the results are realistic.
 
@@ -90,11 +88,14 @@ plot(chm_p2r_05_smoothed, main = "CHM P2R 0.5 smoothed", col = col); plot(sf::st
 
 ## Segment the trees
 
-```{r plot-las-its, rgl = TRUE, fig.width = 4, fig.height = 4, warning = FALSE}
+```{r las-its, warning = FALSE}
 algo <- dalponte2016(chm_p2r_05_smoothed, ttops_chm_p2r_05_smoothed)
 las <- segment_trees(las, algo) # segment point cloud
+```
+```r
 plot(las, bg = "white", size = 4, color = "treeID") # visualize trees
 ```
+<img src="../man/figures/lidR_plot2.jpg" alt="lidR2" width="500">
 
 Get crown metrics:
 
