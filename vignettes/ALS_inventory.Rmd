@@ -140,7 +140,8 @@ trees are being segmented based on typical allometric relations that can be defi
 library(itcSegment)
 
 
-# create a lookup table with common height-crown diameter-relations (example from itcSegment)
+# create a lookup table with common height-crown diameter-relations 
+# (example from itcSegment, also used in our case study)
 lut <- data.frame(
   H = c(2, 10, 15, 20, 25, 30),
   CD = c(0.5, 1, 2, 3, 4, 5))
@@ -159,5 +160,6 @@ plot(se,axes=T)
 #validate the output in TreeCompR
 inv_trees <- read_inv(se, height = Height_m, height_unit = "m")
 #quantify tree competition (adjust radius)
-compete_inv(inv_source = inv_trees, target_source = "buff_edge", radius = 13.5, method = "all")
+compete_inv(inv_source = inv_trees, target_source = "buff_edge", 
+            radius = 13.5, method = "all")
 ```

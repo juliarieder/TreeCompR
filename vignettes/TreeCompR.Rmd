@@ -47,7 +47,7 @@ This is how to quantify the competition with `compete_pc()` for one target tree 
 
 ```{r example1, message=FALSE, warning=FALSE, eval=FALSE}
 library(TreeCompR)
-## insert path to point cloud of the forest plot and to the target tree point cloud
+## insert path to point cloud of the forest plot and to the target tree 
 compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt", 
            tree_source = "../tests/testthat/testdata/tree.txt", 
            comp_method = "cone",
@@ -68,7 +68,7 @@ compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt",
 Distance-dependent competition indices can be quantified using `compete_inv()`
 
 ```{r example3, message=FALSE, warning=FALSE, eval=FALSE}
-## check or define target trees: read inventory file, define targets, plot results
+## check or define target trees: read inventory file and define targets
 plot <- read_inv("../tests/testthat/testdata/inventory.csv", verbose = FALSE)
 targets <- define_target(plot,target_source = "buff_edge", radius = 10)
 ```

@@ -30,7 +30,11 @@ You can install the development version of TreeCompR from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("juliarieder/TreeCompR", dependencies = TRUE, build_vignettes = TRUE)
+devtools::install_github("juliarieder/TreeCompR", dependencies = TRUE)
+
+# or with vignettes on your computer
+devtools::install_github("juliarieder/TreeCompR", 
+            dependencies = TRUE, build_vignettes = TRUE)
 ```
 
 ## Overview
@@ -70,7 +74,7 @@ height) or cylinder method with 5 m radius:
 
 ``` r
 library(TreeCompR)
-## insert path to point cloud of the forest plot and to the target tree point cloud
+## insert path to point cloud of the forest plot and to the target tree 
 compete_pc(forest_source = "tests/testthat/testdata/neighborhood.txt", 
            tree_source = "tests/testthat/testdata/tree.txt", 
            comp_method = "cone",
@@ -104,7 +108,7 @@ Distance-dependent competition indices can be quantified using
 `compete_inv()`
 
 ``` r
-## check or define target trees: read inventory file, define targets, plot results
+## check or define target trees: read inventory file and define targets
 plot <- read_inv("tests/testthat/testdata/inventory.csv", verbose = FALSE)
 targets <- define_target(plot,target_source = "buff_edge", radius = 10)
 ```

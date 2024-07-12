@@ -1,5 +1,5 @@
 ---
-title: "competition-pointcloud"
+title: "Quantify competition from point clouds"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{competition-pointcloud}
@@ -21,10 +21,11 @@ Before using the cone and cylinder point cloud approaches, the trees for which c
 
 After extracting the target tree, export the point cloud by selecting the file in the DB Tree and click File - Save. Do the same for the whole plot, but first clip the point cloud to your area of interest. The best way to do this is to select top view and use the [Cross Section] function (https://www.cloudcompare.org/doc/wiki/index.php/Cross_Section) to clip your point cloud. Make sure that your target tree is not at the edge of the plot. We used 30x30m plots. When exporting/saving the point clouds, you can select .las/.laz, .txt, .csv, ... after clicking save, you will be asked to select the output resolution. If you choose a custom resolution or coordinate accuracy, make sure you choose the same for the target tree and the neighbourhood cloud!
 
-## Quantify Competition
+## Quantify Competition with TreeCompR
 
 Once you have the two point clouds, you can use TreeCompR. Read and validate your point clouds (both the target tree and the neighbourhood). 
 <img src="../man/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700">
+
 Select the method competition method (comp_method) "cylinder" or "cone" or "both". Also the position of the center of the cone or cylinder can be "set" either to crown position ("crown_pos") or base position ("base_pos"). Usually the tree position is calculated by using the lowest points of a tree and take the mean or median, but if the tree is not growing straight, and we want to identify (crown-)competition, we think it is useful to go for the medoid of the crown (crown center). If you want to use the base position, there are additional parameters that you can adjust, as the h_xy (height in m over stem base where position xy should be calculated from) or z_min (minimum number of points in the lowermost 0.1 m of the tree to calculate base position of the tree).
 Read more on the methods themselves or the settings and sensitivity in [Seidel et al., 2015](https://doi.org/10.1016/j.foreco.2014.10.020), [Metz et al., 2013](https://www.sciencedirect.com/science/article/pii/S0378112713005410) or the original KKL index by [Pretzsch et al., 2002](https://www.sciencedirect.com/science/article/pii/S0378112702000476). 
 
@@ -62,7 +63,8 @@ CI <- compete_pc(forest_source = neighbours,
 ```
 
 
-# batch-processing
+## Example for batch-processing
+
 If your study consists of many target trees and surrounding plots, it may be useful to create a lookup table and run the function for all your trees. Here is an example of what this lookup table might look like:
 ```{r lut, echo=FALSE, message=FALSE, warning=FALSE}
 # Define the base paths
@@ -94,11 +96,13 @@ neighborhood_path <- "/path/to/neighborhood/"
 trees_path <- "/path/to/trees/"
 
 # List files in the neighborhood and tree folders
-neighborhood_files <- list.files(neighborhood_path, full.names = TRUE, pattern = "\\.las$")
+neighborhood_files <- list.files(neighborhood_path, full.names = TRUE, 
+                                 pattern = "\\.las$")
 tree_files <- list.files(trees_path, full.names = TRUE, pattern = "\\.las$")
 
 # Create TreeIDs if needed
-# Assuming the same number of neighborhood and tree files, and each tree has a corresponding neighborhood file
+# Assuming the same number of neighborhood and tree files, 
+#and each tree has a corresponding neighborhood file
 TreeIDs <- paste0("Tree_", seq_along(neighborhood_files))
 
 # Create the lookup table as a data frame
@@ -118,7 +122,11 @@ print(lookup_table)
 library(dplyr)
 lookup <- lookup_table %>% dplyr::select(forest_source, tree_source)
 #define parameter settings within the lookup table
-lookup_cone50_cyl5 <- lookup %>% dplyr::mutate(comp_method = "both", center_position = "crown_pos", cyl_r = 5, h_cone = 0.5, z_min = 100, h_xy = 0.3, print_progress = "some")
+lookup_cone50_cyl5 <- lookup %>% dplyr::mutate(comp_method = "both", 
+                                               center_position = "crown_pos", 
+                                               cyl_r = 5, h_cone = 0.5, 
+                                               z_min = 100, h_xy = 0.3, 
+                                               print_progress = "some")
 #use pmap (alternative to lapply) to loop over your table
 lookup_results_cone50_cyl5 <- lookup_cone50_cyl5 %>% purrr::pmap(compete_pc)
 
