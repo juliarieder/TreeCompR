@@ -30,14 +30,14 @@ argument).}
 \value{
 object of class "tree_pos" containing the following components:
 \itemize{
-\item{base_pos}{numeric vector of length 3 with the x, y, z coordinates
+\item{base_pos} {numeric vector of length 3 with the x, y, z coordinates
 of the tree base position.}
-\item{crown_pos}{numeric vector of length 3 with the x, and y
+\item{crown_pos} {numeric vector of length 3 with the x, and y
 coordinates of the central point of the crown projected
 area and the z position of the stem base identified as
 above.}
-\item{height}{numeric of length one containing the tree height in m.}
-\item{tree_name}{name of the object used as the "tree" argument, or name
+\item{height} {numeric of length one containing the tree height in m.}
+\item{tree_name} {name of the object used as the "tree" argument, or name
 specified by the user.}
 }
 }
