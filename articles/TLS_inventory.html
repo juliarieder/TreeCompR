@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>TLS_inventory • TreeCompR</title>
+<title>TLS competition workflow • TreeCompR</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="TLS_inventory">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="TLS competition workflow">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -42,7 +42,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/ALS_inventory.html">ALS competition workflow</a></li>
     <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">competition-pointcloud</a></li>
-    <li><a class="dropdown-item" href="../articles/TLS_inventory.html">TLS_inventory</a></li>
+    <li><a class="dropdown-item" href="../articles/TLS_inventory.html">TLS competition workflow</a></li>
   </ul>
 </li>
       </ul>
@@ -63,7 +63,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>TLS_inventory</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>TLS competition workflow</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/juliarieder/TreeCompR/blob/development/vignettes/TLS_inventory.Rmd" class="external-link"><code>vignettes/TLS_inventory.Rmd</code></a></small>
@@ -72,33 +72,85 @@
 
     
     
+<div class="section level2">
+<h2 id="pre-processing-of-tls-or-mls-point-clouds">Pre-processing of TLS or MLS point clouds<a class="anchor" aria-label="anchor" href="#pre-processing-of-tls-or-mls-point-clouds"></a>
+</h2>
 <p>For extracting information on tree level from close-range laser
-scanning (TLS or MLS), you can use the <a href="https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2" class="external-link"><code>TreeLS</code></a>
+scanning (TLS or MLS), you can use e.g. the <a href="https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2" class="external-link"><code>TreeLS</code></a>
 package. We will show a workflow on how to implement the output of
 TreeLS within TreeCompR.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">TreeLS</span><span class="op">)</span></span></code></pre></div>
+<p>First load the las data, normalize the height, sample the point
+cloud, estimate tree occurrence regions, classify stem points and
+estimate the diameter and height of each individual tree.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span>    <span class="va">file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"pine_plot.laz"</span>, package<span class="op">=</span><span class="st">"TreeLS"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span>    <span class="va">file</span> <span class="op">&lt;-</span> <span class="st">"path/to/file"</span></span>
 <span>    <span class="va">tls</span> <span class="op">&lt;-</span> <span class="fu">readTLS</span><span class="op">(</span><span class="va">file</span><span class="op">)</span></span>
 <span>    <span class="va">tls_norm</span> <span class="op">&lt;-</span> <span class="fu">tlsNormalize</span><span class="op">(</span><span class="va">tls</span>, keep_ground <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
 <span>    <span class="va">thin</span> <span class="op">&lt;-</span> <span class="fu">tlsSample</span><span class="op">(</span><span class="va">tls_norm</span>, <span class="fu">smp.voxelize</span><span class="op">(</span><span class="fl">0.01</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">map</span> <span class="op">&lt;-</span> <span class="fu">treeMap</span><span class="op">(</span><span class="va">thin</span>, <span class="fu">map.hough</span><span class="op">(</span>min_density <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span></span>
 <span>    <span class="va">tls_t</span> <span class="op">&lt;-</span> <span class="fu">treePoints</span><span class="op">(</span><span class="va">tls_norm</span>, <span class="va">map</span>, <span class="fu">trp.crop</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">tls_stem</span> <span class="op">&lt;-</span> <span class="fu">stemPoints</span><span class="op">(</span><span class="va">tls_t</span>, <span class="fu">stm.hough</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">inv</span> <span class="op">&lt;-</span> <span class="fu">tlsInventory</span><span class="op">(</span><span class="va">tls_stem</span>, d_method<span class="op">=</span><span class="fu">shapeFit</span><span class="op">(</span>shape<span class="op">=</span><span class="st">'circle'</span>, algorithm <span class="op">=</span> <span class="st">'ransac'</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">inv</span><span class="op">$</span><span class="va">dbh</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">inv</span><span class="op">$</span><span class="va">Radius</span> <span class="op">*</span><span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<span>    <span class="va">inv</span> <span class="op">&lt;-</span> <span class="fu">tlsInventory</span><span class="op">(</span><span class="va">tls_stem</span>, d_method<span class="op">=</span><span class="fu">shapeFit</span><span class="op">(</span>shape<span class="op">=</span><span class="st">'circle'</span>, </span>
+<span>                                                    algorithm <span class="op">=</span> <span class="st">'ransac'</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">inv</span><span class="op">$</span><span class="va">dbh</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">inv</span><span class="op">$</span><span class="va">Radius</span> <span class="op">*</span><span class="fl">2</span><span class="op">)</span></span>
+<span>    <span class="va">inv</span></span></code></pre></div>
+<p><img src="../reference/figures/TLS_plot3d.jpg" alt="plot_trees3d" width="500"></p>
+</div>
 <div class="section level2">
 <h2 id="use-extracted-tree-information-within-treecompr">Use extracted tree information within TreeCompR<a class="anchor" aria-label="anchor" href="#use-extracted-tree-information-within-treecompr"></a>
 </h2>
+<p>To ensure that the inventory data is assigned correctly, check the
+data and make sure that you specify the units dbh and height, if they
+differ from the default which is metres in both cases. Use
+<code><a href="../reference/read_inv.html">read_inv()</a></code> to validate your inventory data within
+<code>TreeCompR</code>. To visually check, for which trees the CIs would
+be quantified, depending on the chosen search radius, you can use
+<code><a href="../reference/define_target.html">define_target()</a></code> and <code><a href="../reference/plot_target.html">plot_target()</a></code>. We
+recommend to use target_source = “buff_edge”, to automatically calculate
+the CI for all trees in the plot but to only include trees, that are one
+search radius away from the forest edge. This is specifically important
+for TLS/MLS data, since the data usually does not cover a whole forest
+but a forest plot.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv</span>, dbh_unit <span class="op">=</span> <span class="st">"m"</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
-<span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span>inv <span class="op">=</span> <span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">2</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span>inv <span class="op">=</span> <span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span></span></code></pre></div>
+<p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="700"></p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
+<span>              method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
 </div>
-  </main>
+<div class="section level2">
+<h2 id="user-cases">User cases<a class="anchor" aria-label="anchor" href="#user-cases"></a>
+</h2>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## If you focus on a specific CI, e.g. the widely used Hegyi-Index, </span></span>
+<span><span class="co">## you can choose it within methods = "CI_Hegyi".</span></span>
+<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
+<span>              method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## If you have a tree height column that is not automatically recognized within </span></span>
+<span><span class="co">## our validation of input data, you can set it manually:</span></span>
+<span><span class="co"># in read_inv():</span></span>
+<span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inventory</span>, height <span class="op">=</span> <span class="st">"h_column_name"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># in compete_inv():</span></span>
+<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
+<span>              height <span class="op">=</span> <span class="st">"h_column_name"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## If your dbh is specified in cm, just change the dbh_unit to "cm"</span></span>
+<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
+<span>              dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## If you want to keep a column with certain user defined IDs for the trees, </span></span>
+<span><span class="co">## and it is not recognized, specify it with id = "name_column"</span></span>
+<span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inventory</span>, id <span class="op">=</span> <span class="st">"ID_user"</span><span class="op">)</span></span></code></pre></div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 
