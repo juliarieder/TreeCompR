@@ -24,8 +24,8 @@
 #'   See details for computation.
 #' @param center_position character string of length 1 with the position used
 #'   as the center of the search cone/cylinder. Allowed values are "crown_pos"
-#'   for the metroid of the crown projected area and "base_pos" for the stem
-#'   base position as computed by [tree_pos()]. Default value is "crown_pos".
+#'   for the central point of the crown projected area and "base_pos" for the
+#'   stem base position as computed by [tree_pos()]. Default value is "crown_pos".
 #' @param tree_name (optional) ID for the tree. If no argument is put, defaults
 #'   to the name of the argument provided as `tree_source`.
 #' @param cyl_r (optional) only needed when using comp_method "cylinder";

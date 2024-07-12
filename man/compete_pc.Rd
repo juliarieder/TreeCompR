@@ -48,8 +48,8 @@ See details for computation.}
 
 \item{center_position}{character string of length 1 with the position used
 as the center of the search cone/cylinder. Allowed values are "crown_pos"
-for the metroid of the crown projected area and "base_pos" for the stem
-base position as computed by \code{\link[=tree_pos]{tree_pos()}}. Default value is "crown_pos".}
+for the central point of the crown projected area and "base_pos" for the
+stem base position as computed by \code{\link[=tree_pos]{tree_pos()}}. Default value is "crown_pos".}
 
 \item{tree_name}{(optional) ID for the tree. If no argument is put, defaults
 to the name of the argument provided as \code{tree_source}.}
