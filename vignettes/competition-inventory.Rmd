@@ -1,0 +1,70 @@
+---
+title: "Quantify competition from inventory data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{competition-inventory}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+## Overview 
+
+Within `TreeCompR` it is possible to easily derive size-distance-dependent competition indices based on inventory data. This data can be collected in the field, or derived or modelled from 3D point clouds. Depending on the input data, there are some necessary pre-processing steps. Check out our workflows:
+
+* From airborne laser scanning data to competition indices vignette("ALS_inventory")
+
+* From ground-based laser scanning data (from MLS/TLS) to competition indices vignette("TLS_inventory")
+
+
+## Use inventory data within TreeCompR
+
+The inventory data must contain x and y coordinates of the individual trees and at least one more variable (e.g. height or dbh). To ensure that the inventory data is assigned correctly, check the data and make sure that you specify the units dbh and height, if they differ from the default which is metres in both cases. Use `read_inv()` to validate your inventory data within `TreeCompR`. To visually check, for which trees the CIs would be quantified, depending on the chosen search radius, you can use `define_target()` and `plot_target()`. We recommend to use target_source = "buff_edge", to automatically calculate the CI for all trees in the plot but to only include trees, that are one search radius away from the forest edge. This is specifically important for TLS/MLS data, since the data usually does not cover a whole forest but a forest plot. 
+```{r setup}
+library(TreeCompR)
+```
+```{r calculate-CI, message=FALSE,warning=FALSE, eval = FALSE}
+inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")
+targets <- define_target(inv = inventory, target_source = "buff_edge", radius = 10)
+plot_target(targets)
+```
+<img src="../man/figures/README-example3-1.png" alt="plot_trees" width="700">
+
+```r
+compete_inv(inventory, target_source = "buff_edge", radius = 10, 
+              method = "all_methods")
+```
+## User cases
+
+
+```r
+## read inventory from file directory
+inventory <- read_inv(inv_source = "path/to/file")
+
+## If you focus on a specific CI, e.g. the widely used Hegyi-Index, 
+## you can choose it within methods = "CI_Hegyi".
+compete_inv(inventory, target_source = "buff_edge", radius = 10, 
+              method = "CI_Hegyi")
+
+## If you have a tree height column that is not automatically recognized within 
+## our validation of input data, you can set it manually:
+# in read_inv():
+inventory <- read_inv(inv_source = inventory, height = "h_column_name")
+
+# in compete_inv():
+compete_inv(inventory, target_source = "buff_edge", radius = 10, 
+              height = "h_column_name", method = "CI_Hegyi")
+
+## If your dbh is specified in cm, just change the dbh_unit to "cm"
+compete_inv(inventory, target_source = "buff_edge", radius = 10, 
+              dbh_unit = "cm", method = "CI_Hegyi")
+
+## If you want to keep a column with certain user defined IDs for the trees, 
+## and it is not recognized, specify it with id = "name_column"
+inventory <- read_inv(inv_source = inventory, id = "ID_user")
+```
