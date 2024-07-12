@@ -1,5 +1,5 @@
 ---
-title: "TLS_inventory"
+title: "TLS competition workflow"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{TLS_inventory}
@@ -13,30 +13,71 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-For extracting information on tree level from close-range laser scanning (TLS or MLS), you can use the [`TreeLS`](https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2) package. We will show a workflow on how to implement the output of TreeLS within TreeCompR.
+## Pre-processing of TLS or MLS point clouds
+
+For extracting information on tree level from close-range laser scanning 
+(TLS or MLS), you can use e.g. the [`TreeLS`](https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2) package. 
+We will show a workflow on how to implement the output of TreeLS within TreeCompR.
 ```{r setup, message=FALSE,warning=FALSE, eval = FALSE}
 library(TreeCompR)
 library(TreeLS)
 ```
 
+First load the las data, normalize the height, sample the point cloud, estimate tree occurrence regions, classify stem points and estimate the diameter and height of each individual tree. 
 ```{r segment-TLS, eval = FALSE}
-    file <- system.file("extdata", "pine_plot.laz", package="TreeLS")
+    file <- "path/to/file"
     tls <- readTLS(file)
     tls_norm <- tlsNormalize(tls, keep_ground = F)
     thin <- tlsSample(tls_norm, smp.voxelize(0.01))
     map <- treeMap(thin, map.hough(min_density = 0.1), 0)
     tls_t <- treePoints(tls_norm, map, trp.crop())
     tls_stem <- stemPoints(tls_t, stm.hough())
-    inv <- tlsInventory(tls_stem, d_method=shapeFit(shape='circle', algorithm = 'ransac'))
+    inv <- tlsInventory(tls_stem, d_method=shapeFit(shape='circle', 
+                                                    algorithm = 'ransac'))
     inv$dbh <- (inv$Radius *2)
+    inv
 ```
+
+<img src="../man/figures/TLS_plot3d.jpg" alt="plot_trees3d" width="500">
 
 ## Use extracted tree information within TreeCompR
 
-```{r calculate-CI, message=FALSE,warning=FALSE, fig.height= 4, fig.width=7, eval = FALSE}
-inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")
-targets <- define_target(inv = inventory, target_source = "buff_edge", radius = 2)
-plot_target(targets)
-compete_inv(inventory, target_source = "buff_edge", radius = 2, method = "all_methods")
-```
+To ensure that the inventory data is assigned correctly, check the data and make sure that you specify the units dbh and height, if they differ from the default which is metres in both cases. Use `read_inv()` to validate your inventory data within `TreeCompR`. To visually check, for which trees the CIs would be quantified, depending on the chosen search radius, you can use `define_target()` and `plot_target()`. We recommend to use target_source = "buff_edge", to automatically calculate the CI for all trees in the plot but to only include trees, that are one search radius away from the forest edge. This is specifically important for TLS/MLS data, since the data usually does not cover a whole forest but a forest plot. 
 
+```{r calculate-CI, message=FALSE,warning=FALSE, eval = FALSE}
+inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")
+targets <- define_target(inv = inventory, target_source = "buff_edge", radius = 10)
+plot_target(targets)
+```
+<img src="../man/figures/README-example3-1.png" alt="plot_trees" width="700">
+
+```r
+compete_inv(inventory, target_source = "buff_edge", radius = 10, 
+              method = "all_methods")
+```
+## User cases
+
+
+```r
+## If you focus on a specific CI, e.g. the widely used Hegyi-Index, 
+## you can choose it within methods = "CI_Hegyi".
+compete_inv(inventory, target_source = "buff_edge", radius = 10, 
+              method = "CI_Hegyi")
+
+## If you have a tree height column that is not automatically recognized within 
+## our validation of input data, you can set it manually:
+# in read_inv():
+inventory <- read_inv(inv_source = inventory, height = "h_column_name")
+
+# in compete_inv():
+compete_inv(inventory, target_source = "buff_edge", radius = 10, 
+              height = "h_column_name", method = "CI_Hegyi")
+
+## If your dbh is specified in cm, just change the dbh_unit to "cm"
+compete_inv(inventory, target_source = "buff_edge", radius = 10, 
+              dbh_unit = "cm", method = "CI_Hegyi")
+
+## If you want to keep a column with certain user defined IDs for the trees, 
+## and it is not recognized, specify it with id = "name_column"
+inventory <- read_inv(inv_source = inventory, id = "ID_user")
+```
