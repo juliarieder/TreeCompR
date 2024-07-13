@@ -80,43 +80,61 @@
 size-distance-dependent competition indices based on inventory data.
 This data can be collected in the field, or derived or modelled from 3D
 point clouds. Depending on the input data, there are some necessary
-pre-processing steps. Check out our workflows:</p>
+pre-processing steps. Check out our workflows: <!-- Yo, Digga --></p>
 <ul>
-<li><p>From airborne laser scanning data to competition indices
-vignette(“ALS_inventory”)</p></li>
-<li><p>From ground-based laser scanning data (from MLS/TLS) to
-competition indices vignette(“TLS_inventory”)</p></li>
+<li>From airborne laser scanning data to competition indices:
+vignette(“ALS_inventory”): <a href="https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html">ALS
+workflow</a>
+</li>
+<li>From ground-based laser scanning data (from MLS/TLS) to competition
+indices: <a href="https://juliarieder.github.io/TreeCompR/articles/TLS_inventory.html">TLS
+workflow</a>
+</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="use-inventory-data-within-treecompr">Use inventory data within TreeCompR<a class="anchor" aria-label="anchor" href="#use-inventory-data-within-treecompr"></a>
 </h2>
 <p>The inventory data must contain x and y coordinates of the individual
-trees and at least one more variable (e.g. height or dbh). To ensure
-that the inventory data is assigned correctly, check the data and make
-sure that you specify the units dbh and height, if they differ from the
-default which is metres in both cases. Use <code><a href="../reference/read_inv.html">read_inv()</a></code> to
-validate your inventory data within <code>TreeCompR</code>. To visually
-check, for which trees the CIs would be quantified, depending on the
-chosen search radius, you can use <code><a href="../reference/define_target.html">define_target()</a></code> and
-<code><a href="../reference/plot_target.html">plot_target()</a></code>. We recommend to use target_source =
-“buff_edge”, to automatically calculate the CI for all trees in the plot
-but to only include trees, that are one search radius away from the
-forest edge. This is specifically important for TLS/MLS data, since the
-data usually does not cover a whole forest but a forest plot.</p>
+trees and at least one more size-related variable (e.g. height or
+diameter at breast height). To ensure that the inventory data is
+assigned correctly, check the data and make sure that you specify the
+units dbh and height, if they differ from the default, which is cm for
+dbh and m for height. You can either use <code><a href="../reference/read_inv.html">read_inv()</a></code> to
+validate your inventory data and convert them to an object type used by
+the <code>TreeCompR</code> functions, or directly pass data.frames or
+paths to files to <code><a href="../reference/compete_inv.html">compete_inv()</a></code>. The former is especially
+useful if you have data with non-standard column names or data
+structures and want to fully control how they are parsed.</p>
+<p>To select target trees for computing competition indices and visually
+inspect their position relative to the other trees in the neighbourhood,
+you can use the function <code><a href="../reference/define_target.html">define_target()</a></code> and
+<code><a href="../reference/plot_target.html">plot_target()</a></code>. If there is no list of a priori specified
+target trees and the aim is to calculate valid competition indices for
+as many trees as possible, we recommend to use
+<code>target_source = "buff_edge"</code>. This automatically designates
+all trees in the plot that are at least one search radius away from the
+forest edge (approximated by a concave hull). This is specifically
+important for TLS/MLS data, since the data usually does not cover
+relatively small forest plot rather than entire forests. While it is
+possible to compute competition indices for all trees
+(<code>target_source = "all_trees"</code>), this results in a warning
+and should only be done if there very good reasons to assume that the
+edge trees in the data are actually situated at the forest edge as
+otherwise there will be intense edge effects.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv</span>, dbh_unit <span class="op">=</span> <span class="st">"m"</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
 <span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span>inv <span class="op">=</span> <span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span></span></code></pre></div>
-<p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="700"></p>
+<p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="500"></p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
 <span>              method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="user-cases">User cases<a class="anchor" aria-label="anchor" href="#user-cases"></a>
+<h2 id="use-cases">Use cases<a class="anchor" aria-label="anchor" href="#use-cases"></a>
 </h2>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## read inventory from file directory</span></span>

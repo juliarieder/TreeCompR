@@ -271,7 +271,9 @@ if something goes wrong.</p>
 <span></span>
 <span><span class="co">#re-structure results from list to dataframe</span></span>
 <span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">lookup_results_cone50_cyl5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><!-- COMMENT: We absolutely need the output for the different steps of the analysis - look at TreeCompR.Rmd to see how you can do it easily. Also, why not simply use bind_rows(lookup_results_cone50_cyl5) instead of that weird  do.call based thing? that's how I did it in the examples, doesn't it work here? If we do not coerce to data.frame, we also keep printing as a compete_pc object which (hopefully) looks nicer than a raw data.frame output --></p>
+<p><!-- COMMENT: We absolutely need the output for the different steps of the analysis - look at TreeCompR.Rmd to see how you can do it easily. Also, why not simply use bind_rows(lookup_results_cone50_cyl5) instead of that weird  do.call based thing? that's how I did it in the examples, doesn't it work here? If we do not coerce to data.frame, we also keep printing as a compete_pc object which (hopefully) looks nicer than a raw data.frame output
+I'd just go for "results <- lookup_cone50_cyl5 %>% purrr::pmap(compete_pc) %>% dplyr::bind_rows()
+ for the sake of simplicity. --></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
