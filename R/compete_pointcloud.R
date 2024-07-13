@@ -212,7 +212,7 @@ compete_pc <- function(forest_source, tree_source,
     cat("----- Processing competition indices for:", tree_name, "-----\n")
   }
   # read data for central tree
-  tree <- read_pc(tree_source, verbose = print_progress != "none", ...)
+  tree <- read_pc(tree_source, verbose = print_progress == "full", ...)
   # get position and height of central tree
   position <- tree_pos(tree, z_min = z_min, h_xy = h_xy, res = res)
   # get basis position of the cone/cylinder
@@ -221,7 +221,7 @@ compete_pc <- function(forest_source, tree_source,
   h <- position[["height"]]
 
   # read data for neighborhood
-  hood <- read_pc(forest_source, verbose = print_progress != "none", ...)
+  hood <- read_pc(forest_source, verbose = print_progress == "full", ...)
 
   # check if the tree is part of this neighborhood
   if (!(pos["x"] %inrange% range(hood$x) && pos["y"] %inrange% range(hood$y))){
