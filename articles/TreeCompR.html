@@ -80,35 +80,62 @@ individual tree competition indices</p>
 <!-- badges: end -->
 <p>This R package is designed for the quantitative analysis of
 individual tree competition within forest ecosystems. It accepts inputs
-such as LiDAR point clouds (as dataframe with xyz columns or las/laz
-files) of forest plots and individual target trees, or inventory tables
-(including tree ID, x, y, dbh and/or h). Through the use of various
-competition indices, it enables the assessment and measurement of
-competition between trees, providing valuable insights for forest
-ecology, inventories, and forest management strategies. This package
-facilitates a systematic approach to understanding interactions and
-resource competition among trees and enables informed decision making in
-forest management.</p>
+such as LiDAR point clouds (as tabular data with x, y and z coordinates,
+.las/.laz files or .ply files) of forest plots and individual target
+trees, or inventory tables (including tree ID, x and y coordinates,
+diameter and/or tree height). Through the use of various competition
+indices, it enables the assessment and measurement of competition
+between trees, providing valuable insights for forest ecology,
+inventories, and forest management strategies. This package facilitates
+a systematic approach to understanding interactions and resource
+competition among trees and enables informed decision making in forest
+management.</p>
 <div class="section level3">
 <h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h3>
-<p>You can install the development version of TreeCompR from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
+<p>You can install the stable version (main branch) as well as the
+current development version of TreeCompR (development branch: more
+up-to-date, but potentially unstable) from <a href="https://github.com/juliarieder/TreeCompR" class="external-link">GitHub</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"juliarieder/TreeCompR"</span><span class="op">)</span></span></code></pre></div>
+<span></span>
+<span><span class="co"># get stable version</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"juliarieder/TreeCompR"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># get development branch </span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"juliarieder/TreeCompR"</span>, ref <span class="op">=</span> <span class="st">"development"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h3>
-<p>TreeCompR can read point clouds or inventory tables and quantifies
-tree competition in different ways:</p>
+<p>TreeCompR can read point clouds or inventory tables and quantify tree
+competition in different ways:</p>
+<ul>
+<li>Functions for <strong>point-cloud based methods</strong>
 <ul>
 <li>
-<code><a href="../reference/read_pc.html">read_pc()</a></code> reads 3D point clouds in dataframe format or
-las/laz (already loaded or from file path)</li>
+<code><a href="../reference/compete_pc.html">compete_pc()</a></code> quantifies tree competition from point
+clouds using the cone or cylinder method (cf. Metz et al., <a href="https://doi.org/10.1016/j.foreco.2013.08.014" class="external-link">2013</a>; Seidel et
+al., <a href="http://dx.doi.org/10.1016/j.foreco.2014.10.020" class="external-link">2015</a>)</li>
+<li>
+<code><a href="../reference/read_pc.html">read_pc()</a></code> reads 3D point clouds from .las/.laz files,
+.ply files and text-only file formats such as .txt or .csv, and converts
+LAS objects and data.frames to a TreeCompR compatible format</li>
+<li>
+<code><a href="../reference/tree_pos.html">tree_pos()</a></code> computes the base position and height of
+target tree point clouds</li>
+</ul>
+</li>
+<li>Functions for <strong>inventory-based methods</strong>
+<ul>
+<li>
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code> quantifies size- and distance-dependent
+competition using inventory data based on a series of published
+indices</li>
 <li>
 <code><a href="../reference/read_inv.html">read_inv()</a></code> reads and validates inventory tables from
-dataframes or reads the table directly from file path</li>
+data.frames, or reads tabular data directly from text-only file sources
+such as .txt or .csv</li>
 <li>
 <code><a href="../reference/define_target.html">define_target()</a></code> can be used to define for which trees
 within a plot the competition should be quantified in
@@ -119,62 +146,141 @@ within a plot the competition should be quantified in
 and the surrounding trees after defining them with
 <code><a href="../reference/define_target.html">define_target()</a></code>
 </li>
-<li>
-<code><a href="../reference/compete_pc.html">compete_pc()</a></code> quantifies tree competition from point
-clouds (methods: cone or cylinder)</li>
-<li>
-<code><a href="../reference/compete_inv.html">compete_inv()</a></code>quantifies size- and distance-dependent
-competition using inventory data</li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="section level3">
-<h3 id="methodology-of-point-cloud-based-approach">Methodology of point cloud-based approach<a class="anchor" aria-label="anchor" href="#methodology-of-point-cloud-based-approach"></a>
+<h3 id="methodology-of-the-point-cloud-based-approach">Methodology of the point cloud-based approach<a class="anchor" aria-label="anchor" href="#methodology-of-the-point-cloud-based-approach"></a>
 </h3>
 <p>LiDAR point clouds can be used directly to quantify the competition
 exerted by neighboring trees on the target tree. For this purpose, the
 target tree for which the competition is to be determined should be
 segmented beforehand. Since it is crucial whether a part of the point
 cloud is classified as “competing” or as part of the target tree itself,
-a manual segmentation (e.g. in CloudCompare) is most accurate.</p>
+a manual segmentation (e.g. in CloudCompare) is recommended as it tends
+to be much more accurate.</p>
 <p><img src="../reference/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700"></p>
 </div>
 <div class="section level2">
-<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+<h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
 </h2>
-<p>This is how to quantify the competition with
-<code><a href="../reference/compete_pc.html">compete_pc()</a></code> for one target tree using the cone method
-(cone spanned in 60 % of target tree’s height) or cylinder method with 5
-m radius:</p>
+<div class="section level3">
+<h3 id="point-cloud-based-tree-competition-metrics">Point-cloud based tree competition metrics<a class="anchor" aria-label="anchor" href="#point-cloud-based-tree-competition-metrics"></a>
+</h3>
+<p>With <code><a href="../reference/compete_pc.html">compete_pc()</a></code>, it is easy to quantify the
+competition with <code><a href="../reference/compete_pc.html">compete_pc()</a></code> for one target tree, in this
+example using the cone method (which counts the amount of voxels
+belonging to competitor trees situated in a cone opening at 60 % of the
+target tree’s height in an angle of 60 degrees):</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
 <span><span class="co">## insert path to point cloud of the forest plot and to the target tree </span></span>
 <span><span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/neighborhood.txt"</span>, </span>
 <span>           tree_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/tree.txt"</span>, </span>
 <span>           comp_method <span class="op">=</span> <span class="st">"cone"</span>,</span>
-<span>           h_cone <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span></span></code></pre></div>
+<span>           h_cone <span class="op">=</span> <span class="fl">0.6</span>,</span>
+<span>           print_progress <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="co"># suppress messages</span></span>
+<span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;  Point cloud based competition indices for 'tree' </span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;   target height_target center_position CI_cone h_cone</span></span>
+<span><span class="co">#&gt; 1   tree          22.8    crown center   16046    0.6</span></span></code></pre></div>
+<p>Equivalently, the cylinder method can be used to count the amount of
+voxels belonging to competitor trees within a cylinder around the target
+tree with 5 m radius.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## or the cylinder method with radius 5 m</span></span>
-<span><span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/neighborhood.txt"</span>, </span>
-<span>           tree_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/tree.txt"</span>, </span>
-<span>           comp_method <span class="op">=</span> <span class="st">"cylinder"</span>, cyl_r <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/neighborhood.las"</span>, </span>
+<span>           tree_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/tree.las"</span>, </span>
+<span>           comp_method <span class="op">=</span> <span class="st">"cylinder"</span>,</span>
+<span>           cyl_r <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>           print_progress <span class="op">=</span> <span class="st">"none"</span><span class="op">)</span> <span class="co"># suppress messages</span></span>
+<span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;  Point cloud based competition indices for 'tree' </span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;   target height_target center_position CI_cyl cyl_r</span></span>
+<span><span class="co">#&gt; 1   tree          22.8    crown center 102169     5</span></span></code></pre></div>
+<p>While these examples use the default settings of
+<code><a href="../reference/compete_pc.html">compete_pc()</a></code>, the function is highly customizable and able
+to deal with a large number of different file formats and object types,
+the majority of which are identified and read automatically. In cases
+where this is not possible due to non-standard file structures, point
+clouds can be loaded and pre-processed outside of
+<code><a href="../reference/compete_pc.html">compete_pc()</a></code> using <code><a href="../reference/read_pc.html">read_pc()</a></code> with custom
+settings or other functions and then passed on to
+<code><a href="../reference/compete_pc.html">compete_pc()</a></code>.</p>
+</div>
 <div class="section level3">
-<h3 id="size--and-distance-dependent-tree-competition">Size- and distance-dependent tree competition<a class="anchor" aria-label="anchor" href="#size--and-distance-dependent-tree-competition"></a>
+<h3 id="size--and-distance-dependent-tree-competition-metrics">Size- and distance-dependent tree competition metrics<a class="anchor" aria-label="anchor" href="#size--and-distance-dependent-tree-competition-metrics"></a>
 </h3>
-<p>Distance-dependent competition indices can be quantified using
-<code><a href="../reference/compete_inv.html">compete_inv()</a></code></p>
+<p>Analogously, distance-dependent competition indices can be quantified
+using <code><a href="../reference/compete_inv.html">compete_inv()</a></code>, which can read any text file with
+spatial positions of trees and measures of their size (conventionally,
+diameter at breast height or tree height).</p>
+<p>As it is usually not advisable to compute competition indices for all
+trees in a plot because there will be strong edge effects when the
+sample of trees does not comprise the entire forest stand, for
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code> it is necessary to explicitly specify target
+trees. In cases where these are not a priori defined by the design of
+the study, it is possible to automatically identify target trees using
+the <code><a href="../reference/define_target.html">define_target()</a></code> function.</p>
+<p>In the following example, the inventory is first read with
+<code><a href="../reference/read_inv.html">read_inv()</a></code>, and then target trees are identified with
+<code><a href="../reference/define_target.html">define_target()</a></code>. Again, <code><a href="../reference/read_inv.html">read_inv()</a></code> is highly
+customizable, and allows a large amount of different input formats and
+also manual identification of the names of the important variables (x
+and y coordinates and tree size).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## check or define target trees: read inventory file and define targets</span></span>
+<code class="sourceCode R"><span><span class="co">## read forest inventory file from source</span></span>
 <span><span class="va">plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="st">"../tests/testthat/testdata/inventory.csv"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span><span class="va">plot</span>,target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<span><span class="co">## define target trees</span></span>
+<span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span><span class="va">plot</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p>With <code>target_source = "buff_edge</code>, target trees are
+defined as the trees who are in a distance of more than one search
+radius (in this case, 10 m) from the border of the forest stand (which
+is approximated by a concave hull). There are many other possible
+settings for <code>target_source</code>, such as specifying target trees
+by their IDs, by logical subsetting, or as a separate set of
+coordinates. It is also possible to define all trees as target trees,
+but unless your dataset contains all trees in the forest this is almost
+never a good idea due to the obvious edge effects.</p>
+<p>It is possible to plot the selection of target trees and the
+surrounding neighborhood for visual inspection using
+<code><a href="../reference/plot_target.html">plot_target()</a></code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## plot the positions of the target trees and trees at the border</span></span>
 <span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span></span></code></pre></div>
-<p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="700"></p>
+<p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="500"></p>
+<p>In this example, the neighborhood was already chosen to only contain
+a single tree within a 10 m buffer from the border, so in consequence,
+only a single tree was identified as a potential target tree.</p>
+<p>As the <code>target_inv</code> object that results from a call to
+<code><a href="../reference/define_target.html">define_target()</a></code> contains the information about all trees in
+the plot as well as their status as target or neighbor tree, it can
+directly be fed to <code><a href="../reference/compete_inv.html">compete_inv()</a></code> to calculate the
+competition indices for our one target tree without having to specify
+target trees explicitly:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## insert path to inventory table or insert dataframe object</span></span>
-<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">plot</span>,</span>
-<span>            target_source <span class="op">=</span> <span class="va">targets</span>,</span>
-<span>            radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets</span>,</span>
+<span>            radius <span class="op">=</span> <span class="fl">10</span>, </span>
+<span>            method <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
+<span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
+<span><span class="co">#&gt; Collection of data for 1 target and 47 edge trees. </span></span>
+<span><span class="co">#&gt; Source of target trees: buffer around edge    Search radius: 10 </span></span>
+<span><span class="co">#&gt; ---------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;    id     x      y   dbh CI_Hegyi CI_RK1 CI_RK2</span></span>
+<span><span class="co">#&gt; 44 48 0.102 -0.494 0.244     4.39   1.07   1.58</span></span></code></pre></div>
+<p>Choosing <code>method = "all"</code> computes all available metrics
+for the chosen data source. As the dataset only contains diameters, but
+no tree heights, in this case it is the Hegyi index as well as the RK1
+and RK2 indices (see documentation of <code><a href="../reference/compete_inv.html">compete_inv()</a></code> and our
+paper for details).</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
