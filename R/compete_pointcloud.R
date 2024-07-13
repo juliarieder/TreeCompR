@@ -64,9 +64,10 @@
 #'   competition for a tree situated at the edge of a forest stand.
 #' @param ... additional arguments passed on to [data.table::fread()].
 #'
-#' @return data frame with tree ID and counted voxels of neighborhood
-#'   point cloud that reach into the cone/cylinder spanned over/around target
-#'   tree.
+#' @return object of type `compete_pc`: modified `data.frame` with tree ID,
+#'   tree height, the type of center position used for computation as well as
+#'   counts of the number of voxels of the neighborhood point cloud that reach
+#'   into the cone/cylinder spanned over/around the target tree.
 #'
 #' @details `compete_pc()` computes competition indices based on voxel counts of
 #'   neighbor trees that intersect a search cone or search cylinder around

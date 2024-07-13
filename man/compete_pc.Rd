@@ -99,9 +99,10 @@ competition for a tree situated at the edge of a forest stand.}
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }
 \value{
-data frame with tree ID and counted voxels of neighborhood
-point cloud that reach into the cone/cylinder spanned over/around target
-tree.
+object of type \code{compete_pc}: modified \code{data.frame} with tree ID,
+tree height, the type of center position used for computation as well as
+counts of the number of voxels of the neighborhood point cloud that reach
+into the cone/cylinder spanned over/around the target tree.
 }
 \description{
 Counts the voxels of neighboring trees that intersect a
