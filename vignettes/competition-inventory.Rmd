@@ -15,16 +15,18 @@ knitr::opts_chunk$set(
 ```
 ## Overview 
 
-Within `TreeCompR` it is possible to easily derive size-distance-dependent competition indices based on inventory data. This data can be collected in the field, or derived or modelled from 3D point clouds. Depending on the input data, there are some necessary pre-processing steps. Check out our workflows:
+Within `TreeCompR` it is possible to easily derive size-distance-dependent competition indices based on inventory data. This data can be collected in the field, or derived or modelled from 3D point clouds. Depending on the input data, there are some necessary pre-processing steps. Check out our workflows: <!-- Yo, Digga -->
 
-* From airborne laser scanning data to competition indices vignette("ALS_inventory")
-
-* From ground-based laser scanning data (from MLS/TLS) to competition indices vignette("TLS_inventory")
+* From airborne laser scanning data to competition indices: vignette("ALS_inventory"): [ALS workflow](https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html) 
+* From ground-based laser scanning data (from MLS/TLS) to competition indices: [TLS workflow](https://juliarieder.github.io/TreeCompR/articles/TLS_inventory.html) 
 
 
 ## Use inventory data within TreeCompR
 
-The inventory data must contain x and y coordinates of the individual trees and at least one more variable (e.g. height or dbh). To ensure that the inventory data is assigned correctly, check the data and make sure that you specify the units dbh and height, if they differ from the default which is metres in both cases. Use `read_inv()` to validate your inventory data within `TreeCompR`. To visually check, for which trees the CIs would be quantified, depending on the chosen search radius, you can use `define_target()` and `plot_target()`. We recommend to use target_source = "buff_edge", to automatically calculate the CI for all trees in the plot but to only include trees, that are one search radius away from the forest edge. This is specifically important for TLS/MLS data, since the data usually does not cover a whole forest but a forest plot. 
+The inventory data must contain x and y coordinates of the individual trees and at least one more size-related variable (e.g. height or diameter at breast height). To ensure that the inventory data is assigned correctly, check the data and make sure that you specify the units dbh and height, if they differ from the default, which is cm for dbh and m for height. You can either use `read_inv()` to validate your inventory data and convert them to an object type used by the `TreeCompR` functions, or directly pass data.frames or paths to files to `compete_inv()`. The former is especially useful if you have data with non-standard column names or data structures and want to fully control how they are parsed.
+
+To select target trees for computing competition indices and visually inspect their position relative to the other trees in the neighbourhood, you can use the function `define_target()` and `plot_target()`. If there is no list of a priori specified target trees and the aim is to calculate valid competition indices for as many trees as possible, we recommend to use `target_source = "buff_edge"`. This automatically designates all trees in the plot that are at least one search radius away from the forest edge (approximated by a concave hull). This is specifically important for TLS/MLS data, since the data usually does not cover relatively small forest plot rather than entire forests. While it is possible to compute competition indices for all trees (`target_source = "all_trees"`), this results in a warning and should only be done if there very good reasons to assume that the edge trees in the data are actually situated at the forest edge as otherwise there will be intense edge effects. 
+
 ```{r setup}
 library(TreeCompR)
 ```
@@ -33,13 +35,13 @@ inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")
 targets <- define_target(inv = inventory, target_source = "buff_edge", radius = 10)
 plot_target(targets)
 ```
-<img src="../man/figures/README-example3-1.png" alt="plot_trees" width="700">
+<img src="../man/figures/README-example3-1.png" alt="plot_trees" width="500">
 
 ```r
 compete_inv(inventory, target_source = "buff_edge", radius = 10, 
               method = "all_methods")
 ```
-## User cases
+## Use cases
 
 
 ```r
