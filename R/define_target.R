@@ -100,86 +100,96 @@ define_target <- function(inv, target_source, radius = 10,
 
   # set flag for spatial methods
   spatial <- FALSE
+
   # handle different cases for target_source
-  if (is.logical(target_source)){
-    # handle logical vector
-    if (length(target_source) == nrow(inv)) {
-      # define target
-      inv$target <- target_source
-      # keep information about source
-      target_type <- "logical"
-    } else {
-      stop(.wr(
-        "If 'target_source' is a logical vector, its length has to match ",
-        "the number of rows of 'inv.'")
-      )
-    }
-  } else{
-    if (is.character(target_source)){
-      # handle characters
-      if (length(target_source) == 1){
-        if (target_source %in% c("buff_edge", "exclude_edge")) {
-          # set flag for spatial methods
-          spatial <- TRUE
-          # compute target trees from spatial arrangement using internal fun
-          inv <- .spatial_comp(inv, type = target_source,
-                               radius = radius)
-          # keep information about source
-          target_type <- target_source
-        } else {
-          if (target_source == "all_trees"){
-            # define all trees as target trees and send a warning
-            inv$target <- TRUE
+    if (inherits(target_source, "target_inv")){
+    # if a target_inv file was supplied as a target_source, just carry over the
+    # target trees
+    inv$target <- inv$id %in% target$id
+    # keep information about source
+    target_type <- "inventory"
+  } else {
+    if (is.logical(target_source)){
+      # handle logical vector
+      if (length(target_source) == nrow(inv)) {
+        # define target
+        inv$target <- target_source
+        # keep information about source
+        target_type <- "logical"
+      } else {
+        stop(.wr(
+          "If 'target_source' is a logical vector, its length has to match ",
+          "the number of rows of 'inv.'")
+        )
+      }
+    } else{
+      if (is.character(target_source)){
+        # handle characters
+        if (length(target_source) == 1){
+          if (target_source %in% c("buff_edge", "exclude_edge")) {
+            # set flag for spatial methods
+            spatial <- TRUE
+            # compute target trees from spatial arrangement using internal fun
+            inv <- .spatial_comp(inv, type = target_source,
+                                 radius = radius)
             # keep information about source
             target_type <- target_source
           } else {
-            # set single target tree
-            inv$target <- inv$id %in% target_source
-            # keep information about source
-            target_type <- "character"
+            if (target_source == "all_trees"){
+              # define all trees as target trees
+              inv$target <- TRUE
+              # keep information about source
+              target_type <- target_source
+            } else {
+              # set single target tree
+              inv$target <- inv$id %in% target_source
+              # keep information about source
+              target_type <- "character"
+            }
           }
+        } else {
+          # set multiple target trees
+          inv$target <- inv$id %in% target_source
+          # keep information about source
+          target_type <- "character"
         }
       } else {
-        # set multiple target trees
-        inv$target <- inv$id %in% target_source
-        # keep information about source
-        target_type <- "character"
-      }
-    } else {
-      if (inherits(target_source, "forest_inv")){
-        # handle second inventory
-        # set flag for spatial methods
-        spatial <- TRUE
-        # test if there are trees outside the relevant range
-        inside <- inv$x >= min(target_source$x) - radius - tol &
-          inv$x <= max(target_source$x) + radius + tol &
-          inv$y >= min(target_source$y) - radius - tol &
-          inv$y <= max(target_source$y) + radius + tol
-        # message if dataset was modified
-        if (any(!inside) && verbose) message(
-          .wr(
-          sum(!inside), "trees outside the competitive zone around the target",
-          " trees were removed.", sum(inside), "trees remain.")
-        )
-        # filter out trees outside of radius
-        inv <- inv[inside, ]
-        # get matching coordinates
-        closest <- .closest(inv[, c("x", "y")],
-                            target_source[, c("x", "y")],
-                            tol = tol)
-        # check for target trees missing within tolerance
-        if (any(is.na(closest))){
-          warning("No matching coordinates found for the following ",
-                  "target tree(s):\n", paste(target_source$id, sep = ", "))
+        if (inherits(target_source, "forest_inv")){
+          # handle second inventory
+          # set flag for spatial methods
+          spatial <- TRUE
+          # test if there are trees outside the relevant range
+          inside <- inv$x >= min(target_source$x) - radius - tol &
+            inv$x <= max(target_source$x) + radius + tol &
+            inv$y >= min(target_source$y) - radius - tol &
+            inv$y <= max(target_source$y) + radius + tol
+          # message if dataset was modified
+          if (any(!inside) && verbose) message(
+            .wr(
+              sum(!inside),
+              "trees outside the competitive zone around the target",
+              " trees were removed.", sum(inside), "trees remain.")
+          )
+          # filter out trees outside of radius
+          inv <- inv[inside, ]
+          # get matching coordinates
+          closest <- .closest(inv[, c("x", "y")],
+                              target_source[, c("x", "y")],
+                              tol = tol)
+          # check for target trees missing within tolerance
+          if (any(is.na(closest))){
+            warning("No matching coordinates found for the following ",
+                    "target tree(s):\n", paste(target_source$id, sep = ", "))
+          }
+          # get target trees
+          inv$target <- inv$id %in% inv$id[stats::na.omit(closest)]
+          # carry over ID
+          inv$target_id <- NA
+          inv$target_id[stats::na.omit(closest)] <-
+            target_source$id[!is.na(closest)]
+          # keep information about source
+          target_type <- "inventory"
         }
-        # get target trees
-        inv$target <- inv$id %in% inv$id[stats::na.omit(closest)]
-        # carry over ID
-        inv$target_id <- NA
-        inv$target_id[stats::na.omit(closest)] <-
-          target_source$id[!is.na(closest)]
-        # keep information about source
-        target_type <- "inventory"
       }
     }
   }
@@ -193,10 +203,10 @@ define_target <- function(inv, target_source, radius = 10,
   if (!any(!inv$target)){
     warning(
       .wr(
-      "Defining all trees as target trees is rarely a good idea.",
-      "Unless your forest inventory contains all trees in the",
-      "forest, this will lead to strong edge effects. Please make",
-      "sure that this is really what you want to do.")
+        "Defining all trees as target trees is rarely a good idea.",
+        "Unless your forest inventory contains all trees in the",
+        "forest, this will lead to strong edge effects. Please make",
+        "sure that this is really what you want to do.")
     )
   }
   # update class
