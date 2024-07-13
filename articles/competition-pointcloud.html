@@ -78,69 +78,99 @@
 </h2>
 <p>Before using the cone and cylinder point cloud approaches, the trees
 for which competition is to be quantified must be extracted from the
-plot. The most accurate way to do this is with <a href="https://www.danielgm.net/cc/" class="external-link">CloudCompare</a>. Load your point
-cloud of the whole plot and use the <a href="https://www.cloudcompare.org/doc/wiki/index.php/Interactive_Segmentation_Tool" class="external-link">Segment</a>
+plot. The most accurate (if time consuming) way to do this is by manual
+segmentation, for instance with <a href="https://www.danielgm.net/cc/" class="external-link">CloudCompare</a>.</p>
+<p>In CoudCompare, load your point cloud of the whole plot and use the
+<a href="https://www.cloudcompare.org/doc/wiki/index.php/Interactive_Segmentation_Tool" class="external-link">Segment</a>
 function to extract the target tree. Make sure you do not miss any part
 or include neighbouring trees or their branches, as it is crucial to
-determine which parts of the point cloud are neighbours and which points
-belong to the target tree. Pay particular attention to the ground and
-don’t include any ground points in your target tree’s point cloud,
-otherwise the tree’s position may be shifted later as the function takes
-the lowest points into account.</p>
+determine which parts of the point cloud belong to neighbours and which
+points belong to the target tree. Pay particular attention to the ground
+and don’t include any ground points in your target tree’s point cloud,
+otherwise the tree’s base position may be determined imprecisely in
+later steps as the <code><a href="../reference/tree_pos.html">tree_pos()</a></code> function is based on the
+lowest points in the point cloud of the target tree.</p>
 <p><img src="../reference/figures/CloudCompare.jpg" alt="Methods Workflow" width="700"></p>
 <p>After extracting the target tree, export the point cloud by selecting
 the file in the DB Tree and click File - Save. Do the same for the whole
 plot, but first clip the point cloud to your area of interest. The best
 way to do this is to select top view and use the <a href="https://www.cloudcompare.org/doc/wiki/index.php/Cross_Section" class="external-link">Cross
 Section</a> function to clip your point cloud. Make sure that your
-target tree is not at the edge of the plot. We used 30x30m plots. When
-exporting/saving the point clouds, you can select .las/.laz, .txt, .csv,
-… after clicking save, you will be asked to select the output
+target tree is not at the edge of the plot. For the example dataset in
+our paper, we used 30 x 30 m plots.</p>
+<p>When exporting/saving the point clouds, you can select .las/.laz,
+.txt, .csv, … TreeCompR is flexible with file formats, but if possible
+use the same format for target trees and their neighbourhoods as there
+may be slight numeric differences between formats that complicate
+coordinate matching.</p>
+<p>After clicking save, you will be asked to select the output
 resolution. If you choose a custom resolution or coordinate accuracy,
 make sure you choose the same for the target tree and the neighbourhood
-cloud!</p>
+cloud! In our examples, we rounded our coordinates to 2 decimal places
+(i.e. to 1 cm accuracy), which also is what the
+<code><a href="../reference/compete_pc.html">compete_pc()</a></code> uses by default for coordinate matching, but
+other values are possible.</p>
 </div>
 <div class="section level2">
 <h2 id="quantify-competition-with-treecompr">Quantify Competition with TreeCompR<a class="anchor" aria-label="anchor" href="#quantify-competition-with-treecompr"></a>
 </h2>
-<p>Once you have the two point clouds, you can use TreeCompR. Read and
-validate your point clouds (both the target tree and the neighbourhood).
+<p>Once you have the two point clouds for target tree and neighbourhood,
+you can use the <code><a href="../reference/read_pc.html">read_pc()</a></code> function of TreeCompR to read and
+validate them, or directly pass the paths to the point clouds to
+<code><a href="../reference/compete_pc.html">compete_pc()</a></code>.
 <img src="../reference/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700"></p>
-<p>Select the method competition method (comp_method) “cylinder” or
-“cone” or “both”. Also the position of the center of the cone or
-cylinder can be “set” either to crown position (“crown_pos”) or base
-position (“base_pos”). Usually the tree position is calculated by using
-the lowest points of a tree and take the mean or median, but if the tree
-is not growing straight, and we want to identify (crown-)competition, we
-think it is useful to go for the medoid of the crown (crown center). If
-you want to use the base position, there are additional parameters that
-you can adjust, as the h_xy (height in m over stem base where position
-xy should be calculated from) or z_min (minimum number of points in the
-lowermost 0.1 m of the tree to calculate base position of the tree).
-Read more on the methods themselves or the settings and sensitivity in
-<a href="https://doi.org/10.1016/j.foreco.2014.10.020" class="external-link">Seidel et al.,
-2015</a>, <a href="https://www.sciencedirect.com/science/article/pii/S0378112713005410" class="external-link">Metz
-et al., 2013</a> or the original KKL index by <a href="https://www.sciencedirect.com/science/article/pii/S0378112702000476" class="external-link">Pretzsch
-et al., 2002</a>.</p>
+<p>In <code><a href="../reference/compete_pc.html">compete_pc()</a></code>, you can select the method for computing
+competition indices by setting <code>comp_method</code> to
+<code>"cylinder"</code>, <code>"cone"</code> or <code>"both"</code>. To
+compute the competition indices for either of these methods, the
+position of the center of the cone or cylinder has to be defined. The
+<code>center_position</code> argument allows to center the cone or
+cylinder either around the central point of the crown projected area
+(<code>"crown_pos"</code>) or the central point of the tree base
+(<code>"base_pos"</code>). Usually, the position of a tree is calculated
+by using the lowest points of a tree and take the mean or median.
+However, if a tree is not growing straight and we want to identify
+(crown-)competition, we think it is more reasonable to instead focus on
+the center of the crown. For that reason, <code><a href="../reference/compete_pc.html">compete_pc()</a></code>
+currently defaults to <code>center_position = "crown_pos"</code>, the
+median of the x and y position of the voxelized crown projected area
+(see the documentation of <code><a href="../reference/tree_pos.html">tree_pos()</a></code> for details).</p>
+<p>If you want to use the stem base position, there are additional
+parameters that you can adjust to ensure the correct position
+determination, namely <code>h_xy</code> (range in m above the lowermost
+point of the tree point cloud the base position should be calculated
+from) and <code>z_min</code> (minimum number of points in the lowermost
+layer of voxels used to calculate base position of the tree). More about
+the methods themselves and the settings and sensitivity can be found in
+<a href="https://doi.org/10.1016/j.foreco.2014.10.020" class="external-link">Seidel et
+al. (2015)</a>, <a href="https://www.sciencedirect.com/science/article/pii/S0378112713005410" class="external-link">Metz
+et al. (2013)</a>, or, for the original KKL index, in <a href="https://www.sciencedirect.com/science/article/pii/S0378112702000476" class="external-link">Pretzsch
+et al. (2002)</a>.</p>
+<p>In the following example, the compete_pc is used to calculate both
+cone and cylinder-based competition indices centered around the crown
+center, with a cone opening in a height of 0.6 times the total target
+tree height and a cylinder radius of 4 m:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">CI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/neighborhood.txt"</span>, </span>
 <span>                tree_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/tree.txt"</span>, </span>
 <span>                comp_method <span class="op">=</span> <span class="st">"both"</span>, <span class="co"># calculate CI in cylinder and cone</span></span>
-<span>                center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, <span class="co">#center for cone and cylinder</span></span>
-<span>                cyl_r <span class="op">=</span> <span class="fl">4</span>, <span class="co">#radius in m</span></span>
-<span>                h_cone <span class="op">=</span> <span class="fl">0.6</span>, <span class="co">#set height where the cone starts </span></span>
-<span>                <span class="co">#to open in relation to tree height (0.6 = 60 % of tree height)</span></span>
-<span>                print_progress <span class="op">=</span> <span class="st">"some"</span> <span class="co">#get some information during processing</span></span>
-<span>                <span class="op">)</span></span></code></pre></div>
-<p>The result is a data frame that you can save or use for further
-statistical analysis. It contains the name or ID (filename) of the tree,
-the height of the tree, the center_position used, the CI value(s) and
-the main parameter settings.</p>
-<p>If you want to use the same neighbourhood again, because you have
-more than one target tree within that plot, you do not need to read the
-point cloud from the file each time. Read it once with
+<span>                center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, <span class="co"># center for cone and cylinder</span></span>
+<span>                cyl_r <span class="op">=</span> <span class="fl">4</span>, <span class="co"># radius in m</span></span>
+<span>                h_cone <span class="op">=</span> <span class="fl">0.6</span>, <span class="co"># position where the cone starts to open relative</span></span>
+<span>                <span class="co"># to the height of the target tree (0.6 = 60 % of tree height)</span></span>
+<span>                print_progress <span class="op">=</span> <span class="st">"some"</span> <span class="co"># controls how much of the progress is</span></span>
+<span>                <span class="op">)</span>                       <span class="co"># printed</span></span></code></pre></div>
+<p>The result is an object of type <code>compete_pc</code>, i.e. a
+modified data.frame that you can save or use for further statistical
+analysis. It contains the name or ID (filename) of the tree, its height,
+the type center_position used, the computed competition index value(s)
+(voxel counts) and the settings of the parameters controlling cylinder
+and cone size.</p>
+<p>If you want to use the same neighbourhood again because you have more
+than one target tree within that plot, you do not need to read the point
+cloud from the file each time. Instead, simply read it once with
 <code><a href="../reference/read_pc.html">read_pc()</a></code> and use it again. You can also load the target
 tree outside the <code><a href="../reference/compete_pc.html">compete_pc()</a></code> function.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -156,13 +186,33 @@ tree outside the <code><a href="../reference/compete_pc.html">compete_pc()</a></
 <span>                <span class="co">#to open in relation to tree height (0.6 = 60 % of tree height)</span></span>
 <span>                print_progress <span class="op">=</span> <span class="st">"full"</span> <span class="co">#get full information during processing</span></span>
 <span>                <span class="op">)</span></span></code></pre></div>
+<p>Internally, <code><a href="../reference/compete_pc.html">compete_pc()</a></code> crops the neighbourhood to the
+immediate surroundings of the cone or cylinder before matching the
+neighbour and tree point clouds as for large neighbourhoods this is the
+by far computationally most expensive step, while once a neighbourhood
+is loaded filtering (which is done efficiently using functions from the
+<code>data.table</code> package) is comparably fast. To speed up the
+coordinate matching, it is done on integer coordinates rounded to the
+digit accuracy specified by <code>acc_digits</code>, which defaults to 2
+(round to cm). Should you have more accurate data, you can consider
+increasing that value, though it will slow down computations and likely
+will not have a large impact on the outcome as the competition indices
+are computed on a coarser spatial scale (by default 0.1 m).</p>
+<p>Since loading a large point cloud into memory has a considerable
+computational overhead and can take a lot of time (especially with older
+hard drives), loading a neighbourhood just once can speed up the
+analysis considerably when batch processing a large number of trees even
+if the neighbourhood is large. Should the objects become too large to
+handle within memory, we recommend to split them up outside R during the
+data preparation step.</p>
 </div>
 <div class="section level2">
 <h2 id="example-for-batch-processing">Example for batch-processing<a class="anchor" aria-label="anchor" href="#example-for-batch-processing"></a>
 </h2>
 <p>If your study consists of many target trees and surrounding plots, it
-may be useful to create a lookup table and run the function for all your
-trees. Here is an example of what this lookup table might look like:</p>
+may be useful to create a lookup table to more efficiently run the
+function for all your trees. Here is an example of what such a lookup
+table might look like:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># Define the base paths</span></span>
@@ -195,6 +245,17 @@ trees. Here is an example of what this lookup table might look like:</p>
 <span><span class="co">#&gt; 3 Tree_3 /path/to/neighborhood/neighborhood_3.las /path/to/trees/tree_3.las</span></span>
 <span><span class="co">#&gt; 4 Tree_4 /path/to/neighborhood/neighborhood_4.las /path/to/trees/tree_4.las</span></span>
 <span><span class="co">#&gt; 5 Tree_5 /path/to/neighborhood/neighborhood_5.las /path/to/trees/tree_5.las</span></span></code></pre></div>
+<p>In this case, the lookup table contains one path for each segmented
+target tree point cloud, and another path for the corresponding 30 x 30
+m² neighbourhood.</p>
+<p>We can use <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">dplyr::mutate()</a></code> to append the function
+arguments for <code><a href="../reference/compete_pc.html">compete_pc()</a></code>, and <code>purr::pmap()</code>
+to map over the paths and settings line by line and use
+<code><a href="../reference/compete_pc.html">compete_pc()</a></code> with the settings specified in each of them.
+As this can take a considerable amount of time if processing hundreds of
+trees, the different options for <code>print_progress</code> can be
+useful to be able to keep track of the analysis and interrupt it in time
+if something goes wrong.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#calculate both methods at the same time</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
@@ -210,6 +271,7 @@ trees. Here is an example of what this lookup table might look like:</p>
 <span></span>
 <span><span class="co">#re-structure results from list to dataframe</span></span>
 <span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">lookup_results_cone50_cyl5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><!-- COMMENT: We absolutely need the output for the different steps of the analysis - look at TreeCompR.Rmd to see how you can do it easily. Also, why not simply use bind_rows(lookup_results_cone50_cyl5) instead of that weird  do.call based thing? that's how I did it in the examples, doesn't it work here? If we do not coerce to data.frame, we also keep printing as a compete_pc object which (hopefully) looks nicer than a raw data.frame output --></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
