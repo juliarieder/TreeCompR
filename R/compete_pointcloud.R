@@ -75,7 +75,7 @@
 #'   [compete_pc()] as any kind of object inheriting from `data.frame` (such as
 #'   base R data.frames, tibbles, data.tables etc).
 #'
-#'   ## Cone Method
+#' ## Cone Method
 #'   Based on a search cone with an opening angle of 60 degrees,
 #'   by default opening from a basal point situated at 60 % of the
 #'   height of the target tree. The competition index is defined as the number
@@ -86,7 +86,8 @@
 #'   neighbor trees at all intersect the cone of the target tree. However, be
 #'   careful with adjusting this parameter, as competition indices computed with
 #'   different `h_cone` cannot easily be compared among each other.
-#'   ## Cylinder Method
+#'
+#' ## Cylinder Method
 #'   Based on a  search cylinder with a pre-defined radius `cyl_r` around the
 #'   target tree (5 m by default). The competition index is defined as the
 #'   number of the voxels of neighboring trees  (by default, with a 0.1 m res.)
@@ -115,13 +116,13 @@
 #'   more sense to split up the data set into smaller chunks outside R to
 #'   reduce the memory load.
 #'
-#' # Note: support of .las, .laz and .ply formats
-#'   The the 'lidR' package has to be installed to be able to read in .las/.laz
+#' ## Note: support of .las, .laz and .ply formats
+#'   The the `lidR` package has to be installed to be able to read in .las/.laz
 #'   files, which are internally processed by [lidR::readTLSLAS()].
-#'   Analogously, for point clouds in the .ply format, the 'Rvcg' package is
+#'   Analogously, for point clouds in the .ply format, the `Rvcg` package is
 #'   required as these are loaded with [Rvcg::vcgPlyRead()].
 #'
-#' @section Literature:
+#' ## Literature
 #' * Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. & Ammer,
 #'   C. (2013). Crown modeling by terrestrial laser scanning
 #'   as an approach to assess the effect of aboveground intra- and interspecific

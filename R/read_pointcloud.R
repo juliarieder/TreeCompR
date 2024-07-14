@@ -52,10 +52,10 @@
 #'   filter the neighborhood dataset to a relevant range around the target tree
 #'   to speed up calculations.
 #'
-#' # Note: support of .las, .laz and .ply formats
-#'   The the 'lidR' package has to be installed to be able to read in .las/.laz
+#' ## Note: support of .las, .laz and .ply formats
+#'   The the `lidR` package has to be installed to be able to read in .las/.laz
 #'   files, which are internally processed by [lidR::readTLSLAS()].
-#'   Analogously, for point clouds in the .ply format, the 'Rvcg' package is
+#'   Analogously, for point clouds in the .ply format, the `Rvcg` package is
 #'   required as these are loaded with [Rvcg::vcgPlyRead()].
 #'
 #' @return object of class `forest_pc` (inherits from `data.table`) with x, y

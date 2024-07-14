@@ -62,7 +62,7 @@
 #'                         name specified by the user.}
 #'   }
 #'
-#' @seealso [compete_pc()] for details on reading point clouds,
+#' @seealso [read_pc()] for details on reading point clouds,
 #'  [compete_pc()] for computing tree competition from point cloud objects.
 #' @export
 #'

@@ -164,16 +164,16 @@ especially on machines with low RAM capacity. In such cases, it may make
 more sense to split up the data set into smaller chunks outside R to
 reduce the memory load.
 }
-}
-\section{Note: support of .las, .laz and .ply formats}{
-The the 'lidR' package has to be installed to be able to read in .las/.laz
+
+\subsection{Note: support of .las, .laz and .ply formats}{
+
+The the \code{lidR} package has to be installed to be able to read in .las/.laz
 files, which are internally processed by \code{\link[lidR:readLAS]{lidR::readTLSLAS()}}.
-Analogously, for point clouds in the .ply format, the 'Rvcg' package is
+Analogously, for point clouds in the .ply format, the \code{Rvcg} package is
 required as these are loaded with \code{\link[Rvcg:vcgPlyRead]{Rvcg::vcgPlyRead()}}.
 }
 
-\section{Literature}{
-
+\subsection{Literature}{
 \itemize{
 \item Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. & Ammer,
 C. (2013). Crown modeling by terrestrial laser scanning
@@ -190,7 +190,7 @@ Ecology and Management, 336: 119-128.
 http://dx.doi.org/10.1016/j.foreco.2014.10.020
 }
 }
-
+}
 \examples{
 \dontrun{
 # Due to the large required datasets it is not possible to provide running

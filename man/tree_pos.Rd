@@ -87,6 +87,6 @@ pos
 }
 }
 \seealso{
-\code{\link[=compete_pc]{compete_pc()}} for details on reading point clouds,
+\code{\link[=read_pc]{read_pc()}} for details on reading point clouds,
 \code{\link[=compete_pc]{compete_pc()}} for computing tree competition from point cloud objects.
 }

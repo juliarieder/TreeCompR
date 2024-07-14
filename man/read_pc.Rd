@@ -71,14 +71,14 @@ numeric, the function fails with an error.
 The xlim, ylim and zlim arguments are used internally in \code{\link[=compete_pc]{compete_pc()}} to
 filter the neighborhood dataset to a relevant range around the target tree
 to speed up calculations.
-}
-\section{Note: support of .las, .laz and .ply formats}{
-The the 'lidR' package has to be installed to be able to read in .las/.laz
+\subsection{Note: support of .las, .laz and .ply formats}{
+
+The the \code{lidR} package has to be installed to be able to read in .las/.laz
 files, which are internally processed by \code{\link[lidR:readLAS]{lidR::readTLSLAS()}}.
-Analogously, for point clouds in the .ply format, the 'Rvcg' package is
+Analogously, for point clouds in the .ply format, the \code{Rvcg} package is
 required as these are loaded with \code{\link[Rvcg:vcgPlyRead]{Rvcg::vcgPlyRead()}}.
 }
-
+}
 \examples{
 \dontrun{
 # Read a tree point cloud in las or laz format
