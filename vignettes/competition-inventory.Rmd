@@ -183,14 +183,22 @@ CI1 <- compete_inv(
   )
 ```
 
-The output of this function can then again be inspected with `plot_target()` to make sure the selection of target trees make sense.
+The output of this function can then again be inspected in the same way as above using `plot_target(CI1)` to make sure the selection of target trees make sense.
 
 The function computes a series of inventory-based competition indices commonly used in the literature that can be specified via the `method` argument ([Hegyi 1974](https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734); Braathe, 1980; [Rouvinen & Kuuluvainen, 1997](https://doi.org/10.1139/x97-012); see also [Contreras et al., 2011](https://doi.org/10.1016/j.foreco.2011.08.031)). These are either based on tree diameter at breast height ("CI_Hegyi", "CI_RK1", "CI_RK2") or on tree height ("CI_Braathe", "CI_RK3", "CI_RK4"). 
 The mathematical definition of these indices is provided in the documentation of `compete_inv()`.
 
-Note that all these indices are based on a distance-weighted sum of the relative size of all neighbor trees compared to the central tree or a transformation thereof. For that reason, all competition indices are extremely sensitive to the 
-
 If `method = "all_methods"` (the standard setting), `compete_inv()` computes all indices that can be computed with the data available in the inventory. 
+
+```{r comp3, message=FALSE, warning=FALSE, eval=FALSE}
+compete_inv(inv_source = targets4, radius = 10, method = "all_methods")
+```
+<!-- SHOW OUTPUT HERE! -->
+
+## Choosing a search radius
+All indices that can be calculated with `compete_inv()` are based on a distance-weighted sum of the relative size of all neighbor trees within the search radius compared to the size of the central tree, or a sum of a transformation thereof. As the search radius determines how many trees are included for calculating these metric for each tree, all these distance-based competition indices are extremely sensitive to the choice of the search radius. An obvious consequence of this is that it is not meaningfully possible to compare distance based competition indices calculated with different search radii. Perhaps less obvious is that as different tree species differ in their average size and rooting patterns, the optimal search radius may differ between species, and that comparisons between species using competition indices computed with the same settings may not always result in meaningful results. 
+Some authors recommend to use a search radius based on the average crown size of the trees in the plot, such as [Lorimer (1983)](https://doi.org/10.1016/0378-1127(83)90042-7), who propose a search radius of 3.5 average crown radii. While such a recommendation certainly makes more sense than sticking to standard values like 10 m independent of whether calculating competition for stunted Elfin forests or gigantic Redwood trees, ultimately such a setting will always be arbitrary and that there are limits to the comparability of the indices across studies and across species. 
+
 
 
 
