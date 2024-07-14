@@ -110,9 +110,9 @@ accuracy of the GPS coordinates.}
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }
 \value{
-\code{compete_inv} object: a modified data.frame with the forest
-invetory data, target tree specifications and or more competition indices
-depending on chosen method.
+object of class\code{compete_inv}: a modified data.frame with the position
+and size of the designated target tree(s) and one or more competition
+indices depending on chosen method(s).
 }
 \description{
 'compete_inv()' returns a specific distance-height-dependent or distance-
@@ -212,4 +212,10 @@ CI <- compete_inv("path/to/invtable.csv",
 CI <- compete_inv("path/to/invtable.csv", target_source = "buff_edge",
         radius = 12, method = "all_methods")
 }
+}
+\seealso{
+\code{\link[=read_inv]{read_inv()}} to read forest inventory data,
+\code{\link[=define_target]{define_target()}} for designating target trees,
+\code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
+\code{compete_inv} objects.
 }

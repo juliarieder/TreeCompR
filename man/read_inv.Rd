@@ -67,10 +67,9 @@ needed for use within functions).}
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
-object of class \code{c("forest_inv", "data.frame")} with x and y
-coordinates of the tree, a unique tree identifier (\code{id}) and tree diameter
-at breast height (\code{dbh}, in cm) and tree height (\code{height}, in m) if
-available.
+object of class \code{forest_inv} with x and y coordinates of the tree, a
+unique tree identifier (\code{id}) and tree diameter at breast height (\code{dbh}, in
+cm) and tree height (\code{height}, in m) if available.
 }
 \description{
 Read inventory table sourced from a file path or an object that
@@ -107,4 +106,10 @@ inv_table <- read_inv(inv, dbh_unit = "cm", height_unit = "m")
 inv_table <- read_inv(inv_source = "path/to/table.csv", dbh_unit = "cm",
 height_unit = "m")
 }
+}
+\seealso{
+\code{\link[=define_target]{define_target()}} for designating target trees,
+\code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
+\code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
+\code{compete_inv} objects.
 }

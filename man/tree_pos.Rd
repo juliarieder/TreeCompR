@@ -30,15 +30,15 @@ argument).}
 \value{
 object of class "tree_pos" containing the following components:
 \itemize{
-\item{base_pos} {numeric vector of length 3 with the x, y, z coordinates
-of the tree base position.}
-\item{crown_pos} {numeric vector of length 3 with the x, and y
+\item{\code{base_pos}} {numeric vector of length 3 with the x, y, z
+coordinates of the tree base position.}
+\item{\code{crown_pos}} {numeric vector of length 3 with the x, and y
 coordinates of the central point of the crown projected
 area and the z position of the stem base identified as
 above.}
-\item{height} {numeric of length one containing the tree height in m.}
-\item{tree_name} {name of the object used as the "tree" argument, or name
-specified by the user.}
+\item{\code{height}} {numeric of length one containing the tree height in m.}
+\item{\code{tree_name}} {name of the object used as the "tree" argument, or
+name specified by the user.}
 }
 }
 \description{
@@ -85,4 +85,8 @@ tree <- read_tree(path = "path/to/tree_point_cloud.txt")
 pos <- tree_pos(tree)
 pos
 }
+}
+\seealso{
+\code{\link[=compete_pc]{compete_pc()}} for details on reading point clouds,
+\code{\link[=compete_pc]{compete_pc()}} for computing tree competition from point cloud objects.
 }

@@ -43,7 +43,7 @@ NULL (use full range of z coordinates).}
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
-object of class c("forest_pc", "data.table", "data.frame") with x, y
+object of class \code{forest_pc} (inherits from \code{data.table}) with x, y
 and z coordinates of the tree or forest point cloud.
 }
 \description{
@@ -103,4 +103,8 @@ neighborhood <- read_pc(pc_source = "path/to/forest_point_cloud.las",
 tree <- read_pc(tree_df)
 
 }
+}
+\seealso{
+\code{\link[=compete_pc]{compete_pc()}} for computing tree competition and \code{\link[=tree_pos]{tree_pos()}} for
+computing tree position from point cloud objects.
 }

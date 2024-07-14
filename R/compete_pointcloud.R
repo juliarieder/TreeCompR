@@ -64,11 +64,6 @@
 #'   competition for a tree situated at the edge of a forest stand.
 #' @param ... additional arguments passed on to [data.table::fread()].
 #'
-#' @return object of type `compete_pc`: modified `data.frame` with tree ID,
-#'   tree height, the type of center position used for computation as well as
-#'   counts of the number of voxels of the neighborhood point cloud that reach
-#'   into the cone/cylinder spanned over/around the target tree.
-#'
 #' @details `compete_pc()` computes competition indices based on voxel counts of
 #'   neighbor trees that intersect a search cone or search cylinder around
 #'   the target tree. In most cases, the function [read_pc()] that is called
@@ -141,6 +136,12 @@
 #'   Ecology and Management, 336: 119-128.
 #'   http://dx.doi.org/10.1016/j.foreco.2014.10.020
 #'
+#' @return object of type `compete_pc`: modified `data.frame` with tree ID,
+#'   tree height, the type of center position used for computation as well as
+#'   counts of the number of voxels of the neighborhood point cloud that reach
+#'   into the cone/cylinder spanned over/around the target tree.
+#' @seealso [read_pc()] for details on reading point clouds, [tree_pos()] for
+#'   computing tree position from point cloud objects.
 #' @export
 #'
 #' @examples

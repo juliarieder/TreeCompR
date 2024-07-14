@@ -30,13 +30,14 @@
 #'   wherein all neighboring trees are classified as competitors. Only used if
 #'   `target_source` is `"buff_edge"`, `"exclude_edge"` or of type `forest_inv`.
 #'   Defaults to 10.
-#' @param tol numeric. Tolerance for the match between tree coordinates in the
-#'   forest inventory and target datasets if specified as a second set of
+#' @param tol numeric. Only used when `target_source` is an inventory with a
+#'   second set of coordinates. Tolerance for the match between tree coordinates
+#'   in the forest inventory and target datasets if specified as a second set of
 #'   coordinates. If a field measurements (e.g. based on GPS) are used to
 #'   identify target trees and the full inventory is from a different data
 #'   source (e.g. ALS data), a higher tolerance value may be required to
 #'   identify the trees depending on the measurement accuracy. Values of 0 mean
-#'   exact matching.
+#'   exact matching. Defaults to 1 (match within a 1 m buffer).
 #' @param verbose logical of length 1. Should information about progress be
 #'   printed? Defaults to TRUE.
 #'
@@ -55,11 +56,16 @@
 #' of trees is usually an issue!
 #'
 #'
-#' @return object of `c("target_inv", "forest_inv", "data.frame")` with x and y
+#' @return object of class `target_inv` (inherits from `forest_inv`) with the x and y
 #'  coordinates of the tree, a unique tree identifier (`id`), at least one
 #'  of tree diameter at breast height (`dbh`, in cm) and tree height (`height`,
 #'  in m) and a new logical column `target` specifying whether a tree is
 #'  considered a target tree.
+#'
+#' @seealso [read_inv()] to read forest inventory data,
+#'   [compete_inv()] for computing tree competition from inventory data,
+#'   [plot_target()] to plot target tree positions in `target_inv` and
+#'   `compete_inv` objects.
 #' @export
 #'
 #' @examples
@@ -104,8 +110,12 @@ define_target <- function(inv, target_source, radius = 10,
   # handle different cases for target_source
     if (inherits(target_source, "target_inv")){
     # if a target_inv file was supplied as a target_source, just carry over the
-    # target trees
+    # target trees and send a message
     inv$target <- inv$id %in% target$id
+    message(
+      .wr("target_source already is of class target_inv.",
+          "Target tree IDs specified in target_source are kept.")
+    )
     # keep information about source
     target_type <- "inventory"
   } else {
@@ -245,6 +255,10 @@ define_target <- function(inv, target_source, radius = 10,
 #'   validity of the choice of target trees.
 #'
 #' @return A plot of the spatial arrangement of target trees.
+#'
+#' @seealso [read_inv()] to read forest inventory data,
+#'   [define_target()] for designating target trees,
+#'   [compete_inv()] for computing tree competition from inventory data.
 #' @export
 #'
 #' @examples

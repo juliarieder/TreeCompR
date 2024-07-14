@@ -58,8 +58,12 @@
 #'   Analogously, for point clouds in the .ply format, the 'Rvcg' package is
 #'   required as these are loaded with [Rvcg::vcgPlyRead()].
 #'
-#' @return object of class c("forest_pc", "data.table", "data.frame") with x, y
+#' @return object of class `forest_pc` (inherits from `data.table`) with x, y
 #' and z coordinates of the tree or forest point cloud.
+#'
+#' @seealso [compete_pc()] for computing tree competition and [tree_pos()] for
+#'   computing tree position from point cloud objects.
+#'
 #' @export
 #'
 #' @examples

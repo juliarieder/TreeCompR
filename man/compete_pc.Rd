@@ -231,3 +231,7 @@ CI_data <- map(
     bind_rows()
 }
 }
+\seealso{
+\code{\link[=read_pc]{read_pc()}} for details on reading point clouds, \code{\link[=tree_pos]{tree_pos()}} for
+computing tree position from point cloud objects.
+}

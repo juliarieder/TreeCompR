@@ -112,9 +112,14 @@
 #'    Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
 #'
 #'
-#' @return `compete_inv` object: a modified data.frame with the forest
-#'   invetory data, target tree specifications and or more competition indices
-#'   depending on chosen method.
+#' @return object of class`compete_inv`: a modified data.frame with the position
+#'   and size of the designated target tree(s) and one or more competition
+#'   indices depending on chosen method(s).
+#'
+#' @seealso [read_inv()] to read forest inventory data,
+#'   [define_target()] for designating target trees,
+#'   [plot_target()] to plot target tree positions in `target_inv` and
+#'   `compete_inv` objects.
 #' @export
 #'
 #' @examples

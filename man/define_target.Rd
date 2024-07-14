@@ -37,19 +37,20 @@ wherein all neighboring trees are classified as competitors. Only used if
 \code{target_source} is \code{"buff_edge"}, \code{"exclude_edge"} or of type \code{forest_inv}.
 Defaults to 10.}
 
-\item{tol}{numeric. Tolerance for the match between tree coordinates in the
-forest inventory and target datasets if specified as a second set of
+\item{tol}{numeric. Only used when \code{target_source} is an inventory with a
+second set of coordinates. Tolerance for the match between tree coordinates
+in the forest inventory and target datasets if specified as a second set of
 coordinates. If a field measurements (e.g. based on GPS) are used to
 identify target trees and the full inventory is from a different data
 source (e.g. ALS data), a higher tolerance value may be required to
 identify the trees depending on the measurement accuracy. Values of 0 mean
-exact matching.}
+exact matching. Defaults to 1 (match within a 1 m buffer).}
 
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
 }
 \value{
-object of \code{c("target_inv", "forest_inv", "data.frame")} with x and y
+object of class \code{target_inv} (inherits from \code{forest_inv}) with the x and y
 coordinates of the tree, a unique tree identifier (\code{id}), at least one
 of tree diameter at breast height (\code{dbh}, in cm) and tree height (\code{height},
 in m) and a new logical column \code{target} specifying whether a tree is
@@ -94,4 +95,10 @@ target <- define_target(inv, target_source = "buff_edge", radius = 10)
 target <- define_target(inv, target_source = "all_trees", radius = 10)
 }
 
+}
+\seealso{
+\code{\link[=read_inv]{read_inv()}} to read forest inventory data,
+\code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
+\code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
+\code{compete_inv} objects.
 }

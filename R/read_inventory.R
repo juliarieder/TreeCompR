@@ -59,10 +59,14 @@
 #'   for identifying target trees (e.g. if target trees where identified by
 #'   taking their GPS coordinates manually in the field).
 #'
-#' @return object of class `c("forest_inv", "data.frame")` with x and y
-#'  coordinates of the tree, a unique tree identifier (`id`) and tree diameter
-#'  at breast height (`dbh`, in cm) and tree height (`height`, in m) if
-#'  available.
+#' @return object of class `forest_inv` with x and y coordinates of the tree, a
+#'  unique tree identifier (`id`) and tree diameter at breast height (`dbh`, in
+#'  cm) and tree height (`height`, in m) if available.
+#'
+#' @seealso [define_target()] for designating target trees,
+#'   [compete_inv()] for computing tree competition from inventory data,
+#'   [plot_target()] to plot target tree positions in `target_inv` and
+#'   `compete_inv` objects.
 #' @export
 #'
 #' @examples
