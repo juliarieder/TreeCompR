@@ -88,20 +88,30 @@
 </h2>
 <p>TreeCompR can read point clouds or inventory tables and quantifies tree competition in different ways:</p>
 <ul>
+<li>Functions for <strong>point-cloud based methods</strong>
+<ul>
 <li>
-<code><a href="reference/read_pc.html">read_pc()</a></code> reads 3D point clouds in dataframe format or las/laz (already loaded or from file path)</li>
+<code><a href="reference/compete_pc.html">compete_pc()</a></code> quantifies tree competition from point clouds using the cone or cylinder method (see <a href="https://doi.org/10.1016/j.foreco.2013.08.014" class="external-link">Metz et al. 2013</a>;<a href="http://dx.doi.org/10.1016/j.foreco.2014.10.020" class="external-link">Seidel et al. 2015</a>)</li>
 <li>
-<code><a href="reference/read_inv.html">read_inv()</a></code> reads and validates inventory tables from dataframes or reads the table directly from file path</li>
+<code><a href="reference/read_pc.html">read_pc()</a></code> reads 3D point clouds from .las/.laz files, .ply files and text-only file formats such as .txt or .csv, and converts LAS objects and data.frames to a TreeCompR compatible format</li>
+<li>
+<code><a href="reference/tree_pos.html">tree_pos()</a></code> computes the base position and height of target tree point clouds</li>
+</ul>
+</li>
+<li>Functions for <strong>inventory-based methods</strong>
+<ul>
+<li>
+<code><a href="reference/compete_inv.html">compete_inv()</a></code> quantifies size- and distance-dependent competition using inventory data based on a series of published indices</li>
+<li>
+<code><a href="reference/read_inv.html">read_inv()</a></code> reads and validates inventory tables from data.frames, or reads tabular data directly from text-only file sources such as .txt or .csv</li>
 <li>
 <code><a href="reference/define_target.html">define_target()</a></code> can be used to define for which trees within a plot the competition should be quantified in <code><a href="reference/compete_inv.html">compete_inv()</a></code>
 </li>
 <li>
 <code><a href="reference/plot_target.html">plot_target()</a></code> check and validate the tree position(s) and the surrounding trees after defining them with <code><a href="reference/define_target.html">define_target()</a></code>
 </li>
-<li>
-<code><a href="reference/compete_pc.html">compete_pc()</a></code> quantifies tree competition from point clouds (methods: cone or cylinder)</li>
-<li>
-<code><a href="reference/compete_inv.html">compete_inv()</a></code>quantifies size- and distance-dependent competition using inventory data</li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="section level2">
@@ -114,7 +124,7 @@
 </h2>
 <ul>
 <li>
-<a href="https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html">inventory workflow</a> Overview on inventory based competition indices
+<a href="https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html">Inventory-based approach</a> Overview on inventory based competition indices
 <ul>
 <li>
 <a href="https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html">ALS workflow</a> learn how to pre-process and use ALS data (airborne laser scanning) to derive size-distance-based competition indices</li>
@@ -123,7 +133,7 @@
 </ul>
 </li>
 <li>
-<a href="https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html">pointcloud-approach</a> Overview on quantifying competition directly from point clouds from ground-based laser scans and how to pre-process the data for the cone or cylinder method</li>
+<a href="https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html">Point-cloud-based approach</a> Overview on quantifying competition directly from point clouds from ground-based laser scans and how to pre-process the data for the cone or cylinder method</li>
 </ul>
 </div>
 </div>
