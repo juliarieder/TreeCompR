@@ -7,16 +7,17 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r, include=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
+
 ## Pre-processing of TLS or MLS point clouds
 
 For extracting information on tree level from close-range laser scanning 
-(TLS or MLS), you can use e.g. the [`TreeLS`](https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2) package. 
+(TLS or MLS), you can use e.g. the [TreeLS](https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2) package. 
 We will show a workflow on how to implement the output of TreeLS within TreeCompR.
 
 ```{r setup, message=FALSE, warning=FALSE, eval=FALSE}
@@ -24,9 +25,9 @@ library(TreeCompR)
 library(TreeLS)
 ```
 
-First load the .las data, normalize the height, sample the point cloud, estimate tree occurrence regions, classify stem points and estimate the diameter and height of each individual tree. 
+First, load the .las data, normalize the height, sample the point cloud, estimate tree occurrence regions, classify stem points and estimate the diameter and height of each individual tree. 
 
-```{r segment-TLS, eval=FALSE}
+```{r segment-TLS, message=FALSE, warning=FALSE, eval=FALSE}
     file <- "path/to/file"
     tls <- readTLS(file)
     tls_norm <- tlsNormalize(tls, keep_ground = F)
@@ -36,7 +37,7 @@ First load the .las data, normalize the height, sample the point cloud, estimate
     tls_stem <- stemPoints(tls_t, stm.hough())
     inv <- tlsInventory(tls_stem, d_method=shapeFit(shape='circle', 
                                                     algorithm = 'ransac'))
-    inv$dbh <- (inv$Radius *2)
+    inv$dbh <- (inv$Radius * 2)
     inv
 ```
 
@@ -44,23 +45,24 @@ First load the .las data, normalize the height, sample the point cloud, estimate
 
 ## Use extracted tree information within TreeCompR
 
-To ensure that the inventory data is assigned correctly, check the data and make sure that you specify the units dbh and height, if they differ from the default which is metres in both cases. Use `read_inv()` to validate your inventory data within `TreeCompR`. To visually check, for which trees the CIs would be quantified, depending on the chosen search radius, you can use `define_target()` and `plot_target()`. We recommend to use target_source = "buff_edge", to automatically calculate the CI for all trees in the plot but to only include trees, that are one search radius away from the forest edge. This is specifically important for TLS/MLS data, since the data usually does not cover a whole forest but a forest plot. 
+To ensure that the inventory data is assigned correctly, check the data and make sure that you specify the units dbh and height if they differ from the default, which is cm for dbh and m for height. Use `read_inv()` to validate your inventory data within `TreeCompR`. To visually check for which trees the CIs will be quantified depending on the chosen search radius, you can use `define_target()` and `plot_target()`. We recommend to use `target_source = "buff_edge"` to automatically calculate the CI for all trees in the plot except for those that are less than one search radius away from the forest edge. This is specifically important for TLS/MLS data, since these data types usually only cover small forest plots rather than whole forests. 
 
 ```{r calculate-CI1, message=FALSE, warning=FALSE, eval=FALSE}
 inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")
 targets <- define_target(inv = inventory, target_source = "buff_edge", radius = 10)
 plot_target(targets)
 ```
+
 <img src="../man/figures/README-example3-1.png" alt="plot_trees" width="500">
 
 ```{r calculate-CI2, message=FALSE, warning=FALSE, eval=FALSE}
 compete_inv(inventory, target_source = "buff_edge", radius = 10, 
               method = "all_methods")
 ```
+
 ## Use cases
 
-
-```{r use-case, message=FALSE, warning=FALSE, eval=FALSE}
+```{r use-cases, message=FALSE, warning=FALSE, eval=FALSE}
 ## If you focus on a specific CI, e.g. the widely used Hegyi-Index, 
 ## you can choose it within methods = "CI_Hegyi".
 compete_inv(inventory, target_source = "buff_edge", radius = 10, 

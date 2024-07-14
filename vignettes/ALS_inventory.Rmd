@@ -9,14 +9,15 @@ vignette: >
 
 ## Workflow for deriving size-distance-dependent competition indizes from ALS data
 
-```{r, include = FALSE}
+```{r, include=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
+
 Airborne Laser Scanning is a powerful tool for forest management and research, offering accurate large-scale data. To quantify competition on the individual tree level, first the ALS point cloud needs to be pre-processed. For using the data in TreeCompR, we need to segment the trees and derive an inventory table. The package [`lidR`](https://CRAN.R-project.org/package=lidR) is a great option to load,inspect and process your ALS data and to segment individual trees. Check out the [lidRbook](https://r-lidar.github.io/lidRbook/) for their very nice detailed workflows and examples. 
-```{r setup, message=FALSE, warning=FALSE}
+```{r setup, message=FALSE, warning=FALSE, eval=FALSE}
 library(lidR)
 library(TreeCompR)
 ```

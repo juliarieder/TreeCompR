@@ -7,12 +7,13 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
   
-```{r, include = FALSE}
+```{r, include=FALSE}
 knitr::opts_chunk$set(
 collapse = TRUE,
 comment = "#>"
 )
 ```
+
 ## Overview 
 
 Within `TreeCompR` it is possible to easily derive size-distance-dependent competition indices based on inventory data. This data can be collected in the field, or derived or modelled from 3D point clouds. Depending on the input data, there are some necessary pre-processing steps. Check out our workflows: <!-- Yo, Digga -->
@@ -24,7 +25,7 @@ Within `TreeCompR` it is possible to easily derive size-distance-dependent compe
 ## Analyzing inventory data with TreeCompR
 To illustrate how TreeCompR can be included inside a tidy workflow, we will make use of [tidyverse](https://www.tidyverse.org/) function throughout the tutorial:
 
-```{r setup, eval = FALSE}
+```{r setup, eval=FALSE}
 library(TreeCompR)
 library(tidyverse)
 ```
@@ -39,7 +40,7 @@ To ensure that the inventory data is assigned correctly, inspect the data thorou
 
 In a simple case, reading data with `read_inv()` with standard settings (except for the metric tree diameters) looks like this:
 
-```{r read-inv1, message=FALSE,warning=FALSE, eval = FALSE}
+```{r read-inv1, eval=FALSE, message=FALSE, warning=FALSE}
 inventory1 <- read_inv(
   inv_source = "data/inventory1.csv", 
   dbh_unit = "m", 
@@ -51,7 +52,7 @@ inventory1 <- read_inv(
 If you have variable names that cannot be automatically recognized, you can specify them explicitly with the corresponding arguments either as a character string of length 1 with the variable name or by directly specifying the name without quotes. 
 For example, assume you have a data set with (metric) UTM coordinates from a Spanish source, i.e. with "dap_cm" (diámetro en altura de pecho) instead of dbh and "altura" instead of height:
 
-```{r read-inv2, message=FALSE, warning=FALSE, eval = FALSE}
+```{r read-inv2, message=FALSE, warning=FALSE, eval=FALSE}
 inventory2 <- read_inv(
   inv_source = "data/inventory2.csv",  
   x = utmx,
@@ -64,7 +65,7 @@ inventory2 <- read_inv(
 
 Non-standard field separators etc. can be internally passed on to `data.table::fread()` via the `...` arguments to read more exotic formats such as the semicolon-separated ".csv" files with commas as decimal separators used for example in Germany. 
 
-```{r read-inv3, message=FALSE,warning=FALSE, eval = FALSE}
+```{r read-inv3, message=FALSE, warning=FALSE, eval=FALSE}
 inventory1 <- read_inv(
   inv_source = "data/inventory3.csv", 
   dbh_unit = "m", 
@@ -75,7 +76,7 @@ inventory1 <- read_inv(
 
 In many cases, pre-processing of the inventories based on other variables than coordinates and tree size is necessary. For that reason, it is possible to read in any objects that inherit from class `data.frame` (e.g., tibbles, data.tables or actual data.frames) with `read_inv()`:
 
-```{r read-inv4, message=FALSE, warning=FALSE, eval = FALSE}
+```{r read-inv4, message=FALSE, warning=FALSE, eval=FALSE}
 # read dataset outside read_inv and filter to the plot in question
 dat <- readr::read_csv("data/inventory4.csv") %>% 
   filter(plot_id == "Plot 1")
@@ -96,7 +97,7 @@ There are many different ways of specifying target trees that are described in t
 
 Defining targets with a vector of tree IDs could look like this, assuming you want to compute competition indices for 3 adjacent _Fagus sylvatica_ trees and this is your naming scheme:
 
-```{r define-target1, message=FALSE,warning=FALSE, eval = FALSE}
+```{r define-target1, message=FALSE, warning=FALSE, eval=FALSE}
 # set target trees based on vector with tree ids
 targets1 <- define_target(
   inv = inventory1, 
@@ -106,7 +107,7 @@ targets1 <- define_target(
 
 You might also want to define target trees based on a logical criterion, for instance for all trees whose ID contains "FASY":
 
-```{r define-target2, message=FALSE,warning=FALSE, eval = FALSE}
+```{r define-target2, message=FALSE, warning=FALSE, eval=FALSE}
 # set target trees based on logical vector
 targets2 <- define_target(
   inv = inventory1, 
@@ -118,7 +119,7 @@ In many cases you will have target tree coordinates that come from a different d
 
 In these cases, it is possible to supply an inventory based on a second set of coordinates as a `target_source` which is then matched against the inventory data. IDs are then ignored (as they are likely automatically generated anyway) and matching is based only on the closest trees with in a buffer of `tol` m (the default is `tol = 1`: matching within 1 m). All further size-related variables in the second set of coordinates are ignored as well to ensure the competition indices are based on the same data source:
 
-```{r define-target3, message=FALSE,warning=FALSE, eval = FALSE}
+```{r define-target3, message=FALSE, warning=FALSE, eval=FALSE}
 # read target tree positions
 target_pos <- read_inv("data/target_tree_gps.csv", x = gps_x, y = gps_y)
 # define target trees
@@ -135,7 +136,7 @@ In many cases, there will be no list of a priori specified target trees, and the
 
 Here is an example of how to identify all potential target trees that run in no risk of excluding potential edge trees when computing competition indices with a search radius of 10 m:
 
-```{r define-target4, message=FALSE,warning=FALSE, eval = FALSE}
+```{r define-target4, message=FALSE, warning=FALSE, eval=FALSE}
 targets4 <- define_target(
   inv = inventory1, 
   target_source = "buff_edge", 
@@ -149,7 +150,7 @@ While it is possible to compute competition indices for all trees (`target_sourc
 
 To visually inspect the position of the designated target trees relative to the other trees in the neighbourhood, you can use the function `plot_target()`, which automatically displays the relevant information depending on the `target_source` setting for both `target_inv` datasets and the output of `compete_inv()` itself:
 
-```{r plot-target, message=FALSE,warning=FALSE, eval = FALSE}
+```{r plot-target, message=FALSE, warning=FALSE, eval=FALSE}
 plot_target(targets4)
 ```
 <img src="../man/figures/README-example3-1.png" alt="plot_trees" width="500">
@@ -161,13 +162,13 @@ The purpose of this function is to provide a fast tool for visual inspection rat
 
 If target trees have already been specified with `target_inv()`, the outcome can directly be passed to `compete_inv()`, which then ignores the target_source argument and all further arguments that are passed on to `read_inv()` and `define_target()`.
 
-```{r comp1, message=FALSE,warning=FALSE, eval = FALSE}
+```{r comp1, message=FALSE, warning=FALSE, eval=FALSE}
 compete_inv(inv_source = targets4, radius = 10, method = "CI_Hegyi")
 ```
 
 Otherwise, it is for example possible to calculate the Hegyi competition index from a data from a .csv source with non-standard column names and decimal and field separators (in this example, from a German file source) and then get reasonable target trees via `target_source = "buff_edge"`:
 
-```{r comp2, message=FALSE,warning=FALSE, eval = FALSE}
+```{r comp2, message=FALSE, warning=FALSE, eval=FALSE}
 CI1 <- compete_inv(
   inv_source = "data/inventory5.csv",
   target_source = "buff_edge",

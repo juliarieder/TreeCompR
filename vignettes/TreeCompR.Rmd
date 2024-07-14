@@ -19,7 +19,7 @@ This R package is designed for the quantitative analysis of individual tree comp
 
 You can install the stable version (main branch) as well as the current development version of TreeCompR (development branch: more up-to-date, but potentially unstable) from [GitHub](https://github.com/juliarieder/TreeCompR) with:
 
-``` r
+```{r installation, message=FALSE, warning=FALSE, eval=FALSE}
 # install.packages("devtools")
 
 # get stable version
@@ -28,6 +28,7 @@ devtools::install_github("juliarieder/TreeCompR")
 # get development branch 
 devtools::install_github("juliarieder/TreeCompR", ref = "development")
 ```
+
 ## Overview
 
 TreeCompR can read point clouds or inventory tables and quantify tree competition in different ways:
