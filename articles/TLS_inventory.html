@@ -77,13 +77,13 @@
 <h2 id="pre-processing-of-tls-or-mls-point-clouds">Pre-processing of TLS or MLS point clouds<a class="anchor" aria-label="anchor" href="#pre-processing-of-tls-or-mls-point-clouds"></a>
 </h2>
 <p>For extracting information on tree level from close-range laser
-scanning (TLS or MLS), you can use e.g. the <a href="https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2" class="external-link"><code>TreeLS</code></a>
+scanning (TLS or MLS), you can use e.g. the <a href="https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2" class="external-link">TreeLS</a>
 package. We will show a workflow on how to implement the output of
 TreeLS within TreeCompR.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">TreeLS</span><span class="op">)</span></span></code></pre></div>
-<p>First load the .las data, normalize the height, sample the point
+<p>First, load the .las data, normalize the height, sample the point
 cloud, estimate tree occurrence regions, classify stem points and
 estimate the diameter and height of each individual tree.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -96,7 +96,7 @@ estimate the diameter and height of each individual tree.</p>
 <span>    <span class="va">tls_stem</span> <span class="op">&lt;-</span> <span class="fu">stemPoints</span><span class="op">(</span><span class="va">tls_t</span>, <span class="fu">stm.hough</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">inv</span> <span class="op">&lt;-</span> <span class="fu">tlsInventory</span><span class="op">(</span><span class="va">tls_stem</span>, d_method<span class="op">=</span><span class="fu">shapeFit</span><span class="op">(</span>shape<span class="op">=</span><span class="st">'circle'</span>, </span>
 <span>                                                    algorithm <span class="op">=</span> <span class="st">'ransac'</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">inv</span><span class="op">$</span><span class="va">dbh</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">inv</span><span class="op">$</span><span class="va">Radius</span> <span class="op">*</span><span class="fl">2</span><span class="op">)</span></span>
+<span>    <span class="va">inv</span><span class="op">$</span><span class="va">dbh</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">inv</span><span class="op">$</span><span class="va">Radius</span> <span class="op">*</span> <span class="fl">2</span><span class="op">)</span></span>
 <span>    <span class="va">inv</span></span></code></pre></div>
 <p><img src="../reference/figures/TLS_plot3d.jpg" alt="plot_trees3d" width="500"></p>
 </div>
@@ -104,17 +104,17 @@ estimate the diameter and height of each individual tree.</p>
 <h2 id="use-extracted-tree-information-within-treecompr">Use extracted tree information within TreeCompR<a class="anchor" aria-label="anchor" href="#use-extracted-tree-information-within-treecompr"></a>
 </h2>
 <p>To ensure that the inventory data is assigned correctly, check the
-data and make sure that you specify the units dbh and height, if they
-differ from the default which is metres in both cases. Use
+data and make sure that you specify the units dbh and height if they
+differ from the default, which is cm for dbh and m for height. Use
 <code><a href="../reference/read_inv.html">read_inv()</a></code> to validate your inventory data within
-<code>TreeCompR</code>. To visually check, for which trees the CIs would
-be quantified, depending on the chosen search radius, you can use
+<code>TreeCompR</code>. To visually check for which trees the CIs will
+be quantified depending on the chosen search radius, you can use
 <code><a href="../reference/define_target.html">define_target()</a></code> and <code><a href="../reference/plot_target.html">plot_target()</a></code>. We
-recommend to use target_source = “buff_edge”, to automatically calculate
-the CI for all trees in the plot but to only include trees, that are one
-search radius away from the forest edge. This is specifically important
-for TLS/MLS data, since the data usually does not cover a whole forest
-but a forest plot.</p>
+recommend to use <code>target_source = "buff_edge"</code> to
+automatically calculate the CI for all trees in the plot except for
+those that are less than one search radius away from the forest edge.
+This is specifically important for TLS/MLS data, since these data types
+usually only cover small forest plots rather than whole forests.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv</span>, dbh_unit <span class="op">=</span> <span class="st">"m"</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
 <span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span>inv <span class="op">=</span> <span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
