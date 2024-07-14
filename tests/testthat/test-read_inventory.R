@@ -61,6 +61,15 @@ test_that("read_inv works for data.frame objects", {
   "No variable found with a name"
   )
 
+  # reading in fails with an error if forbidden IDs are used
+  expect_error({
+    test4 <- test
+    test4$TreeID[c(2,3)] <- c("buff_edge", "all_trees")
+    read_inv(test4, verbose = FALSE)
+  },
+  "Found the following tree ids:"
+  )
+
   # reading in without diamete nor height is possible
   expect_length(read_inv(test[, -4], verbose = FALSE), 3)
 

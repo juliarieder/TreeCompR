@@ -162,6 +162,17 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       class_out = "character",
       alternative = 1:nrow(inv_source)
     )
+    # test for forbidden IDs
+    forbidden <- inv_out$id %in% c("buff_edge", "exclude_edge", "all_trees")
+    if (any(forbidden)){
+      stop("Found the following tree ids: ",
+           paste(inv_out$id[forbidden], collapse = ", "),
+           "\n\n",
+        .wr("Trees named 'buff_edge', 'exclude_edge' and 'all_trees'",
+          "are not allowed as they interfere with define_target().")
+      )
+    }
+
     # validate x coordinate
     inv_out$x <- .get_cols(
       data = inv_source,
