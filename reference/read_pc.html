@@ -131,14 +131,16 @@ three numeric columns or one of the columns labeled x, y, and z is not
 numeric, the function fails with an error.</p>
 <p>The xlim, ylim and zlim arguments are used internally in <code><a href="compete_pc.html">compete_pc()</a></code> to
 filter the neighborhood dataset to a relevant range around the target tree
-to speed up calculations.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="note-support-of-las-laz-and-ply-formats">Note: support of .las, .laz and .ply formats<a class="anchor" aria-label="anchor" href="#note-support-of-las-laz-and-ply-formats"></a></h2>
-    <p>The the 'lidR' package has to be installed to be able to read in .las/.laz
+to speed up calculations.</p><div class="section">
+<h3 id="note-support-of-las-laz-and-ply-formats">Note: support of .las, .laz and .ply formats<a class="anchor" aria-label="anchor" href="#note-support-of-las-laz-and-ply-formats"></a></h3>
+
+
+<p>The the <code>lidR</code> package has to be installed to be able to read in .las/.laz
 files, which are internally processed by <code><a href="https://rdrr.io/pkg/lidR/man/readLAS.html" class="external-link">lidR::readTLSLAS()</a></code>.
-Analogously, for point clouds in the .ply format, the 'Rvcg' package is
+Analogously, for point clouds in the .ply format, the <code>Rvcg</code> package is
 required as these are loaded with <code><a href="https://rdrr.io/pkg/Rvcg/man/vcgPlyRead.html" class="external-link">Rvcg::vcgPlyRead()</a></code>.</p>
+</div>
+
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

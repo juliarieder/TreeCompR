@@ -241,17 +241,18 @@ more sense to split up the data set into smaller chunks outside R to
 reduce the memory load.</p>
 </div>
 
-    </div>
-    <div class="section level2">
-    <h2 id="note-support-of-las-laz-and-ply-formats">Note: support of .las, .laz and .ply formats<a class="anchor" aria-label="anchor" href="#note-support-of-las-laz-and-ply-formats"></a></h2>
-    <p>The the 'lidR' package has to be installed to be able to read in .las/.laz
-files, which are internally processed by <code><a href="https://rdrr.io/pkg/lidR/man/readLAS.html" class="external-link">lidR::readTLSLAS()</a></code>.
-Analogously, for point clouds in the .ply format, the 'Rvcg' package is
-required as these are loaded with <code><a href="https://rdrr.io/pkg/Rvcg/man/vcgPlyRead.html" class="external-link">Rvcg::vcgPlyRead()</a></code>.</p>
-    </div>
-    <div class="section level2">
-    <h2 id="literature">Literature<a class="anchor" aria-label="anchor" href="#literature"></a></h2>
+<div class="section">
+<h3 id="note-support-of-las-laz-and-ply-formats">Note: support of .las, .laz and .ply formats<a class="anchor" aria-label="anchor" href="#note-support-of-las-laz-and-ply-formats"></a></h3>
 
+
+<p>The the <code>lidR</code> package has to be installed to be able to read in .las/.laz
+files, which are internally processed by <code><a href="https://rdrr.io/pkg/lidR/man/readLAS.html" class="external-link">lidR::readTLSLAS()</a></code>.
+Analogously, for point clouds in the .ply format, the <code>Rvcg</code> package is
+required as these are loaded with <code><a href="https://rdrr.io/pkg/Rvcg/man/vcgPlyRead.html" class="external-link">Rvcg::vcgPlyRead()</a></code>.</p>
+</div>
+
+<div class="section">
+<h3 id="literature">Literature<a class="anchor" aria-label="anchor" href="#literature"></a></h3>
 
 <ul><li><p>Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. &amp; Ammer,
 C. (2013). Crown modeling by terrestrial laser scanning
@@ -267,6 +268,8 @@ terrestrial laser scanning and some methodical considerations. Forest
 Ecology and Management, 336: 119-128.
 http://dx.doi.org/10.1016/j.foreco.2014.10.020</p></li>
 </ul></div>
+
+    </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="read_pc.html">read_pc()</a></code> for details on reading point clouds, <code><a href="tree_pos.html">tree_pos()</a></code> for

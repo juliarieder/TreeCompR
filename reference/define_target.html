@@ -57,7 +57,13 @@ coordinates.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">define_target</span><span class="op">(</span><span class="va">inv</span>, <span class="va">target_source</span>, radius <span class="op">=</span> <span class="fl">10</span>, tol <span class="op">=</span> <span class="fl">1</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">define_target</span><span class="op">(</span></span>
+<span>  <span class="va">inv</span>,</span>
+<span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>,</span>
+<span>  radius <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  tol <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -115,23 +121,50 @@ printed? Defaults to TRUE.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>object of class <code>target_inv</code> (inherits from <code>forest_inv</code>) with the x and y
-coordinates of the tree, a unique tree identifier (<code>id</code>), at least one
+    <p>object of class <code>target_inv</code> (inherits from <code>forest_inv</code>) with the x
+and y coordinates of the tree, a unique tree identifier (<code>id</code>), at least one
 of tree diameter at breast height (<code>dbh</code>, in cm) and tree height (<code>height</code>,
 in m) and a new logical column <code>target</code> specifying whether a tree is
 considered a target tree.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The input data can either be taken directly from field measurements or
-derived beforehand from LiDAR point clouds.</p>
-<p>Various approaches can be used to segment airborne laser scanning point
-clouds into single trees and to obtain inventory data based it. Existing R
-packages for this are for example:</p><ul><li><p>lidR package with different options to segment the point cloud or a Canopy
-Height Model (CHM)</p></li>
-<li><p>itcLiDARallo within the package itcSegment</p></li>
-</ul><p>Be careful with low resolution/low density point clouds, as oversegmentation
-of trees is usually an issue!</p>
+    <p><code>define_target()</code> can be used to select target trees from a
+<code>forest_inv</code> object either by manually specifying them as a character
+vector with tree IDs, as a logical vector that specifies for each tree in
+the inventory whether or not it is treated as a target tree, a separate
+set of (approximate) coordinates of the target trees that is matched
+against the original inventory, or a character string describing how to
+choose the target trees based on their spatial arrangement.</p>
+<p>When the target is defined by a second set of coordinates, these
+coordinates will then be matched against the inventory data. IDs are
+ignored in this case and  matching is based only on the closest trees with
+in a buffer of <code>tol</code> m  (the default is <code>tol = 1</code>: matching within 1 m).
+All further size-related variables in the second set of coordinates are
+ignored as well to make sure that in later steps competition indices will
+be computed with data from the same data source.
+The intended use case for determining target trees in this way is to
+compute tree competition from ALS data based on GPS coordinates of single
+trees in studies that are based on single trees rather than plot-level
+data.</p>
+<p>The methods <code>target_source = "buff_edge"</code> and
+<code>target_source = "exclude_edge"</code> are intended for cases where it is desired
+to compute valid competition indices for as many trees as possible while
+avoiding edge effects. While it is possible to designate all trees in the
+dataset as target tree by setting <code>target_source = "all_trees"</code>, this is
+not a good idea in the majority of cases: unless your dataset contains all
+trees in the forest (possible for ALS-based data, but very unlikely for
+data based on classical inventory methods and TLS/MLS), there will be very
+extreme edge effects at the outer edge of the extent of the covered trees
+resulting in strongly underestimated competition for edge trees.
+<code>target_source = "buff_edge"</code> excludes all trees who are less than one
+search radius (<code>radius</code>) away from the plot border (approximated by a
+concave hull based on <code><a href="https://joelgombin.github.io/concaveman/reference/concaveman.html" class="external-link">concaveman::concaveman()</a></code>) and hence guarantees to
+only include trees that can obtain valid competition index values for that
+search radius. <code>target_source = "exclude_edge"</code> only removes the edge trees
+and hence is less restrictive, but more prone to edge effects.</p>
+<p>Do not use <code>target_source = "all_trees"</code> unless you know exactly what you
+are doing!</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
