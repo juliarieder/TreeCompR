@@ -24,7 +24,7 @@ library(TreeLS)
 ```
 
 First load the las data, normalize the height, sample the point cloud, estimate tree occurrence regions, classify stem points and estimate the diameter and height of each individual tree. 
-```{r segment-TLS, eval = FALSE}
+```{r segment-TLS, eval=FALSE}
     file <- "path/to/file"
     tls <- readTLS(file)
     tls_norm <- tlsNormalize(tls, keep_ground = F)
@@ -44,21 +44,21 @@ First load the las data, normalize the height, sample the point cloud, estimate 
 
 To ensure that the inventory data is assigned correctly, check the data and make sure that you specify the units dbh and height, if they differ from the default which is metres in both cases. Use `read_inv()` to validate your inventory data within `TreeCompR`. To visually check, for which trees the CIs would be quantified, depending on the chosen search radius, you can use `define_target()` and `plot_target()`. We recommend to use target_source = "buff_edge", to automatically calculate the CI for all trees in the plot but to only include trees, that are one search radius away from the forest edge. This is specifically important for TLS/MLS data, since the data usually does not cover a whole forest but a forest plot. 
 
-```{r calculate-CI, message=FALSE,warning=FALSE, eval = FALSE}
+```{r calculate-CI1, message=FALSE, warning=FALSE, eval=FALSE}
 inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")
 targets <- define_target(inv = inventory, target_source = "buff_edge", radius = 10)
 plot_target(targets)
 ```
 <img src="../man/figures/README-example3-1.png" alt="plot_trees" width="700">
 
-```r
+```{r calculate-CI2, message=FALSE, warning=FALSE, eval=FALSE}
 compete_inv(inventory, target_source = "buff_edge", radius = 10, 
               method = "all_methods")
 ```
-## User cases
+## Use cases
 
 
-```r
+```{r use-case, message=FALSE, warning=FALSE, eval=FALSE}
 ## If you focus on a specific CI, e.g. the widely used Hegyi-Index, 
 ## you can choose it within methods = "CI_Hegyi".
 compete_inv(inventory, target_source = "buff_edge", radius = 10, 

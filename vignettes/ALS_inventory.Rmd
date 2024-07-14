@@ -23,7 +23,7 @@ library(TreeCompR)
 ## Read the point cloud
 The [`lidR`](https://CRAN.R-project.org/package=lidR) package can read various data formats. Read in the raw ALS point cloud. Here we show a workflow with the example data from the lidR package.
 
-```r
+```{r LAS, message=FALSE, warning=FALSE, eval=FALSE}
 LASfile <- system.file("extdata", "Megaplot.laz", package="lidR")
 las <- readLAS(LASfile)
 #print a summary
@@ -32,16 +32,16 @@ print(las)
 
 Maybe just load xyz to save memory, in case you have a lot of parameters stored in your data, by using the optional parameter `select` within `readLAS()`.
 
-```r
+```{r LAS1, message=FALSE, warning=FALSE, eval=FALSE}
 las <- readLAS("file.las", select = "xyz")  # load XYZ only
 ```
 And it is always good to check and validate your data using the `las_check()` function.
-```r
+```{r LAS2, message=FALSE, warning=FALSE, eval=FALSE}
 las_check(las)
 ```
 
 ## Plot your data
-```r
+```{r LAS3, message=FALSE, warning=FALSE, eval=FALSE}
 plot(las)
 ```
 <img src="../man/figures/lidR_plot1.jpg" alt="lidR1" width="500">
@@ -50,7 +50,7 @@ Please note, there are various options on individual tree segmentations (e.g. ba
 
 For a segmentation based on CHM, first the CHM needs to be generated:
 
-```r
+```{r CHM, message=FALSE, warning=FALSE, eval=FALSE}
 # create CHM raster from point cloud with 0.5 m resolution (adjust values if needed)
 chm_p2r_05 <- rasterize_canopy(las, 0.5, p2r(subcircle = 0.2), pkg = "terra")
 
@@ -61,7 +61,7 @@ chm_p2r_05_smoothed <- terra::focal(chm_p2r_05, w = kernel, fun = median, na.rm 
 #locate tree tops
 ttops_chm_p2r_05_smoothed <- locate_trees(chm_p2r_05_smoothed, lmf(5))
 ```
-```r
+```{r CHM1, message=FALSE, warning=FALSE, eval=FALSE}
 col <- height.colors(50)
 plot(chm_p2r_05_smoothed, main = "CHM P2R 0.5 smoothed", col = col); plot(sf::st_geometry(ttops_chm_p2r_05_smoothed), add = T, pch =3)
 ```
@@ -69,7 +69,7 @@ plot(chm_p2r_05_smoothed, main = "CHM P2R 0.5 smoothed", col = col); plot(sf::st
 
 ## Segment the trees
 
-```r
+```{r segment, message=FALSE, warning=FALSE, eval=FALSE}
 algo <- dalponte2016(chm_p2r_05_smoothed, ttops_chm_p2r_05_smoothed)
 las <- segment_trees(las, algo) # segment point cloud
 plot(las, bg = "white", size = 4, color = "treeID") # visualize trees
@@ -78,13 +78,13 @@ plot(las, bg = "white", size = 4, color = "treeID") # visualize trees
 
 ## Get crown metrics
 
-```r
+```{r crown-metrics, message=FALSE, warning=FALSE, eval=FALSE}
 crowns <- crown_metrics(las, func = .stdtreemetrics, geom = "convex")
 plot(crowns["convhull_area"], main = "Crown area (convex hull)")
 ```
 <img src="../man/figures/cpa_ALS.jpeg" alt="cpa" width="500">
 
-```r
+```{r crown-metrics1, message=FALSE, warning=FALSE, eval=FALSE}
 trees <- crown_metrics(las, func = .stdtreemetrics, geom = "point")
 plot(trees["Z"], main = "Tree heights", pch = 16)
 ```
@@ -93,7 +93,7 @@ plot(trees["Z"], main = "Tree heights", pch = 16)
 ## Integration into TreeCompR
 Extract a inventory table from the crown data:
 
-```r
+```{r integrate, message=FALSE, warning=FALSE, eval=FALSE}
 library(sf)
 library(dplyr)
 inventory <- trees %>%
@@ -102,7 +102,7 @@ inventory <- trees %>%
 ```
 validate the inventory table with `read_inv()` and define target trees (automatically) with `define_targets()` where trees at the edge of the plot or dataset (1 search radius away from plot edge) are automatically excluded for calculating CIs. 
 
-```r
+```{r integrate1, message=FALSE, warning=FALSE, eval=FALSE}
 inv_trees <- read_inv(inventory, height = Z, height_unit = "m")
 targets_buff <- define_target(inv_trees, target_source = "buff_edge", radius = 10)
 plot_target(targets_buff)
@@ -110,13 +110,14 @@ plot_target(targets_buff)
 <img src="../man/figures/plot_target_ALS.jpeg" alt="targets" width="500">
 
 Now you can calculate the tree competition (size-distance-dependent) for your trees. Afterwards you can print your results, save the dataframe or plot the results according to your needs.
-```r
+```{r integrate3, message=FALSE, warning=FALSE, eval=FALSE}
 CI <- compete_inv(inv_source = inv_trees, target_source = "buff_edge", 
                   radius = 10, method = "all")
 ```
+
 ## plot the results
 
-```r
+```{r plot-res, message=FALSE, warning=FALSE, eval=FALSE}
 library(ggplot2)
 ggplot(CI, aes(x = x, y = y, color = CI_Braathe)) +
   geom_point(size = 2, alpha = 0.7) + # Adjust point size and transparency
