@@ -1,0 +1,12 @@
+bibentry(
+  bibtype  = "Article",
+  title    = "TreeCompR: Tree competition indices for inventory data and 3D point clouds",
+  author   = "J.S. Rieder and R. M. Link and K. Köthe and D. Seidel and T. Ullmann and A. Žmegač and C. Zang and B. Schuldt",
+  journal  = "BiorXiv",
+  year     = 2024,
+  volume   = "",
+  number   = "",
+  pages    = "",
+  doi      = "10.1101/2024.03.23.586379"
+)
+
