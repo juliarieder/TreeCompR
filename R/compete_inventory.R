@@ -1,8 +1,6 @@
 #' Quantify size- and distance-dependent competition using inventory data
-#' @description
-#' 'compete_inv()' returns a specific distance-height-dependent or distance-
-#' dbh-dependent competition index (or group of indices) for all trees within a
-#' forest plot or specified target trees.
+#' @description `compete_inv()` computes one or several distance-height- or
+#'  distance-dbh-dependent competition indices based on forest inventory data.
 #'
 #' @param inv_source either an object of class `target_inv`, or any object that
 #'   can be imported by [read_inv()] (in this case, `x`, `y`, `id`,
@@ -51,21 +49,35 @@
 #' @param ... additional arguments passed on to [data.table::fread()].
 #' @inheritParams read_inv
 #'
-#' @details
-#' Using an inventory table to easily quantify distance-dependent tree
-#' competition for a list of trees within a plot or all the trees.
-#' The input data can either be taken directly from field measurements or
-#' derived beforehand from LiDAR point clouds.
-#' The function calculates 6 different Competition indices, based on tree
-#' heights or dbh and distance to competitors.
+#' @details `compete_inv()` calculates one or several distance-dependent tree
+#'   competition indices based on forest inventory data. These can be obtained
+#'   either with classical forest inventory methods, or be derived from LiDAR
+#'   point clouds (see below).
 #'
-#' @section Methods:
-#' The available competition indices are computed according to the following
-#' equations, where \eqn{d_i} and \eqn{h_i} are the dbh and height of neighbor
-#' tree \eqn{i}, \eqn{d} and \eqn{h} are dbh and height of the focal tree, and
-#' \eqn{dist_i} is the distance of neighbor tree \eqn{i}.
+#'   Inventory data can be either loaded from source, imported from an object
+#'   inheriting from class `data.frame` (i.e., data.frames, tibbles,
+#'   data.table objects etc.) or a `forest_inv` type object created with
+#'   [read_inv()]. `compete_inv()` takes the same arguments for reading
+#'   inventory data and has the same flexibility as [read_inv()].
 #'
-#' ### Diameter-based competition indices
+#'   To compute competition indices for trees from an inventory dataset, it is
+#'   necessary to decide on the target trees for the analysis. While it is also
+#'   possible to calculate competition indices for all trees in the inventory,
+#'   this is almost never a good idea because unless the dataset covers all
+#'   trees in the entire forest, there will be intense edge effects for the
+#'   trees at the edge of the spatial extent of the dataset.
+#'   `read_inv()` allows to define target trees in a number of different ways
+#'   based on the function [define_target()] that is called internally.
+#'
+#'
+#'   ## Available competition indices
+#'   The competition indices are computed according to the following
+#'   equations, where \eqn{d_i} and \eqn{h_i} are the dbh and height of neighbor
+#'   tree \eqn{i}, \eqn{d} and \eqn{h} are dbh and height of the target tree,
+#'   and \eqn{dist_i} is the distance from neighbor tree \eqn{i} to the target
+#'   tree.
+#'
+#'  _Diameter-based competition indices_
 #'  * CI_Hegyi introduced by Hegyi (1974): \cr
 #'    \eqn{CI_{Hegyi} = \sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})}
 #'  * CI_RK1 according to CI1 Rouvinen & Kuuluvainen (1997):\cr
@@ -74,7 +86,7 @@
 #'    \eqn{CI_{RK2} =\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i}
 #'    / dist_{i})}
 #'
-#'  ### Height-based competition indices
+#'  _Height-based competition indices_
 #'  * CI_Braathe according to Braathe (1980): \cr
 #'    \eqn{CI_{Braathe} = \sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
 #'  * CI_RK3 according to CI5 in Rouvinen & Kuuluvainen (1997): \cr
@@ -85,19 +97,42 @@
 #'    \eqn{CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
 #'    \mathrm{arctan}(h_{i} / dist_{i})}
 #'
-#' @section Tree Segmentation:
-#' Various approaches can be used to segment (airborne) laser scanning point
-#' clouds into single trees and to obtain inventory data based it. Existing R
-#' packages for this are for example:
-#' * TreeLS package for automated segmentation of terrestrial/mobile laser scans
-#' * lidR package with different options to segment the point cloud or a Canopy
-#'    Height Model (CHM)
-#' * itcLiDARallo within the package itcSegment
+#'  As all these indices are distance-weighted sums of the relative size of all
+#'  competitor trees within the search radius compared to the target tree (or a
+#'  sum of transformations thereof), they are very sensitive to the choice of
+#'  the search radius. It is not generally possible to meaningfully compare
+#'  competition indices computed with different search radii. Over which
+#'  distance competitors affect the growth of the central tree is certainly
+#'  specific and likely also depends on the average size of trees of the same
+#'  species as the target tree and how far its roots spread under the local
+#'  conditions. Lorimer (1983) recommends to use 3.5 times the mean crown radius
+#'  of the target trees, but it is likely that there is no single value that
+#'  works well under all conditions, and possible that the same values of
+#'  competition indices calculated with the same radius have different meanings
+#'  for different species.
 #'
-#' Be careful with low resolution/low density point clouds, as oversegmentation
-#' of trees is usually an issue!
+#'  ## Tree Segmentation
+#'   Various approaches can be used to segment (airborne) laser scanning point
+#'   clouds into single trees and to obtain inventory data based it. Existing R
+#'   packages for this are for example:
+#'   * `TreeLS` package for automated segmentation of terrestrial/mobile laser
+#'      scans
+#'   * `lidR` package with different options to segment the point cloud or a
+#'     Canopy Height Model (CHM)
+#'   * `itcLiDARallo()` from the package `itcSegment`
 #'
-#' @section Literature:
+#'   Be careful with low resolution/low density point clouds, as
+#'   oversegmentation of trees is usually an issue!
+#'
+#'   For examples of workflows to obtain inventory dator from airborne
+#'   laser scanning data or terrestrial/mobile laser scanning data, see
+#'   [ALS
+#'   workflow](https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html)
+#'   and [TLS
+#'   workflow](https://juliarieder.github.io/TreeCompR/articles/TLS_inventory.html),
+#'   respectively.
+#'
+#' ## Literature
 #'  * Hegyi, F., 1974. A simulation model for managing jackpine stands. In:
 #'    Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models
 #'    for tree and stand simulation, Royal College of Forestry, Stockholm.
@@ -110,7 +145,9 @@
 #'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree
 #'    competition indices as predictors of basal area increment in western
 #'    Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
-#'
+#'  * Lorimer, C.G., 1983. Tests of age-independent competition indices for
+#'    individual trees in natural hardwood stands. For. Ecol. Manage. 6,
+#'    343–360.
 #'
 #' @return object of class`compete_inv`: a modified data.frame with the position
 #'   and size of the designated target tree(s) and one or more competition
@@ -208,11 +245,11 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
     inv <- inv_source
     # warn if radii are different
     if (attr(inv, "target_type") %in% c("buff_edge", "exclude_edge",
-                                          "inventory")){
+                                        "inventory")){
       if(attr(inv, "spatial_radius") != radius){
         warning(
           .wr("Radius used to determine target trees / filter surrounding",
-                "trees differs from search radius for competition indices.")
+              "trees differs from search radius for competition indices.")
         )
       }
     }
@@ -221,7 +258,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
   # singularity in inverse distance weighting)
   if (any(duplicated(inv[,c("x", "y")]))) {
     stop(.wr("Dataset contains duplicate coordinates. ",
-         "Please revise tree positions."))
+             "Please revise tree positions."))
   }
   # define methods to calculate if method == "all_methods"
   if (method == "all_methods"){
