@@ -340,9 +340,9 @@ German file source) and then get reasonable target trees via
 <span>  sep <span class="op">=</span> <span class="st">";"</span>,</span>
 <span>  dec <span class="op">=</span> <span class="st">","</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p>The output of this function can then again be inspected with
-<code><a href="../reference/plot_target.html">plot_target()</a></code> to make sure the selection of target trees
-make sense.</p>
+<p>The output of this function can then again be inspected in the same
+way as above using <code>plot_target(CI1)</code> to make sure the
+selection of target trees make sense.</p>
 <p>The function computes a series of inventory-based competition indices
 commonly used in the literature that can be specified via the
 <code>method</code> argument (<a href="https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734" class="external-link">Hegyi
@@ -352,14 +352,38 @@ commonly used in the literature that can be specified via the
 (“CI_Hegyi”, “CI_RK1”, “CI_RK2”) or on tree height (“CI_Braathe”,
 “CI_RK3”, “CI_RK4”). The mathematical definition of these indices is
 provided in the documentation of <code><a href="../reference/compete_inv.html">compete_inv()</a></code>.</p>
-<p>Note that all these indices are based on a distance-weighted sum of
-the relative size of all neighbor trees compared to the central tree or
-a transformation thereof. For that reason, all competition indices are
-extremely sensitive to the</p>
 <p>If <code>method = "all_methods"</code> (the standard setting),
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code> computes all indices that can be computed
 with the data available in the inventory.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
+<!-- SHOW OUTPUT HERE! -->
 </div>
+</div>
+<div class="section level2">
+<h2 id="choosing-a-search-radius">Choosing a search radius<a class="anchor" aria-label="anchor" href="#choosing-a-search-radius"></a>
+</h2>
+<p>All indices that can be calculated with <code><a href="../reference/compete_inv.html">compete_inv()</a></code>
+are based on a distance-weighted sum of the relative size of all
+neighbor trees within the search radius compared to the size of the
+central tree, or a sum of a transformation thereof. As the search radius
+determines how many trees are included for calculating these metric for
+each tree, all these distance-based competition indices are extremely
+sensitive to the choice of the search radius. An obvious consequence of
+this is that it is not meaningfully possible to compare distance based
+competition indices calculated with different search radii. Perhaps less
+obvious is that as different tree species differ in their average size
+and rooting patterns, the optimal search radius may differ between
+species, and that comparisons between species using competition indices
+computed with the same settings may not always result in meaningful
+results. Some authors recommend to use a search radius based on the
+average crown size of the trees in the plot, such as <a href="https://doi.org/10.1016/0378-1127(83)90042-7" class="external-link">Lorimer (1983)</a>,
+who propose a search radius of 3.5 average crown radii. While such a
+recommendation certainly makes more sense than sticking to standard
+values like 10 m independent of whether calculating competition for
+stunted Elfin forests or gigantic Redwood trees, ultimately such a
+setting will always be arbitrary and that there are limits to the
+comparability of the indices across studies and across species.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
