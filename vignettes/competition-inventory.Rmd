@@ -185,8 +185,33 @@ CI1 <- compete_inv(
 
 The output of this function can then again be inspected in the same way as above using `plot_target(CI1)` to make sure the selection of target trees make sense.
 
+#### Available competition indices
 The function computes a series of inventory-based competition indices commonly used in the literature that can be specified via the `method` argument ([Hegyi 1974](https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734); Braathe, 1980; [Rouvinen & Kuuluvainen, 1997](https://doi.org/10.1139/x97-012); see also [Contreras et al., 2011](https://doi.org/10.1016/j.foreco.2011.08.031)). These are either based on tree diameter at breast height ("CI_Hegyi", "CI_RK1", "CI_RK2") or on tree height ("CI_Braathe", "CI_RK3", "CI_RK4"). 
-The mathematical definition of these indices is provided in the documentation of `compete_inv()`.
+
+The competition indices are computed according to the following equations, where $d_i$ and $h_i$ are the dbh and height of neighbor tree $i$, $d$ and $h$ are dbh and height of the target tree, and $dist_i$ is the distance from neighbor tree $i$ to the target tree.
+
+**Diameter-based competition indices**
+
+**CI_Hegyi** introduced by Hegyi (1974): 
+$$CI_{Hegyi} = \sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})$$
+**CI_RK1** according to CI1 Rouvinen & Kuuluvainen (1997): 
+$$CI_{RK1} = \sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})$$
+**CI_RK2** according to CI3 in Rouvinen & Kuuluvainen (1997): 
+$$CI_{RK2} =\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i} / dist_{i})$$
+
+**Height-based competition indices**
+
+**CI_Braathe** according to Braathe (1980): 
+$$CI_{Braathe} = \sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})$$
+**CI_RK3** according to CI5 in Rouvinen & Kuuluvainen (1997): 
+$$CI_{RK3} = \sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i})$$ 
+for all trees with $h_{i} > h$
+
+**CI_RK4** based on CI3 in Rouvinen & Kuuluvainen (1997) and Contreras et al. (2011):
+$$CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot    \mathrm{arctan}(h_{i} / dist_{i})$$
+
+An advantage of the classical distance-based indices (CI_Hegyi and CI_Braathe) is their clear interpretation as the sum of the relative sizes of the neighbour trees relative to the target tree size, weighted by their distance to the target tree. 
+
 
 If `method = "all_methods"` (the standard setting), `compete_inv()` computes all indices that can be computed with the data available in the inventory. 
 

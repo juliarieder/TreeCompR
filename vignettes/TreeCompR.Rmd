@@ -122,7 +122,7 @@ In this example, the neighborhood was already chosen to only contain a single tr
 As the `target_inv` object that results from a call to `define_target()` contains the information about all trees in the plot as well as their status as target or neighbor tree, it can directly be fed to `compete_inv()` to calculate the competition indices for our one target tree without having to specify target trees explicitly: 
 
 ```{r example4, message=FALSE, warning=FALSE, eval=FALSE}
-## insert path to inventory table or insert dataframe object
+## get competition indices for the selected target trees
 compete_inv(inv_source = targets,
             radius = 10, 
             method = "all")
