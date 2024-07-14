@@ -179,18 +179,29 @@ instead of height:</p>
 <span>  height <span class="op">=</span> <span class="va">altura</span>,</span>
 <span>  dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, </span>
 <span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></code></pre></div>
+<p>Non-standard field separators etc. can be internally passed on to
+<code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread()</a></code> via the <code>...</code> arguments to
+read more exotic formats such as the semicolon-separated “.csv” files
+with commas as decimal separators used for example in Germany.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">inventory1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span></span>
+<span>  inv_source <span class="op">=</span> <span class="st">"data/inventory3.csv"</span>, </span>
+<span>  dbh_unit <span class="op">=</span> <span class="st">"m"</span>, </span>
+<span>  height_unit <span class="op">=</span> <span class="st">"m"</span>, </span>
+<span>  dec <span class="op">=</span> <span class="st">","</span>,</span>
+<span>  sep <span class="op">=</span> <span class="st">";"</span><span class="op">)</span></span></code></pre></div>
 <p>In many cases, pre-processing of the inventories based on other
 variables than coordinates and tree size is necessary. For that reason,
 it is possible to read in any objects that inherit from class
 <code>data.frame</code> (e.g., tibbles, data.tables or actual
 data.frames) with <code><a href="../reference/read_inv.html">read_inv()</a></code>:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># read dataset outside read_inv and filter to the plot in question</span></span>
-<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu">read_csv</span><span class="op">(</span><span class="st">"data/inventory3.csv"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu">read_csv</span><span class="op">(</span><span class="st">"data/inventory4.csv"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">plot_id</span> <span class="op">==</span> <span class="st">"Plot 1"</span><span class="op">)</span></span>
 <span>  </span>
 <span><span class="co"># use read_inv to convert to a forest_inv object that works with TreeCompR functions</span></span>
-<span><span class="va">inventory3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span></span>
+<span><span class="va">inventory4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span></span>
 <span>  inv_source <span class="op">=</span> <span class="va">dat</span>,</span>
 <span>  dbh <span class="op">=</span> <span class="va">DAP</span>,</span>
 <span>  dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, </span>
@@ -212,7 +223,7 @@ specifying a method to define the target trees (“buff_edge”,
 <p>Defining targets with a vector of tree IDs could look like this,
 assuming you want to compute competition indices for 3 adjacent
 <em>Fagus sylvatica</em> trees and this is your naming scheme:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set target trees based on vector with tree ids</span></span>
 <span><span class="va">targets1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
 <span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
@@ -220,7 +231,7 @@ assuming you want to compute competition indices for 3 adjacent
 <span>  <span class="op">)</span></span></code></pre></div>
 <p>You might also want to define target trees based on a logical
 criterion, for instance for all trees whose ID contains “FASY”:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set target trees based on logical vector</span></span>
 <span><span class="va">targets2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
 <span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
@@ -243,7 +254,7 @@ closest trees with in a buffer of <code>tol</code> m (the default is
 <code>tol = 1</code>: matching within 1 m). All further size-related
 variables in the second set of coordinates are ignored as well to ensure
 the competition indices are based on the same data source:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># read target tree positions</span></span>
 <span><span class="va">target_pos</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="st">"data/target_tree_gps.csv"</span>, x <span class="op">=</span> <span class="va">gps_x</span>, y <span class="op">=</span> <span class="va">gps_y</span><span class="op">)</span></span>
 <span><span class="co"># define target trees</span></span>
@@ -277,8 +288,8 @@ a larger number of plots, consider e.g. mapping over the plots with
 <p>Here is an example of how to identify all potential target trees that
 run in no risk of excluding potential edge trees when computing
 competition indices with a search radius of 10 m:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">targets4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
 <span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
 <span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
 <span>  radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
@@ -300,8 +311,8 @@ function <code><a href="../reference/plot_target.html">plot_target()</a></code>,
 relevant information depending on the <code>target_source</code> setting
 for both <code>target_inv</code> datasets and the output of
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code> itself:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets4</span><span class="op">)</span></span></code></pre></div>
 <p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="500"></p>
 <p>The purpose of this function is to provide a fast tool for visual
 inspection rather than to create beautiful visual output. As all the
@@ -312,39 +323,56 @@ are left as an exercise to the user.</p>
 <div class="section level3">
 <h3 id="computing-competition-indices-with-compete_inv">Computing competition indices with <code>compete_inv()</code><a class="anchor" aria-label="anchor" href="#computing-competition-indices-with-compete_inv"></a>
 </h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="use-cases">Use cases<a class="anchor" aria-label="anchor" href="#use-cases"></a>
-</h2>
+<p><code><a href="../reference/compete_inv.html">compete_inv()</a></code> is very flexible with its input, in
+essence directly accepting everything that can also be loaded with
+<code><a href="../reference/read_inv.html">read_inv()</a></code> and also passing additional settings for column
+specifications etc. on to this function, which is used to load the data
+internally. Also all options for <code>target_source</code> that can be
+set in <code><a href="../reference/define_target.html">define_target()</a></code> can be directly specified in
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code>, and in most cases this function will likely
+be called directly unless there are reasons to perform the other steps
+explicitly, for instance, because the data structure and formatting
+differ between the inventory and target files or because an inspection
+of the target settings is desired <em>before</em> computing the
+results.</p>
+<p>If target trees have already been specified with
+<code>target_inv()</code>, the outcome can directly be passed to
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code>, which then ignores the target_source
+argument and all further arguments that are passed on to
+<code><a href="../reference/read_inv.html">read_inv()</a></code> and <code><a href="../reference/define_target.html">define_target()</a></code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## read inventory from file directory</span></span>
-<span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="st">"path/to/file"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## If you focus on a specific CI, e.g. the widely used Hegyi-Index, </span></span>
-<span><span class="co">## you can choose it within methods = "CI_Hegyi".</span></span>
-<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## If you have a tree height column that is not automatically recognized within </span></span>
-<span><span class="co">## our validation of input data, you can set it manually:</span></span>
-<span><span class="co"># in read_inv():</span></span>
-<span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inventory</span>, height <span class="op">=</span> <span class="st">"h_column_name"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># in compete_inv():</span></span>
-<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>height <span class="op">=</span> <span class="st">"h_column_name"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## If your dbh is specified in cm, just change the dbh_unit to "cm"</span></span>
-<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">## If you want to keep a column with certain user defined IDs for the trees, </span></span>
-<span><span class="co">## and it is not recognized, specify it with id = "name_column"</span></span>
-<span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inventory</span>, id <span class="op">=</span> <span class="st">"ID_user"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span></code></pre></div>
+<p>Otherwise, it is for example possible to calculate the Hegyi
+competition index from a data from a .csv source with non-standard
+column names and decimal and field separators (in this example, from a
+German file source) and then get reasonable target trees via
+<code>target_source = "buff_edge"</code>:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CI1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span></span>
+<span>  inv_source <span class="op">=</span> <span class="st">"data/inventory5.csv"</span>,</span>
+<span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>,</span>
+<span>  radius <span class="op">=</span> <span class="fl">10</span>, </span>
+<span>  method <span class="op">=</span> <span class="st">"CI_Hegyi"</span>,</span>
+<span>  x <span class="op">=</span> <span class="va">Koord_x</span>, </span>
+<span>  y <span class="op">=</span> <span class="va">Koord_y</span>,</span>
+<span>  id <span class="op">=</span> <span class="va">Baumname</span>,</span>
+<span>  dbh <span class="op">=</span> <span class="va">Durchmesser</span>,</span>
+<span>  sep <span class="op">=</span> <span class="st">";"</span>,</span>
+<span>  dec <span class="op">=</span> <span class="st">","</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p>The output of this function can then again be inspected with
+<code><a href="../reference/plot_target.html">plot_target()</a></code> to make sure the selection of target trees
+make sense.</p>
+<p>The function computes a series of inventory-based competition indices
+prevalent in the literature that can be specified via the
+<code>method</code> argument (<a href="https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734" class="external-link">Hegyi
+1974</a>; Braathe, 1980; <a href="https://doi.org/10.1139/x97-012" class="external-link">Rouvinen &amp; Kuuluvainen,
+1997</a>; see also <a href="https://doi.org/10.1016/j.foreco.2011.08.031" class="external-link">Contreras et al.,
+2011</a>). based on tree diameter at breast height (“CI_Hegyi”,
+“CI_RK1”, “CI_RK2”) or tree height (“CI_Braathe”, “CI_RK3”, “CI_RK4”)
+that are described in detail in the documentation of
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code>.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
