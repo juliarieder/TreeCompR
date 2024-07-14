@@ -41,8 +41,8 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/ALS_inventory.html">ALS competition workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/competition-inventory.html">UNKNOWN TITLE</a></li>
-    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">Quantify competition from point clouds</a></li>
+    <li><a class="dropdown-item" href="../articles/competition-inventory.html">Quantifying competition from inventory data</a></li>
+    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">Quantifying competition from point cloud data</a></li>
     <li><a class="dropdown-item" href="../articles/TLS_inventory.html">TLS competition workflow</a></li>
   </ul>
 </li>
@@ -83,7 +83,7 @@ TreeLS within TreeCompR.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">TreeLS</span><span class="op">)</span></span></code></pre></div>
-<p>First load the las data, normalize the height, sample the point
+<p>First load the .las data, normalize the height, sample the point
 cloud, estimate tree occurrence regions, classify stem points and
 estimate the diameter and height of each individual tree.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -119,7 +119,7 @@ but a forest plot.</p>
 <code class="sourceCode R"><span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv</span>, dbh_unit <span class="op">=</span> <span class="st">"m"</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
 <span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span>inv <span class="op">=</span> <span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span></span></code></pre></div>
-<p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="700"></p>
+<p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="500"></p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
 <span>              method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>

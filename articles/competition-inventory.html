@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title> • TreeCompR</title>
+<title>Quantifying competition from inventory data • TreeCompR</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Quantifying competition from inventory data">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -41,8 +41,8 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/ALS_inventory.html">ALS competition workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/competition-inventory.html">UNKNOWN TITLE</a></li>
-    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">Quantify competition from point clouds</a></li>
+    <li><a class="dropdown-item" href="../articles/competition-inventory.html">Quantifying competition from inventory data</a></li>
+    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">Quantifying competition from point cloud data</a></li>
     <li><a class="dropdown-item" href="../articles/TLS_inventory.html">TLS competition workflow</a></li>
   </ul>
 </li>
@@ -64,7 +64,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1></h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Quantifying competition from inventory data</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/juliarieder/TreeCompR/blob/development/vignettes/competition-inventory.Rmd" class="external-link"><code>vignettes/competition-inventory.Rmd</code></a></small>
@@ -73,26 +73,6 @@
 
     
     
-<table class="table"><tbody>
-<tr class="odd">
-<td>title: “Quantify competition from inventory data”</td>
-</tr>
-<tr class="even">
-<td>output: rmarkdown::html_vignette</td>
-</tr>
-<tr class="odd">
-<td>vignette: &gt;</td>
-</tr>
-<tr class="even">
-<td>%</td>
-</tr>
-<tr class="odd">
-<td>%</td>
-</tr>
-<tr class="even">
-<td>%</td>
-</tr>
-</tbody></table>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
@@ -364,14 +344,21 @@ German file source) and then get reasonable target trees via
 <code><a href="../reference/plot_target.html">plot_target()</a></code> to make sure the selection of target trees
 make sense.</p>
 <p>The function computes a series of inventory-based competition indices
-prevalent in the literature that can be specified via the
+commonly used in the literature that can be specified via the
 <code>method</code> argument (<a href="https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734" class="external-link">Hegyi
 1974</a>; Braathe, 1980; <a href="https://doi.org/10.1139/x97-012" class="external-link">Rouvinen &amp; Kuuluvainen,
 1997</a>; see also <a href="https://doi.org/10.1016/j.foreco.2011.08.031" class="external-link">Contreras et al.,
-2011</a>). based on tree diameter at breast height (“CI_Hegyi”,
-“CI_RK1”, “CI_RK2”) or tree height (“CI_Braathe”, “CI_RK3”, “CI_RK4”)
-that are described in detail in the documentation of
-<code><a href="../reference/compete_inv.html">compete_inv()</a></code>.</p>
+2011</a>). These are either based on tree diameter at breast height
+(“CI_Hegyi”, “CI_RK1”, “CI_RK2”) or on tree height (“CI_Braathe”,
+“CI_RK3”, “CI_RK4”). The mathematical definition of these indices is
+provided in the documentation of <code><a href="../reference/compete_inv.html">compete_inv()</a></code>.</p>
+<p>Note that all these indices are based on a distance-weighted sum of
+the relative size of all neighbor trees compared to the central tree or
+a transformation thereof. For that reason, all competition indices are
+extremely sensitive to the</p>
+<p>If <code>method = "all_methods"</code> (the standard setting),
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code> computes all indices that can be computed
+with the data available in the inventory.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
