@@ -260,7 +260,7 @@ compete_pc <- function(forest_source, tree_source,
     zlim <- NULL
   }
   # remove values outside the relevant range (in separate step)
-  hood <- TreeCompR:::.validate_pc(hood, xlim = xlim, ylim = ylim, zlim = zlim)
+  hood <- .validate_pc(hood, xlim = xlim, ylim = ylim, zlim = zlim)
 
   # round neighborhood and tree to the specified digits of accuracy
   # (in two steps to perform anti_join with integers: much faster)
