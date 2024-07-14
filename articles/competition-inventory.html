@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Quantify competition from inventory data • TreeCompR</title>
+<title> • TreeCompR</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Quantify competition from inventory data">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -41,7 +41,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/ALS_inventory.html">ALS competition workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/competition-inventory.html">Quantify competition from inventory data</a></li>
+    <li><a class="dropdown-item" href="../articles/competition-inventory.html">UNKNOWN TITLE</a></li>
     <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">Quantify competition from point clouds</a></li>
     <li><a class="dropdown-item" href="../articles/TLS_inventory.html">TLS competition workflow</a></li>
   </ul>
@@ -64,7 +64,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Quantify competition from inventory data</h1>
+      <img src="../logo.png" class="logo" alt=""><h1></h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/juliarieder/TreeCompR/blob/development/vignettes/competition-inventory.Rmd" class="external-link"><code>vignettes/competition-inventory.Rmd</code></a></small>
@@ -73,6 +73,26 @@
 
     
     
+<table class="table"><tbody>
+<tr class="odd">
+<td>title: “Quantify competition from inventory data”</td>
+</tr>
+<tr class="even">
+<td>output: rmarkdown::html_vignette</td>
+</tr>
+<tr class="odd">
+<td>vignette: &gt;</td>
+</tr>
+<tr class="even">
+<td>%</td>
+</tr>
+<tr class="odd">
+<td>%</td>
+</tr>
+<tr class="even">
+<td>%</td>
+</tr>
+</tbody></table>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
@@ -93,57 +113,221 @@ workflow</a>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="use-inventory-data-within-treecompr">Use inventory data within TreeCompR<a class="anchor" aria-label="anchor" href="#use-inventory-data-within-treecompr"></a>
+<h2 id="analyzing-inventory-data-with-treecompr">Analyzing inventory data with TreeCompR<a class="anchor" aria-label="anchor" href="#analyzing-inventory-data-with-treecompr"></a>
 </h2>
+<p>To illustrate how TreeCompR can be included inside a tidy workflow,
+we will make use of <a href="https://www.tidyverse.org/" class="external-link">tidyverse</a>
+function throughout the tutorial:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span></code></pre></div>
+<p>However, we will explicitly quote the corresponding package for all
+functions used in the tutorial in the form of <code><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">purrr::map()</a></code>
+for all functions besides the <code>magrittr</code> pipe operator
+<code>%&gt;%</code>.</p>
+<div class="section level3">
+<h3 id="reading-in-forest-inventory-data-with-with-read_inv">Reading in forest inventory data with with
+<code>read_inv()</code><a class="anchor" aria-label="anchor" href="#reading-in-forest-inventory-data-with-with-read_inv"></a>
+</h3>
 <p>The inventory data must contain x and y coordinates of the individual
-trees and at least one more size-related variable (e.g. height or
-diameter at breast height). To ensure that the inventory data is
-assigned correctly, check the data and make sure that you specify the
-units dbh and height, if they differ from the default, which is cm for
-dbh and m for height. You can either use <code><a href="../reference/read_inv.html">read_inv()</a></code> to
-validate your inventory data and convert them to an object type used by
-the <code>TreeCompR</code> functions, or directly pass data.frames or
-paths to files to <code><a href="../reference/compete_inv.html">compete_inv()</a></code>. The former is especially
-useful if you have data with non-standard column names or data
-structures and want to fully control how they are parsed.</p>
-<p>To select target trees for computing competition indices and visually
-inspect their position relative to the other trees in the neighbourhood,
-you can use the function <code><a href="../reference/define_target.html">define_target()</a></code> and
-<code><a href="../reference/plot_target.html">plot_target()</a></code>. If there is no list of a priori specified
-target trees and the aim is to calculate valid competition indices for
-as many trees as possible, we recommend to use
+trees, and to be able to compute competition have to contain at least
+one more size-related variable (e.g. height or diameter at breast
+height).</p>
+<p>To ensure that the inventory data is assigned correctly, inspect the
+data thoroughly. Make sure to specify the units for dbh and height if
+they differ from the default, which is cm for dbh and m for height. Tree
+coordinates should <strong>always</strong> be specified in m. You can
+either use <code><a href="../reference/read_inv.html">read_inv()</a></code> to validate your inventory data and
+convert them to an object type used by the <code>TreeCompR</code>
+functions, or directly pass data.frames or paths to files to
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code>. The former is especially useful if you have
+data with non-standard column names or data structures and want to fully
+control how they are parsed.</p>
+<p>In a simple case, reading data with <code><a href="../reference/read_inv.html">read_inv()</a></code> with
+standard settings (except for the metric tree diameters) looks like
+this:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">inventory1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span></span>
+<span>  inv_source <span class="op">=</span> <span class="st">"data/inventory1.csv"</span>, </span>
+<span>  dbh_unit <span class="op">=</span> <span class="st">"m"</span>, </span>
+<span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="../reference/read_inv.html">read_inv()</a></code> does flexibly recognize a large number of
+different spellings for the common inventory variables. If provided with
+tabular data without explicitly specified variable names, the function
+by default takes the columns named “X” and “Y” (or “x” and “y”) to be
+the tree coordinates, and looks for columns named “height”, “height_m”
+or “h” as well as “dbh”, “diameter”,“diam”, or “d” (in any
+capitalization) as size-related variables. The tree ids are taken from
+columns named “id”, “tree_id”, “treeID” or “tree.id” (in any
+capitalization). All special characters besides “.” and “_” are stripped
+from the column names before matching. If <code>verbose = TRUE</code>,
+the function will inform you which columns were automatically
+identifided to avoid errors.</p>
+<p>If you have variable names that cannot be automatically recognized,
+you can specify them explicitly with the corresponding arguments either
+as a character string of length 1 with the variable name or by directly
+specifying the name without quotes. For example, assume you have a data
+set with (metric) UTM coordinates from a Spanish source, i.e. with
+“dap_cm” (diámetro en altura de pecho) instead of dbh and “altura”
+instead of height:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">inventory2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span></span>
+<span>  inv_source <span class="op">=</span> <span class="st">"data/inventory2.csv"</span>,  </span>
+<span>  x <span class="op">=</span> <span class="va">utmx</span>,</span>
+<span>  y <span class="op">=</span> <span class="va">utmy</span>,</span>
+<span>  dbh <span class="op">=</span> <span class="va">dap_cm</span>,</span>
+<span>  height <span class="op">=</span> <span class="va">altura</span>,</span>
+<span>  dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, </span>
+<span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></code></pre></div>
+<p>In many cases, pre-processing of the inventories based on other
+variables than coordinates and tree size is necessary. For that reason,
+it is possible to read in any objects that inherit from class
+<code>data.frame</code> (e.g., tibbles, data.tables or actual
+data.frames) with <code><a href="../reference/read_inv.html">read_inv()</a></code>:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># read dataset outside read_inv and filter to the plot in question</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu">read_csv</span><span class="op">(</span><span class="st">"data/inventory3.csv"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">plot_id</span> <span class="op">==</span> <span class="st">"Plot 1"</span><span class="op">)</span></span>
+<span>  </span>
+<span><span class="co"># use read_inv to convert to a forest_inv object that works with TreeCompR functions</span></span>
+<span><span class="va">inventory3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span></span>
+<span>  inv_source <span class="op">=</span> <span class="va">dat</span>,</span>
+<span>  dbh <span class="op">=</span> <span class="va">DAP</span>,</span>
+<span>  dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, </span>
+<span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="designating-target-trees-with-define_target">Designating target trees with <code>define_target()</code><a class="anchor" aria-label="anchor" href="#designating-target-trees-with-define_target"></a>
+</h3>
+<p>To select target trees for computing competition indices, you can use
+the function <code><a href="../reference/define_target.html">define_target()</a></code>.</p>
+<p>There are many different ways of specifying target trees that are
+described in the documentation of <code><a href="../reference/define_target.html">define_target()</a></code>. Briefly,
+you can directly supply tree IDs as a character string, you can define
+them based on logical vectors, you can supply another
+<code>forest_inv</code> object created with <code>read_tree()</code>
+that contains their coordinates, or finally with a character string
+specifying a method to define the target trees (“buff_edge”,
+“exclude_edge” and “all_trees”).</p>
+<p>Defining targets with a vector of tree IDs could look like this,
+assuming you want to compute competition indices for 3 adjacent
+<em>Fagus sylvatica</em> trees and this is your naming scheme:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># set target trees based on vector with tree ids</span></span>
+<span><span class="va">targets1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
+<span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
+<span>  target_source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"FASY-43-27"</span>, <span class="st">"FASY-43-28"</span>, <span class="st">"FASY-43-29"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p>You might also want to define target trees based on a logical
+criterion, for instance for all trees whose ID contains “FASY”:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># set target trees based on logical vector</span></span>
+<span><span class="va">targets2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
+<span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
+<span>  target_source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"FASY"</span>, <span class="va">inventory1</span><span class="op">$</span><span class="va">id</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p>In many cases you will have target tree coordinates that come from a
+different data source and have a different accuracy than the inventory
+data, for instance when you perform a ground-based study focusing on
+single trees and wish to derive tree competition from ALS sources based
+on the GPS coordinates from your trees. In these cases, you will have to
+match the GPS coordinates against the tree coordinates derived from the
+ALS source (see <a href="https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html">ALS
+workflow</a> for details on how to derive inventory data from ALS
+sources).</p>
+<p>In these cases, it is possible to supply an inventory based on a
+second set of coordinates as a <code>target_source</code> which is then
+matched against the inventory data. IDs are then ignored (as they are
+likely automatically generated anyway) and matching is based only on the
+closest trees with in a buffer of <code>tol</code> m (the default is
+<code>tol = 1</code>: matching within 1 m). All further size-related
+variables in the second set of coordinates are ignored as well to ensure
+the competition indices are based on the same data source:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># read target tree positions</span></span>
+<span><span class="va">target_pos</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="st">"data/target_tree_gps.csv"</span>, x <span class="op">=</span> <span class="va">gps_x</span>, y <span class="op">=</span> <span class="va">gps_y</span><span class="op">)</span></span>
+<span><span class="co"># define target trees</span></span>
+<span><span class="va">targets3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
+<span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
+<span>  target_source <span class="op">=</span> <span class="va">target_pos</span>,</span>
+<span>  tol <span class="op">=</span> <span class="fl">1</span> <span class="co"># match within 1 m accuracy</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
+<p>If no trees in the inventory are in the desired distance of one or
+more of your target trees, you will receive a warning, while if there is
+more than one equally good match for a target tree, the function will
+fail with an error.</p>
+<p>In many cases, there will be no list of a priori specified target
+trees, and the aim will be to calculate valid competition indices for as
+many trees as possible. In these cases, we recommend to use
 <code>target_source = "buff_edge"</code>. This automatically designates
 all trees in the plot that are at least one search radius away from the
-forest edge (approximated by a concave hull). This is specifically
-important for TLS/MLS data, since the data usually does not cover
-relatively small forest plot rather than entire forests. While it is
-possible to compute competition indices for all trees
+plot edge (roughly approximated by a concave hull) to avoid edge
+effects. This is specifically important for TLS/MLS data and classical
+forest inventories, since in contrast to ALS-derived datasets these data
+usually cover relatively small forest plot rather than entire forests.
+Setting <code>target_source = "exclude_edge"</code> only removes the
+trees on the edge of the plot without checking how close the rest of the
+trees is from the edge and is hence less restrictive but more prone to
+edge effects than the previous option. If you use these spatially
+explicit methods of defining target trees, make sure that your inventory
+only contains data from one plot as currently grouping is not possible
+in <code><a href="../reference/define_target.html">define_target()</a></code>. If you want to consider doing this for
+a larger number of plots, consider e.g. mapping over the plots with
+[purrr::map()] to compute the output step by step.</p>
+<p>Here is an example of how to identify all potential target trees that
+run in no risk of excluding potential edge trees when computing
+competition indices with a search radius of 10 m:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
+<span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
+<span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
+<span>  radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p>While it is possible to compute competition indices for all trees
 (<code>target_source = "all_trees"</code>), this results in a warning
-and should only be done if there very good reasons to assume that the
-edge trees in the data are actually situated at the forest edge as
-otherwise there will be intense edge effects.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv</span>, dbh_unit <span class="op">=</span> <span class="st">"m"</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
-<span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span>inv <span class="op">=</span> <span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span></span></code></pre></div>
+and should only be done if there <strong>very good reasons</strong> to
+assume that the edge trees in the data are actually situated at the
+forest edge, as otherwise there will be <em>intense</em> edge effects:
+for a tree on a straight plot edge, on average nearly half and for a
+tree in an edge position in a rectangular plot 3/4 of the competitors
+will be missing in the data!</p>
+</div>
+<div class="section level3">
+<h3 id="inspecting-the-target-selection-with-plot_target">Inspecting the target selection with <code>plot_target()</code><a class="anchor" aria-label="anchor" href="#inspecting-the-target-selection-with-plot_target"></a>
+</h3>
+<p>To visually inspect the position of the designated target trees
+relative to the other trees in the neighbourhood, you can use the
+function <code><a href="../reference/plot_target.html">plot_target()</a></code>, which automatically displays the
+relevant information depending on the <code>target_source</code> setting
+for both <code>target_inv</code> datasets and the output of
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code> itself:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span></span></code></pre></div>
 <p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="500"></p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>The purpose of this function is to provide a fast tool for visual
+inspection rather than to create beautiful visual output. As all the
+data for the plot are contained in the <code>target_inv</code> object,
+more appealing (e.g., <a href="https://ggplot2.tidyverse.org/" class="external-link">ggplot2</a>-based) visualizations
+are left as an exercise to the user.</p>
+</div>
+<div class="section level3">
+<h3 id="computing-competition-indices-with-compete_inv">Computing competition indices with <code>compete_inv()</code><a class="anchor" aria-label="anchor" href="#computing-competition-indices-with-compete_inv"></a>
+</h3>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>              method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
+<span>method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="use-cases">Use cases<a class="anchor" aria-label="anchor" href="#use-cases"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## read inventory from file directory</span></span>
 <span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="st">"path/to/file"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## If you focus on a specific CI, e.g. the widely used Hegyi-Index, </span></span>
 <span><span class="co">## you can choose it within methods = "CI_Hegyi".</span></span>
 <span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>              method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<span>method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## If you have a tree height column that is not automatically recognized within </span></span>
 <span><span class="co">## our validation of input data, you can set it manually:</span></span>
@@ -152,11 +336,11 @@ otherwise there will be intense edge effects.</p>
 <span></span>
 <span><span class="co"># in compete_inv():</span></span>
 <span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>              height <span class="op">=</span> <span class="st">"h_column_name"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<span>height <span class="op">=</span> <span class="st">"h_column_name"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## If your dbh is specified in cm, just change the dbh_unit to "cm"</span></span>
 <span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>              dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<span>dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## If you want to keep a column with certain user defined IDs for the trees, </span></span>
 <span><span class="co">## and it is not recognized, specify it with id = "name_column"</span></span>
