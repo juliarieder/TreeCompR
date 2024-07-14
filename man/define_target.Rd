@@ -5,7 +5,13 @@
 \alias{print.target_inv}
 \title{Define target trees in forest inventory data}
 \usage{
-define_target(inv, target_source, radius = 10, tol = 1, verbose = TRUE)
+define_target(
+  inv,
+  target_source = "buff_edge",
+  radius = 10,
+  tol = 1,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{inv}{object of class \code{forest_inv} as created with \code{\link[=read_inv]{read_inv()}}.}
@@ -50,8 +56,8 @@ exact matching. Defaults to 1 (match within a 1 m buffer).}
 printed? Defaults to TRUE.}
 }
 \value{
-object of class \code{target_inv} (inherits from \code{forest_inv}) with the x and y
-coordinates of the tree, a unique tree identifier (\code{id}), at least one
+object of class \code{target_inv} (inherits from \code{forest_inv}) with the x
+and y coordinates of the tree, a unique tree identifier (\code{id}), at least one
 of tree diameter at breast height (\code{dbh}, in cm) and tree height (\code{height},
 in m) and a new logical column \code{target} specifying whether a tree is
 considered a target tree.
@@ -64,20 +70,45 @@ dataset or identified automatically by excluding edge trees from their
 coordinates.
 }
 \details{
-The input data can either be taken directly from field measurements or
-derived beforehand from LiDAR point clouds.
+\code{define_target()} can be used to select target trees from a
+\code{forest_inv} object either by manually specifying them as a character
+vector with tree IDs, as a logical vector that specifies for each tree in
+the inventory whether or not it is treated as a target tree, a separate
+set of (approximate) coordinates of the target trees that is matched
+against the original inventory, or a character string describing how to
+choose the target trees based on their spatial arrangement.
 
-Various approaches can be used to segment airborne laser scanning point
-clouds into single trees and to obtain inventory data based it. Existing R
-packages for this are for example:
-\itemize{
-\item lidR package with different options to segment the point cloud or a Canopy
-Height Model (CHM)
-\item itcLiDARallo within the package itcSegment
-}
+When the target is defined by a second set of coordinates, these
+coordinates will then be matched against the inventory data. IDs are
+ignored in this case and  matching is based only on the closest trees with
+in a buffer of \code{tol} m  (the default is \code{tol = 1}: matching within 1 m).
+All further size-related variables in the second set of coordinates are
+ignored as well to make sure that in later steps competition indices will
+be computed with data from the same data source.
+The intended use case for determining target trees in this way is to
+compute tree competition from ALS data based on GPS coordinates of single
+trees in studies that are based on single trees rather than plot-level
+data.
 
-Be careful with low resolution/low density point clouds, as oversegmentation
-of trees is usually an issue!
+The methods \code{target_source = "buff_edge"} and
+\code{target_source = "exclude_edge"} are intended for cases where it is desired
+to compute valid competition indices for as many trees as possible while
+avoiding edge effects. While it is possible to designate all trees in the
+dataset as target tree by setting \code{target_source = "all_trees"}, this is
+not a good idea in the majority of cases: unless your dataset contains all
+trees in the forest (possible for ALS-based data, but very unlikely for
+data based on classical inventory methods and TLS/MLS), there will be very
+extreme edge effects at the outer edge of the extent of the covered trees
+resulting in strongly underestimated competition for edge trees.
+\code{target_source = "buff_edge"} excludes all trees who are less than one
+search radius (\code{radius}) away from the plot border (approximated by a
+concave hull based on \code{\link[concaveman:concaveman]{concaveman::concaveman()}}) and hence guarantees to
+only include trees that can obtain valid competition index values for that
+search radius. \code{target_source = "exclude_edge"} only removes the edge trees
+and hence is less restrictive, but more prone to edge effects.
+
+Do not use \code{target_source = "all_trees"} unless you know exactly what you
+are doing!
 }
 \examples{
 \dontrun{
