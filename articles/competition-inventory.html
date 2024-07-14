@@ -343,6 +343,9 @@ German file source) and then get reasonable target trees via
 <p>The output of this function can then again be inspected in the same
 way as above using <code>plot_target(CI1)</code> to make sure the
 selection of target trees make sense.</p>
+<div class="section level4">
+<h4 id="available-competition-indices">Available competition indices<a class="anchor" aria-label="anchor" href="#available-competition-indices"></a>
+</h4>
 <p>The function computes a series of inventory-based competition indices
 commonly used in the literature that can be specified via the
 <code>method</code> argument (<a href="https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734" class="external-link">Hegyi
@@ -350,14 +353,50 @@ commonly used in the literature that can be specified via the
 1997</a>; see also <a href="https://doi.org/10.1016/j.foreco.2011.08.031" class="external-link">Contreras et al.,
 2011</a>). These are either based on tree diameter at breast height
 (“CI_Hegyi”, “CI_RK1”, “CI_RK2”) or on tree height (“CI_Braathe”,
-“CI_RK3”, “CI_RK4”). The mathematical definition of these indices is
-provided in the documentation of <code><a href="../reference/compete_inv.html">compete_inv()</a></code>.</p>
+“CI_RK3”, “CI_RK4”).</p>
+<p>The competition indices are computed according to the following
+equations, where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>i</mi></msub><annotation encoding="application/x-tex">d_i</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>h</mi><mi>i</mi></msub><annotation encoding="application/x-tex">h_i</annotation></semantics></math>
+are the dbh and height of neighbor tree
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math>
+and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>h</mi><annotation encoding="application/x-tex">h</annotation></semantics></math>
+are dbh and height of the target tree, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">dist_i</annotation></semantics></math>
+is the distance from neighbor tree
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
+to the target tree.</p>
+<p><strong>Diameter-based competition indices</strong></p>
+<p><strong>CI_Hegyi</strong> introduced by Hegyi (1974):
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>H</mi><mi>e</mi><mi>g</mi><mi>y</mi><mi>i</mi></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>d</mi><mi>i</mi></msub><mi>/</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>d</mi><mo>⋅</mo><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{Hegyi} = \sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})</annotation></semantics></math><strong>CI_RK1</strong> according to CI1 Rouvinen &amp; Kuuluvainen
+(1997):
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>1</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>d</mi><mi>i</mi></msub><mi>/</mi><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK1} = \sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})</annotation></semantics></math><strong>CI_RK2</strong> according to CI3 in Rouvinen &amp; Kuuluvainen
+(1997):
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>2</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>d</mi><mi>i</mi></msub><mi>/</mi><mi>d</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>⋅</mo><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>d</mi><mi>i</mi></msub><mi>/</mi><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK2} =\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i} / dist_{i})</annotation></semantics></math></p>
+<p><strong>Height-based competition indices</strong></p>
+<p><strong>CI_Braathe</strong> according to Braathe (1980):
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>B</mi><mi>r</mi><mi>a</mi><mi>a</mi><mi>t</mi><mi>h</mi><mi>e</mi></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>h</mi><mi>i</mi></msub><mi>/</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>h</mi><mo>⋅</mo><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{Braathe} = \sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})</annotation></semantics></math><strong>CI_RK3</strong> according to CI5 in Rouvinen &amp; Kuuluvainen
+(1997):
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>3</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mi>i</mi></msub><mi>/</mi><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK3} = \sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i})</annotation></semantics></math>
+for all trees with
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>i</mi></msub><mo>&gt;</mo><mi>h</mi></mrow><annotation encoding="application/x-tex">h_{i} &gt; h</annotation></semantics></math></p>
+<p><strong>CI_RK4</strong> based on CI3 in Rouvinen &amp; Kuuluvainen
+(1997) and Contreras et al. (2011):
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>4</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mi>i</mi></msub><mi>/</mi><mi>h</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>⋅</mo><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mi>i</mi></msub><mi>/</mi><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot    \mathrm{arctan}(h_{i} / dist_{i})</annotation></semantics></math></p>
+<p>An advantage of the classical distance-based indices (CI_Hegyi and
+CI_Braathe) is their clear interpretation as the sum of the relative
+sizes of the neighbour trees relative to the target tree size, weighted
+by their distance to the target tree.</p>
 <p>If <code>method = "all_methods"</code> (the standard setting),
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code> computes all indices that can be computed
 with the data available in the inventory.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
 <!-- SHOW OUTPUT HERE! -->
+</div>
 </div>
 </div>
 <div class="section level2">
