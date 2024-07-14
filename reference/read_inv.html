@@ -137,10 +137,9 @@ needed for use within functions).</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>object of class <code>c("forest_inv", "data.frame")</code> with x and y
-coordinates of the tree, a unique tree identifier (<code>id</code>) and tree diameter
-at breast height (<code>dbh</code>, in cm) and tree height (<code>height</code>, in m) if
-available.</p>
+    <p>object of class <code>forest_inv</code> with x and y coordinates of the tree, a
+unique tree identifier (<code>id</code>) and tree diameter at breast height (<code>dbh</code>, in
+cm) and tree height (<code>height</code>, in m) if available.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -161,6 +160,13 @@ trees difficult). It is possible to read in datasets without dbh and
 height, but usually only sensible if these are used as accessory datasets
 for identifying target trees (e.g. if target trees where identified by
 taking their GPS coordinates manually in the field).</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="define_target.html">define_target()</a></code> for designating target trees,
+<code><a href="compete_inv.html">compete_inv()</a></code> for computing tree competition from inventory data,
+<code><a href="plot_target.html">plot_target()</a></code> to plot target tree positions in <code>target_inv</code> and
+<code>compete_inv</code> objects.</p></div>
     </div>
 
     <div class="section level2">

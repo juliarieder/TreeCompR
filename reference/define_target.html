@@ -98,13 +98,14 @@ Defaults to 10.</p></dd>
 
 
 <dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
-<dd><p>numeric. Tolerance for the match between tree coordinates in the
-forest inventory and target datasets if specified as a second set of
+<dd><p>numeric. Only used when <code>target_source</code> is an inventory with a
+second set of coordinates. Tolerance for the match between tree coordinates
+in the forest inventory and target datasets if specified as a second set of
 coordinates. If a field measurements (e.g. based on GPS) are used to
 identify target trees and the full inventory is from a different data
 source (e.g. ALS data), a higher tolerance value may be required to
 identify the trees depending on the measurement accuracy. Values of 0 mean
-exact matching.</p></dd>
+exact matching. Defaults to 1 (match within a 1 m buffer).</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -114,7 +115,7 @@ printed? Defaults to TRUE.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>object of <code>c("target_inv", "forest_inv", "data.frame")</code> with x and y
+    <p>object of class <code>target_inv</code> (inherits from <code>forest_inv</code>) with the x and y
 coordinates of the tree, a unique tree identifier (<code>id</code>), at least one
 of tree diameter at breast height (<code>dbh</code>, in cm) and tree height (<code>height</code>,
 in m) and a new logical column <code>target</code> specifying whether a tree is
@@ -131,6 +132,13 @@ Height Model (CHM)</p></li>
 <li><p>itcLiDARallo within the package itcSegment</p></li>
 </ul><p>Be careful with low resolution/low density point clouds, as oversegmentation
 of trees is usually an issue!</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="read_inv.html">read_inv()</a></code> to read forest inventory data,
+<code><a href="compete_inv.html">compete_inv()</a></code> for computing tree competition from inventory data,
+<code><a href="plot_target.html">plot_target()</a></code> to plot target tree positions in <code>target_inv</code> and
+<code>compete_inv</code> objects.</p></div>
     </div>
 
     <div class="section level2">

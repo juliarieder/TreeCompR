@@ -112,7 +112,7 @@ NULL (use full range of z coordinates).</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>object of class c("forest_pc", "data.table", "data.frame") with x, y
+    <p>object of class <code>forest_pc</code> (inherits from <code>data.table</code>) with x, y
 and z coordinates of the tree or forest point cloud.</p>
     </div>
     <div class="section level2">
@@ -139,6 +139,11 @@ to speed up calculations.</p>
 files, which are internally processed by <code><a href="https://rdrr.io/pkg/lidR/man/readLAS.html" class="external-link">lidR::readTLSLAS()</a></code>.
 Analogously, for point clouds in the .ply format, the 'Rvcg' package is
 required as these are loaded with <code><a href="https://rdrr.io/pkg/Rvcg/man/vcgPlyRead.html" class="external-link">Rvcg::vcgPlyRead()</a></code>.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
+    <div class="dont-index"><p><code><a href="compete_pc.html">compete_pc()</a></code> for computing tree competition and <code><a href="tree_pos.html">tree_pos()</a></code> for
+computing tree position from point cloud objects.</p></div>
     </div>
 
     <div class="section level2">
