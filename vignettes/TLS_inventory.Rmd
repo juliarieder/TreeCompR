@@ -41,7 +41,7 @@ First, load the .las data, normalize the height, sample the point cloud, estimat
     inv
 ```
 
-<img src="../man/figures/TLS_plot3d.jpg" alt="plot_trees3d" width="500">
+<img src="../man/figures/TLS_plot3d.JPG" alt="plot_trees3d" width="500">
 
 ## Use extracted tree information within TreeCompR
 
