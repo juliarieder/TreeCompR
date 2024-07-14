@@ -2,7 +2,7 @@
 title: "TLS competition workflow"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{TLS_inventory}
+  %\VignetteIndexEntry{TLS competition workflow}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,12 +18,14 @@ knitr::opts_chunk$set(
 For extracting information on tree level from close-range laser scanning 
 (TLS or MLS), you can use e.g. the [`TreeLS`](https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2) package. 
 We will show a workflow on how to implement the output of TreeLS within TreeCompR.
-```{r setup, message=FALSE,warning=FALSE, eval = FALSE}
+
+```{r setup, message=FALSE, warning=FALSE, eval=FALSE}
 library(TreeCompR)
 library(TreeLS)
 ```
 
-First load the las data, normalize the height, sample the point cloud, estimate tree occurrence regions, classify stem points and estimate the diameter and height of each individual tree. 
+First load the .las data, normalize the height, sample the point cloud, estimate tree occurrence regions, classify stem points and estimate the diameter and height of each individual tree. 
+
 ```{r segment-TLS, eval=FALSE}
     file <- "path/to/file"
     tls <- readTLS(file)
@@ -49,7 +51,7 @@ inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")
 targets <- define_target(inv = inventory, target_source = "buff_edge", radius = 10)
 plot_target(targets)
 ```
-<img src="../man/figures/README-example3-1.png" alt="plot_trees" width="700">
+<img src="../man/figures/README-example3-1.png" alt="plot_trees" width="500">
 
 ```{r calculate-CI2, message=FALSE, warning=FALSE, eval=FALSE}
 compete_inv(inventory, target_source = "buff_edge", radius = 10, 

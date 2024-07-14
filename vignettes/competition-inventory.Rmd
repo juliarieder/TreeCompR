@@ -1,11 +1,11 @@
 ---
-title: "Quantify competition from inventory data"
+title: "Quantifying competition from inventory data"
 output: rmarkdown::html_vignette
 vignette: >
-%\VignetteIndexEntry{competition-inventory}
+  %\VignetteIndexEntry{Quantifying competition from inventory data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  ---
+---
   
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -184,5 +184,12 @@ CI1 <- compete_inv(
 
 The output of this function can then again be inspected with `plot_target()` to make sure the selection of target trees make sense.
 
-The function computes a series of inventory-based competition indices prevalent in the literature that can be specified via the `method` argument ([Hegyi 1974](https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734); Braathe, 1980; [Rouvinen & Kuuluvainen, 1997](https://doi.org/10.1139/x97-012); see also [Contreras et al., 2011](https://doi.org/10.1016/j.foreco.2011.08.031)). based on tree diameter at breast height ("CI_Hegyi", "CI_RK1", "CI_RK2") or tree height ("CI_Braathe", "CI_RK3", "CI_RK4") that are described in detail in the documentation of `compete_inv()`.
+The function computes a series of inventory-based competition indices commonly used in the literature that can be specified via the `method` argument ([Hegyi 1974](https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734); Braathe, 1980; [Rouvinen & Kuuluvainen, 1997](https://doi.org/10.1139/x97-012); see also [Contreras et al., 2011](https://doi.org/10.1016/j.foreco.2011.08.031)). These are either based on tree diameter at breast height ("CI_Hegyi", "CI_RK1", "CI_RK2") or on tree height ("CI_Braathe", "CI_RK3", "CI_RK4"). 
+The mathematical definition of these indices is provided in the documentation of `compete_inv()`.
+
+Note that all these indices are based on a distance-weighted sum of the relative size of all neighbor trees compared to the central tree or a transformation thereof. For that reason, all competition indices are extremely sensitive to the 
+
+If `method = "all_methods"` (the standard setting), `compete_inv()` computes all indices that can be computed with the data available in the inventory. 
+
+
 

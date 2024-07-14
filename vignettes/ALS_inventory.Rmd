@@ -6,6 +6,7 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
+
 ## Workflow for deriving size-distance-dependent competition indizes from ALS data
 
 ```{r, include = FALSE}

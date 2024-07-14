@@ -1,8 +1,8 @@
 ---
-title: "Quantify competition from point clouds"
+title: "Quantifying competition from point cloud data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{competition-pointcloud}
+  %\VignetteIndexEntry{Quantifying competition from point cloud data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
