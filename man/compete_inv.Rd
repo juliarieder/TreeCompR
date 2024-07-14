@@ -7,7 +7,7 @@
 \usage{
 compete_inv(
   inv_source,
-  target_source,
+  target_source = "buff_edge",
   radius,
   method = c("all_methods", "CI_Hegyi", "CI_Braathe", "CI_RK1", "CI_RK2", "CI_RK3",
     "CI_RK4"),

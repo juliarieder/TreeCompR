@@ -140,7 +140,7 @@
 #' CI <- compete_inv("path/to/invtable.csv", target_source = "buff_edge",
 #'         radius = 12, method = "all_methods")
 #' }
-compete_inv <- function(inv_source, target_source, radius,
+compete_inv <- function(inv_source, target_source = "buff_edge", radius,
                         method = c("all_methods", "CI_Hegyi", "CI_Braathe",
                                    "CI_RK1", "CI_RK2", "CI_RK3", "CI_RK4"),
                         x = NULL, y = NULL,
