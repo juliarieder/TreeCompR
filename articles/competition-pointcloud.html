@@ -153,7 +153,7 @@ tree height and a cylinder radius of 4 m:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">CI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/neighborhood.txt"</span>, </span>
+<span><span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/neighborhood.txt"</span>, </span>
 <span>                tree_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/tree.txt"</span>, </span>
 <span>                comp_method <span class="op">=</span> <span class="st">"both"</span>, <span class="co"># calculate CI in cylinder and cone</span></span>
 <span>                center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, <span class="co"># center for cone and cylinder</span></span>
@@ -161,7 +161,14 @@ tree height and a cylinder radius of 4 m:</p>
 <span>                h_cone <span class="op">=</span> <span class="fl">0.6</span>, <span class="co"># position where the cone starts to open relative</span></span>
 <span>                <span class="co"># to the height of the target tree (0.6 = 60 % of tree height)</span></span>
 <span>                print_progress <span class="op">=</span> <span class="st">"some"</span> <span class="co"># controls how much of the progress is</span></span>
-<span>                <span class="op">)</span>                       <span class="co"># printed</span></span></code></pre></div>
+<span>                <span class="op">)</span>                       <span class="co"># printed</span></span>
+<span><span class="co">#&gt; ----- Processing competition indices for: tree -----</span></span>
+<span><span class="co">#&gt; Cone-based CI = 16046      Cylinder-based CI = 56820</span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;  Point cloud based competition indices for 'tree' </span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;   target height_target center_position CI_cone h_cone CI_cyl cyl_r</span></span>
+<span><span class="co">#&gt; 1   tree          22.8    crown center   16046    0.6  56820     4</span></span></code></pre></div>
 <p>The result is an object of type <code>compete_pc</code>, i.e. a
 modified data.frame that you can save or use for further statistical
 analysis. It contains the name or ID (filename) of the tree, its height,
@@ -175,9 +182,14 @@ cloud from the file each time. Instead, simply read it once with
 tree outside the <code><a href="../reference/compete_pc.html">compete_pc()</a></code> function.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">neighbours</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span><span class="st">"../tests/testthat/testdata/neighborhood.txt"</span><span class="op">)</span></span>
-<span><span class="va">tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span><span class="st">"../tests/testthat/testdata/tree.txt"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; No named coordinates. Columns V1, V2, V3 (no.  1, 2, 3 in raw data)</span></span>
+<span><span class="co">#&gt; used as x, y, z coordinates, respectively.</span></span>
 <span></span>
-<span><span class="va">CI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="va">neighbours</span>, </span>
+<span><span class="va">tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span><span class="st">"../tests/testthat/testdata/tree.txt"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; No named coordinates. Columns V1, V2, V3 (no.  1, 2, 3 in raw data)</span></span>
+<span><span class="co">#&gt; used as x, y, z coordinates, respectively.</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="va">neighbours</span>, </span>
 <span>                tree_source <span class="op">=</span> <span class="va">tree</span>, </span>
 <span>                comp_method <span class="op">=</span> <span class="st">"both"</span>, <span class="co"># calculate CI in cylinder and cone</span></span>
 <span>                center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, <span class="co">#center for cone and cylinder</span></span>
@@ -185,7 +197,18 @@ tree outside the <code><a href="../reference/compete_pc.html">compete_pc()</a></
 <span>                h_cone <span class="op">=</span> <span class="fl">0.6</span>, <span class="co">#set height where the cone starts </span></span>
 <span>                <span class="co">#to open in relation to tree height (0.6 = 60 % of tree height)</span></span>
 <span>                print_progress <span class="op">=</span> <span class="st">"full"</span> <span class="co">#get full information during processing</span></span>
-<span>                <span class="op">)</span></span></code></pre></div>
+<span>                <span class="op">)</span></span>
+<span><span class="co">#&gt; ----- Processing competition indices for: tree -----</span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;  Point cloud based competition indices for 'tree' </span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;   target height_target center_position CI_cone h_cone CI_cyl cyl_r</span></span>
+<span><span class="co">#&gt; 1   tree          22.8    crown center   16046    0.6  56820     4</span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;  Point cloud based competition indices for 'tree' </span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;   target height_target center_position CI_cone h_cone CI_cyl cyl_r</span></span>
+<span><span class="co">#&gt; 1   tree          22.8    crown center   16046    0.6  56820     4</span></span></code></pre></div>
 <p>Internally, <code><a href="../reference/compete_pc.html">compete_pc()</a></code> crops the neighbourhood to the
 immediate surroundings of the cone or cylinder before matching the
 neighbour and tree point clouds as for large neighbourhoods this is the
@@ -267,13 +290,7 @@ if something goes wrong.</p>
 <span>                                               z_min <span class="op">=</span> <span class="fl">100</span>, h_xy <span class="op">=</span> <span class="fl">0.3</span>, </span>
 <span>                                               print_progress <span class="op">=</span> <span class="st">"some"</span><span class="op">)</span></span>
 <span><span class="co">#use pmap (alternative to lapply) to loop over your table</span></span>
-<span><span class="va">lookup_results_cone50_cyl5</span> <span class="op">&lt;-</span> <span class="va">lookup_cone50_cyl5</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pmap.html" class="external-link">pmap</a></span><span class="op">(</span><span class="va">compete_pc</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co">#re-structure results from list to dataframe</span></span>
-<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">lookup_results_cone50_cyl5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><!-- COMMENT: We absolutely need the output for the different steps of the analysis - look at TreeCompR.Rmd to see how you can do it easily. Also, why not simply use bind_rows(lookup_results_cone50_cyl5) instead of that weird  do.call based thing? that's how I did it in the examples, doesn't it work here? If we do not coerce to data.frame, we also keep printing as a compete_pc object which (hopefully) looks nicer than a raw data.frame output
-I'd just go for "results <- lookup_cone50_cyl5 %>% purrr::pmap(compete_pc) %>% dplyr::bind_rows()
- for the sake of simplicity. --></p>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="va">lookup_cone50_cyl5</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pmap.html" class="external-link">pmap</a></span><span class="op">(</span><span class="va">compete_pc</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

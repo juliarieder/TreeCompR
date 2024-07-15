@@ -128,9 +128,24 @@ standard settings (except for the metric tree diameters) looks like
 this:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">inventory1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span></span>
-<span>  inv_source <span class="op">=</span> <span class="st">"data/inventory1.csv"</span>, </span>
-<span>  dbh_unit <span class="op">=</span> <span class="st">"m"</span>, </span>
-<span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></code></pre></div>
+<span>  inv_source <span class="op">=</span> <span class="st">"data/inventory1.csv"</span>,</span>
+<span>  dbh_unit <span class="op">=</span> <span class="st">"m"</span>,</span>
+<span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
+<span></span>
+<span></span>
+<span><span class="va">inventory1</span></span>
+<span><span class="co">#&gt; ---------------------------------------  </span></span>
+<span><span class="co">#&gt; 'forest_inv' class inventory dataset: </span></span>
+<span><span class="co">#&gt; collection of 48 observations </span></span>
+<span><span class="co">#&gt; ---------------------------------------</span></span>
+<span><span class="co">#&gt;     id      x      y    dbh</span></span>
+<span><span class="co">#&gt; 1    1 15.181 -2.979 35.275</span></span>
+<span><span class="co">#&gt; 2    2 13.097  0.193 20.068</span></span>
+<span><span class="co">#&gt; 3    3 12.633 -9.445 35.333</span></span>
+<span><span class="co">#&gt;    ...    ...    ...    ...</span></span>
+<span><span class="co">#&gt; 46  51 -1.639 -4.842 12.605</span></span>
+<span><span class="co">#&gt; 47  52 -6.409 -4.722  6.035</span></span>
+<span><span class="co">#&gt; 48  53 -7.485 -7.619 20.065</span></span></code></pre></div>
 <p><code><a href="../reference/read_inv.html">read_inv()</a></code> does flexibly recognize a large number of
 different spellings for the common inventory variables. If provided with
 tabular data without explicitly specified variable names, the function
@@ -158,7 +173,19 @@ instead of height:</p>
 <span>  dbh <span class="op">=</span> <span class="va">dap_cm</span>,</span>
 <span>  height <span class="op">=</span> <span class="va">altura</span>,</span>
 <span>  dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, </span>
-<span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></code></pre></div>
+<span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ---------------------------------------  </span></span>
+<span><span class="co">#&gt; 'forest_inv' class inventory dataset: </span></span>
+<span><span class="co">#&gt; collection of 48 observations </span></span>
+<span><span class="co">#&gt; ---------------------------------------</span></span>
+<span><span class="co">#&gt;     id      x      y    dbh</span></span>
+<span><span class="co">#&gt; 1    1 15.181 -2.979 35.275</span></span>
+<span><span class="co">#&gt; 2    2 13.097  0.193 20.068</span></span>
+<span><span class="co">#&gt; 3    3 12.633 -9.445 35.333</span></span>
+<span><span class="co">#&gt;    ...    ...    ...    ...</span></span>
+<span><span class="co">#&gt; 46  51 -1.639 -4.842 12.605</span></span>
+<span><span class="co">#&gt; 47  52 -6.409 -4.722  6.035</span></span>
+<span><span class="co">#&gt; 48  53 -7.485 -7.619 20.065</span></span></code></pre></div>
 <p>Non-standard field separators etc. can be internally passed on to
 <code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread()</a></code> via the <code>...</code> arguments to
 read more exotic formats such as the semicolon-separated “.csv” files
@@ -169,7 +196,19 @@ with commas as decimal separators used for example in Germany.</p>
 <span>  dbh_unit <span class="op">=</span> <span class="st">"m"</span>, </span>
 <span>  height_unit <span class="op">=</span> <span class="st">"m"</span>, </span>
 <span>  dec <span class="op">=</span> <span class="st">","</span>,</span>
-<span>  sep <span class="op">=</span> <span class="st">";"</span><span class="op">)</span></span></code></pre></div>
+<span>  sep <span class="op">=</span> <span class="st">";"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ---------------------------------------  </span></span>
+<span><span class="co">#&gt; 'forest_inv' class inventory dataset: </span></span>
+<span><span class="co">#&gt; collection of 48 observations </span></span>
+<span><span class="co">#&gt; ---------------------------------------</span></span>
+<span><span class="co">#&gt;     id      x      y    dbh</span></span>
+<span><span class="co">#&gt; 1    1 15.181 -2.979 35.275</span></span>
+<span><span class="co">#&gt; 2    2 13.097  0.193 20.068</span></span>
+<span><span class="co">#&gt; 3    3 12.633 -9.445 35.333</span></span>
+<span><span class="co">#&gt;    ...    ...    ...    ...</span></span>
+<span><span class="co">#&gt; 46  51 -1.639 -4.842 12.605</span></span>
+<span><span class="co">#&gt; 47  52 -6.409 -4.722  6.035</span></span>
+<span><span class="co">#&gt; 48  53 -7.485 -7.619 20.065</span></span></code></pre></div>
 <p>In many cases, pre-processing of the inventories based on other
 variables than coordinates and tree size is necessary. For that reason,
 it is possible to read in any objects that inherit from class
@@ -185,7 +224,19 @@ data.frames) with <code><a href="../reference/read_inv.html">read_inv()</a></cod
 <span>  inv_source <span class="op">=</span> <span class="va">dat</span>,</span>
 <span>  dbh <span class="op">=</span> <span class="va">DAP</span>,</span>
 <span>  dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, </span>
-<span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></code></pre></div>
+<span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ---------------------------------------  </span></span>
+<span><span class="co">#&gt; 'forest_inv' class inventory dataset: </span></span>
+<span><span class="co">#&gt; collection of 48 observations </span></span>
+<span><span class="co">#&gt; ---------------------------------------</span></span>
+<span><span class="co">#&gt;     id      x      y    dbh</span></span>
+<span><span class="co">#&gt; 1    1 15.181 -2.979 35.275</span></span>
+<span><span class="co">#&gt; 2    2 13.097  0.193 20.068</span></span>
+<span><span class="co">#&gt; 3    3 12.633 -9.445 35.333</span></span>
+<span><span class="co">#&gt;    ...    ...    ...    ...</span></span>
+<span><span class="co">#&gt; 46  51 -1.639 -4.842 12.605</span></span>
+<span><span class="co">#&gt; 47  52 -6.409 -4.722  6.035</span></span>
+<span><span class="co">#&gt; 48  53 -7.485 -7.619 20.065</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="designating-target-trees-with-define_target">Designating target trees with <code>define_target()</code><a class="anchor" aria-label="anchor" href="#designating-target-trees-with-define_target"></a>
@@ -272,7 +323,21 @@ competition indices with a search radius of 10 m:</p>
 <code class="sourceCode R"><span><span class="va">targets4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
 <span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
 <span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
-<span>  radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<span>  radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">targets4</span></span>
+<span><span class="co">#&gt; --------------------------------------------------------------- </span></span>
+<span><span class="co">#&gt; 'target_inv' class inventory dataset with defined target trees: </span></span>
+<span><span class="co">#&gt; collection of 48 observations </span></span>
+<span><span class="co">#&gt; Source of target trees: buffer around edge </span></span>
+<span><span class="co">#&gt; ---------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;     id      x      y    dbh target</span></span>
+<span><span class="co">#&gt; 1    1 15.181 -2.979 35.275  FALSE</span></span>
+<span><span class="co">#&gt; 2    2 13.097  0.193 20.068  FALSE</span></span>
+<span><span class="co">#&gt; 3    3 12.633 -9.445 35.333  FALSE</span></span>
+<span><span class="co">#&gt;    ...    ...    ...    ...    ...</span></span>
+<span><span class="co">#&gt; 46  51 -1.639 -4.842 12.605  FALSE</span></span>
+<span><span class="co">#&gt; 47  52 -6.409 -4.722  6.035  FALSE</span></span>
+<span><span class="co">#&gt; 48  53 -7.485 -7.619 20.065  FALSE</span></span></code></pre></div>
 <p>While it is possible to compute competition indices for all trees
 (<code>target_source = "all_trees"</code>), this results in a warning
 and should only be done if there <strong>very good reasons</strong> to
@@ -321,7 +386,14 @@ results.</p>
 argument and all further arguments that are passed on to
 <code><a href="../reference/read_inv.html">read_inv()</a></code> and <code><a href="../reference/define_target.html">define_target()</a></code>.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
+<span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
+<span><span class="co">#&gt; Collection of data for 1 target and 47 edge trees. </span></span>
+<span><span class="co">#&gt; Source of target trees: buffer around edge    Search radius: 10 </span></span>
+<span><span class="co">#&gt; ---------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;    id     x      y  dbh CI_Hegyi</span></span>
+<span><span class="co">#&gt; 44 48 0.102 -0.494 24.4     4.39</span></span></code></pre></div>
 <p>Otherwise, it is for example possible to calculate the Hegyi
 competition index from a data from a .csv source with non-standard
 column names and decimal and field separators (in this example, from a
@@ -394,8 +466,14 @@ by their distance to the target tree.</p>
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code> computes all indices that can be computed
 with the data available in the inventory.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
-<!-- SHOW OUTPUT HERE! -->
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
+<span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
+<span><span class="co">#&gt; Collection of data for 1 target and 47 edge trees. </span></span>
+<span><span class="co">#&gt; Source of target trees: buffer around edge    Search radius: 10 </span></span>
+<span><span class="co">#&gt; ---------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;    id     x      y  dbh CI_Hegyi CI_RK1 CI_RK2</span></span>
+<span><span class="co">#&gt; 44 48 0.102 -0.494 24.4     4.39     33   38.5</span></span></code></pre></div>
 </div>
 </div>
 </div>
