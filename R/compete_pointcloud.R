@@ -117,7 +117,7 @@
 #'   reduce the memory load.
 #'
 #' ## Note: support of .las, .laz and .ply formats
-#'   The the `lidR` package has to be installed to be able to read in .las/.laz
+#'   The `lidR` package has to be installed to be able to read in .las/.laz
 #'   files, which are internally processed by [lidR::readTLSLAS()].
 #'   Analogously, for point clouds in the .ply format, the `Rvcg` package is
 #'   required as these are loaded with [Rvcg::vcgPlyRead()].

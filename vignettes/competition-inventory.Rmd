@@ -42,9 +42,24 @@ In a simple case, reading data with `read_inv()` with standard settings (except 
 
 ```{r read-inv1, eval=FALSE, message=FALSE, warning=FALSE}
 inventory1 <- read_inv(
-  inv_source = "data/inventory1.csv", 
-  dbh_unit = "m", 
+  inv_source = "data/inventory1.csv",
+  dbh_unit = "m",
   height_unit = "m")
+
+
+inventory1
+#> ---------------------------------------  
+#> 'forest_inv' class inventory dataset: 
+#> collection of 48 observations 
+#> ---------------------------------------
+#>     id      x      y    dbh
+#> 1    1 15.181 -2.979 35.275
+#> 2    2 13.097  0.193 20.068
+#> 3    3 12.633 -9.445 35.333
+#>    ...    ...    ...    ...
+#> 46  51 -1.639 -4.842 12.605
+#> 47  52 -6.409 -4.722  6.035
+#> 48  53 -7.485 -7.619 20.065
 ```
 
 `read_inv()` does flexibly recognize a large number of different spellings for the common inventory variables. If provided with tabular data without explicitly specified variable names, the function by default takes the columns named "X" and "Y" (or "x" and "y") to be the tree coordinates, and looks for columns named "height", "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any capitalization) as size-related variables. The tree ids are taken from columns named "id", "tree_id", "treeID" or "tree.id" (in any capitalization). All special characters besides "." and "_" are stripped from the column names before matching. If `verbose = TRUE`, the function will inform you which columns were automatically identifided to avoid errors.
@@ -61,6 +76,18 @@ inventory2 <- read_inv(
   height = altura,
   dbh_unit = "cm", 
   height_unit = "m")
+#> ---------------------------------------  
+#> 'forest_inv' class inventory dataset: 
+#> collection of 48 observations 
+#> ---------------------------------------
+#>     id      x      y    dbh
+#> 1    1 15.181 -2.979 35.275
+#> 2    2 13.097  0.193 20.068
+#> 3    3 12.633 -9.445 35.333
+#>    ...    ...    ...    ...
+#> 46  51 -1.639 -4.842 12.605
+#> 47  52 -6.409 -4.722  6.035
+#> 48  53 -7.485 -7.619 20.065
 ```
 
 Non-standard field separators etc. can be internally passed on to `data.table::fread()` via the `...` arguments to read more exotic formats such as the semicolon-separated ".csv" files with commas as decimal separators used for example in Germany. 
@@ -72,6 +99,18 @@ inventory1 <- read_inv(
   height_unit = "m", 
   dec = ",",
   sep = ";")
+#> ---------------------------------------  
+#> 'forest_inv' class inventory dataset: 
+#> collection of 48 observations 
+#> ---------------------------------------
+#>     id      x      y    dbh
+#> 1    1 15.181 -2.979 35.275
+#> 2    2 13.097  0.193 20.068
+#> 3    3 12.633 -9.445 35.333
+#>    ...    ...    ...    ...
+#> 46  51 -1.639 -4.842 12.605
+#> 47  52 -6.409 -4.722  6.035
+#> 48  53 -7.485 -7.619 20.065
 ```
 
 In many cases, pre-processing of the inventories based on other variables than coordinates and tree size is necessary. For that reason, it is possible to read in any objects that inherit from class `data.frame` (e.g., tibbles, data.tables or actual data.frames) with `read_inv()`:
@@ -87,6 +126,18 @@ inventory4 <- read_inv(
   dbh = DAP,
   dbh_unit = "cm", 
   height_unit = "m")
+#> ---------------------------------------  
+#> 'forest_inv' class inventory dataset: 
+#> collection of 48 observations 
+#> ---------------------------------------
+#>     id      x      y    dbh
+#> 1    1 15.181 -2.979 35.275
+#> 2    2 13.097  0.193 20.068
+#> 3    3 12.633 -9.445 35.333
+#>    ...    ...    ...    ...
+#> 46  51 -1.639 -4.842 12.605
+#> 47  52 -6.409 -4.722  6.035
+#> 48  53 -7.485 -7.619 20.065
 ```
 
 ### Designating target trees with `define_target()`
@@ -141,6 +192,20 @@ targets4 <- define_target(
   inv = inventory1, 
   target_source = "buff_edge", 
   radius = 10)
+targets4
+#> --------------------------------------------------------------- 
+#> 'target_inv' class inventory dataset with defined target trees: 
+#> collection of 48 observations 
+#> Source of target trees: buffer around edge 
+#> ---------------------------------------------------------------
+#>     id      x      y    dbh target
+#> 1    1 15.181 -2.979 35.275  FALSE
+#> 2    2 13.097  0.193 20.068  FALSE
+#> 3    3 12.633 -9.445 35.333  FALSE
+#>    ...    ...    ...    ...    ...
+#> 46  51 -1.639 -4.842 12.605  FALSE
+#> 47  52 -6.409 -4.722  6.035  FALSE
+#> 48  53 -7.485 -7.619 20.065  FALSE
 ```
 
 While it is possible to compute competition indices for all trees (`target_source = "all_trees"`), this results in a warning and should only be done if there __very good reasons__ to assume that the edge trees in the data are actually situated at the forest edge, as otherwise there will be _intense_ edge effects: for a tree on a straight plot edge, on average nearly half and for a tree in an edge position in a rectangular plot  3/4 of the competitors will be missing in the data!
@@ -164,6 +229,13 @@ If target trees have already been specified with `target_inv()`, the outcome can
 
 ```{r comp1, message=FALSE, warning=FALSE, eval=FALSE}
 compete_inv(inv_source = targets4, radius = 10, method = "CI_Hegyi")
+#> --------------------------------------------------------------------- 
+#> 'compete_inv' class inventory with distance-based competition indices 
+#> Collection of data for 1 target and 47 edge trees. 
+#> Source of target trees: buffer around edge    Search radius: 10 
+#> ---------------------------------------------------------------------
+#>    id     x      y  dbh CI_Hegyi
+#> 44 48 0.102 -0.494 24.4     4.39
 ```
 
 Otherwise, it is for example possible to calculate the Hegyi competition index from a data from a .csv source with non-standard column names and decimal and field separators (in this example, from a German file source) and then get reasonable target trees via `target_source = "buff_edge"`:
@@ -217,8 +289,15 @@ If `method = "all_methods"` (the standard setting), `compete_inv()` computes all
 
 ```{r comp3, message=FALSE, warning=FALSE, eval=FALSE}
 compete_inv(inv_source = targets4, radius = 10, method = "all_methods")
+#> --------------------------------------------------------------------- 
+#> 'compete_inv' class inventory with distance-based competition indices 
+#> Collection of data for 1 target and 47 edge trees. 
+#> Source of target trees: buffer around edge    Search radius: 10 
+#> ---------------------------------------------------------------------
+#>    id     x      y  dbh CI_Hegyi CI_RK1 CI_RK2
+#> 44 48 0.102 -0.494 24.4     4.39     33   38.5
 ```
-<!-- SHOW OUTPUT HERE! -->
+
 
 ## Choosing a search radius
 All indices that can be calculated with `compete_inv()` are based on a distance-weighted sum of the relative size of all neighbor trees within the search radius compared to the size of the central tree, or a sum of a transformation thereof. As the search radius determines how many trees are included for calculating these metric for each tree, all these distance-based competition indices are extremely sensitive to the choice of the search radius. An obvious consequence of this is that it is not meaningfully possible to compare distance based competition indices calculated with different search radii. Perhaps less obvious is that as different tree species differ in their average size and rooting patterns, the optimal search radius may differ between species, and that comparisons between species using competition indices computed with the same settings may not always result in meaningful results. 

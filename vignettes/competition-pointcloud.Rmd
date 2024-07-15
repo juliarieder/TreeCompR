@@ -43,7 +43,7 @@ In the following example, the compete_pc is used to calculate both  cone and cyl
 ```{r setup, message=FALSE, warning=FALSE, eval=FALSE}
 library(TreeCompR)
 
-CI <- compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt", 
+compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt", 
                 tree_source = "../tests/testthat/testdata/tree.txt", 
                 comp_method = "both", # calculate CI in cylinder and cone
                 center_position = "crown_pos", # center for cone and cylinder
@@ -52,6 +52,13 @@ CI <- compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt",
                 # to the height of the target tree (0.6 = 60 % of tree height)
                 print_progress = "some" # controls how much of the progress is
                 )                       # printed
+#> ----- Processing competition indices for: tree -----
+#> Cone-based CI = 16046      Cylinder-based CI = 56820
+#>  ------------------------------------------------------------------
+#>  Point cloud based competition indices for 'tree' 
+#>  ------------------------------------------------------------------
+#>   target height_target center_position CI_cone h_cone CI_cyl cyl_r
+#> 1   tree          22.8    crown center   16046    0.6  56820     4
 ```
 
 The result is an object of type `compete_pc`, i.e. a modified data.frame that you can save or use for further statistical analysis. It contains the name or ID (filename) of the tree, its height, the type center_position used, the computed competition index value(s) (voxel counts) and the settings of the parameters controlling cylinder and cone size.
@@ -60,9 +67,14 @@ If you want to use the same neighbourhood again because you have more than one t
 
 ```{r neighbour, warning=FALSE, eval=FALSE}
 neighbours <- read_pc("../tests/testthat/testdata/neighborhood.txt")
-tree <- read_pc("../tests/testthat/testdata/tree.txt")
+#> No named coordinates. Columns V1, V2, V3 (no.  1, 2, 3 in raw data)
+#> used as x, y, z coordinates, respectively.
 
-CI <- compete_pc(forest_source = neighbours, 
+tree <- read_pc("../tests/testthat/testdata/tree.txt")
+#> No named coordinates. Columns V1, V2, V3 (no.  1, 2, 3 in raw data)
+#> used as x, y, z coordinates, respectively.
+
+compete_pc(forest_source = neighbours, 
                 tree_source = tree, 
                 comp_method = "both", # calculate CI in cylinder and cone
                 center_position = "crown_pos", #center for cone and cylinder
@@ -71,6 +83,17 @@ CI <- compete_pc(forest_source = neighbours,
                 #to open in relation to tree height (0.6 = 60 % of tree height)
                 print_progress = "full" #get full information during processing
                 )
+#> ----- Processing competition indices for: tree -----
+#>  ------------------------------------------------------------------
+#>  Point cloud based competition indices for 'tree' 
+#>  ------------------------------------------------------------------
+#>   target height_target center_position CI_cone h_cone CI_cyl cyl_r
+#> 1   tree          22.8    crown center   16046    0.6  56820     4
+#>  ------------------------------------------------------------------
+#>  Point cloud based competition indices for 'tree' 
+#>  ------------------------------------------------------------------
+#>   target height_target center_position CI_cone h_cone CI_cyl cyl_r
+#> 1   tree          22.8    crown center   16046    0.6  56820     4
 ```
 
 Internally, `compete_pc()` crops the neighbourhood to the immediate surroundings of the cone or cylinder before matching the neighbour and tree point clouds as for large neighbourhoods this is the by far computationally most expensive step, while once a neighbourhood is loaded filtering (which is done efficiently using functions from the `data.table` package) is comparably fast. To speed up the coordinate matching, it is done on integer coordinates rounded to the digit accuracy specified by `acc_digits`, which defaults to 2 (round to cm). Should you have more accurate data, you can consider increasing that value, though it will slow down computations and likely will not have a large impact on the outcome as the competition indices are computed on a coarser spatial scale (by default 0.1 m). 
@@ -148,12 +171,6 @@ lookup_cone50_cyl5 <- lookup %>% dplyr::mutate(comp_method = "both",
                                                z_min = 100, h_xy = 0.3, 
                                                print_progress = "some")
 #use pmap (alternative to lapply) to loop over your table
-lookup_results_cone50_cyl5 <- lookup_cone50_cyl5 %>% purrr::pmap(compete_pc)
-
-#re-structure results from list to dataframe
-results <- as.data.frame(do.call(rbind, lookup_results_cone50_cyl5))
+results <- lookup_cone50_cyl5 %>% purrr::pmap(compete_pc) %>% dplyr::bind_rows()
 ```
 
- <!-- COMMENT: We absolutely need the output for the different steps of the analysis - look at TreeCompR.Rmd to see how you can do it easily. Also, why not simply use bind_rows(lookup_results_cone50_cyl5) instead of that weird  do.call based thing? that's how I did it in the examples, doesn't it work here? If we do not coerce to data.frame, we also keep printing as a compete_pc object which (hopefully) looks nicer than a raw data.frame output
-I'd just go for "results <- lookup_cone50_cyl5 %>% purrr::pmap(compete_pc) %>% dplyr::bind_rows()
- for the sake of simplicity. -->
