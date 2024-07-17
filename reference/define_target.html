@@ -62,6 +62,7 @@ coordinates.</p>
 <span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>,</span>
 <span>  radius <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  tol <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  crop_to_target <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -83,9 +84,7 @@ the corresponding tree is a target tree.</p></li>
 target trees. In this case, the coordinates are matched against the
 coordinates in <code>inv</code> and IDs may differ (useful e.g. when target trees
 are defined based on GPS coordinates and matched against an airborne laser
-scanning dataset). In this case, the extent of <code>inv</code> will be cropped to
-the extent of <code>forest_inv</code> \(\pm\) <code>radius + tol</code> to reduce
-computational load.</p></li>
+scanning dataset).</p></li>
 <li><p>a character vector of length 1 defining the method by which the target
 trees should be determined. Allowed are <code>"buff_edge"</code> for excluding all
 trees that are at least one search radius from the forest edge,
@@ -112,6 +111,13 @@ identify target trees and the full inventory is from a different data
 source (e.g. ALS data), a higher tolerance value may be required to
 identify the trees depending on the measurement accuracy. Values of 0 mean
 exact matching. Defaults to 1 (match within a 1 m buffer).</p></dd>
+
+
+<dt id="arg-crop-to-target">crop_to_target<a class="anchor" aria-label="anchor" href="#arg-crop-to-target"></a></dt>
+<dd><p>logical of length 1. Should the inventory be limited
+to the extent of the target coordinates? If TRUE, the extent of <code>inv</code> will
+be cropped to the extent of <code>forest_inv</code> \(\pm\) <code>radius + tol</code> to
+reduce computational load in later steps. Defaults to FALSE.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
