@@ -47,6 +47,13 @@
 #'   calculated for this tree and the function will return a warning.
 #'   `tol` defaults to 1 m, but should be chosen depending on the measurement
 #'   accuracy of the GPS coordinates.
+#' @param kmax integer of length 1. maximum number of nearest neighbors to
+#'   consider for determining the neighbor trees of each tree. Lower values
+#'   speed up computation, which is likely not an issue unlike your inventory
+#'   contains tens of thousands of trees, but is very relevant for big datasets.
+#'   Defaults to 100, which should be reasonable in many forest settings, but
+#'   should be adjusted when there are warnings (especially for large search
+#'   radii).
 #' @param ... additional arguments passed on to [data.table::fread()].
 #' @inheritParams read_inv
 #'
@@ -194,7 +201,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
                         dbh_unit = c("cm", "m", "mm"),
                         height_unit = c("m", "cm", "mm"),
                         verbose = TRUE,
-                        tol = 1,
+                        tol = 1, kmax = 100,
                         ...) {
   # validate vector of specified CI methods
   method <- .validate_method(method)
@@ -216,16 +223,12 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
       dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
       names_as_is = TRUE, ...)
 
-    # check if method requirements are met
-    method <- .validate_reqs(method, names(inv))
-
     # check if target_source is a length 1 character
     if(inherits(target_source, "character") && length(target_source) == 1){
       # if it is a valid file path, read and validate target tree dataset
       if (file.exists(target_source)){
         target_source <- read_inv(
-          target_source, x = x, y = y, dbh = dbh, height = height, id = id,
-          dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
+          target_source, x = x, y = y, verbose = verbose,
           names_as_is = TRUE, ...)
         # else it is passed to define_target as a character string
       }
@@ -257,69 +260,45 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
     }
   }
 
-  # compute matrices required for calculation
-  # Euclidean distance matrix
-  distance <- with(inv, sqrt(outer(x[target], x, "-") ^ 2 +
-                               outer(y[target], y, "-") ^ 2))
-  # get inverse distance matrix
-  inv_distance  <- 1 / distance # careful: diagonal becomes infinite
-  inv_distance[with(inv, outer(id[target], id, "=="))] <- 0
-  # singularity resolved by setting to zero for identical values
-  # get trees within critical distance
-  trees_in_radius <- distance <= radius
-  # trees outside radius are taken out of the summation by setting to zero
+  # check if method requirements are met
+  method <- .validate_reqs(method, names(inv))
 
-  # get matrix with focal trees (for row-wise summation of indices)
-  if (any(method %in%  c("CI_Hegyi", "CI_RK1", "CI_RK2"))) {
-    # get matrix with focal tree dbh
-    focal_dbh <- matrix(rep(inv$dbh[inv$target], nrow(inv)), ncol = nrow(inv))
-    # get matrix with neighbor tree dbh
-    neighbor_dbh <-  matrix(rep(inv$dbh, sum(inv$target)), ncol = nrow(inv),
-                            byrow = TRUE)
-    # calculation per tree is row-wise so neighbor matrix has to be column-wise
+  # get subset of target trees
+  targets <- inv[inv$target, -"target"]
+  # compute radius
+  nn <- nabor::knn(inv[, c("x", "y")], targets[, c("x", "y")],
+                   k = min(kmax, nrow(inv)), radius = radius)
+  # warn if kmax is too low
+  if (kmax < nrow(inv)){
+    # only makes sense if kmax is more than the total number of trees
+    if (any(nn$nn.idx[,kmax] > 0)){
+      warning(
+        .wr("Maximum number of target trees reached for",
+            sum(nn$nn.idx[,kmax] > 0), "out of", nrow(target),
+            "target trees. Computed Competition indexes are not reliable.",
+            "Please increase kmax.")
+      )
+    }
   }
-  if (any(method %in%  c("CI_Braathe", "CI_RK3", "CI_RK4"))) {
-    # get matrix with focal tree height
-    focal_height <-matrix(rep(inv$height[inv$target], nrow(inv)),
-                          ncol = nrow(inv))
-    # get matrix with neighbor tree height
-    neighbor_height <- matrix(rep(inv$height, sum(inv$target)),
-                              ncol = nrow(inv),
-                              byrow = TRUE)
-    # caculation per tree is row-wise so neighbor matrix has to be column-wise
+  # prepare output
+  out <- targets
+  # create empty vectors for results
+  for (meth in method){
+    out[[meth]] <- NA_real_
   }
-  # prepare output file (remove edge trees and target column)
-  out <- inv[inv$target, ]
-  out$target <- NULL
+  # loop over all target trees
+  for (i in 1:nrow(targets)){
+    # get target tree
+    target <- targets[i, ]
+    # get neighborhood
+    ids <- nn$nn.idx[i,-1] # remove first tree: target tree
+    neighbors   <- inv[ids[ids>0],]
+    neighbors$dist <-  nn$nn.dists[i, 1:nrow(neighbors) + 1]
 
-  # compute Hegyi index for all target trees
-  if("CI_Hegyi" %in% method){
-    out$CI_Hegyi <- rowSums(trees_in_radius * inv_distance *
-                              neighbor_dbh / focal_dbh)
-  }
-  # compute Braathe index for all target trees
-  if("CI_Braathe" %in% method){
-    out$CI_Braathe <- rowSums(trees_in_radius * inv_distance *
-                                neighbor_height / focal_height)
-  }
-  # compute RK1 index for all target trees
-  if("CI_RK1" %in% method){
-    out$CI_RK1 <- rowSums(trees_in_radius * atan(inv_distance * neighbor_dbh))
-  }
-  # compute RK2 index for all target trees
-  if("CI_RK2" %in% method){
-    out$CI_RK2 <- rowSums(trees_in_radius * atan(inv_distance * neighbor_dbh)
-                          * neighbor_dbh / focal_dbh)
-  }
-  # compute RK3 index for all target trees
-  if("CI_RK3" %in% method){
-    out$CI_RK3 <- rowSums(trees_in_radius * (neighbor_height > focal_height) *
-                            atan(inv_distance * neighbor_height))
-  }
-  # compute RK4 index for all target trees
-  if("CI_RK4" %in% method){
-    out$CI_RK4 <- rowSums(trees_in_radius * atan(inv_distance * neighbor_height)
-                          * neighbor_height / focal_height)
+    # loop over methods to compute indices
+    for(meth in method){
+      out[[meth]][i] <- do.call(meth, args = list(target, neighbors))
+    }
   }
   # add radius and method as attributes
   attr(out, "radius") <- radius
