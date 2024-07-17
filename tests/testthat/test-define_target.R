@@ -34,6 +34,15 @@ test_that(
       "No target trees have been found"
     )
 
+    # test if crop_to_target results in a message
+    expect_message({
+      test3 <- define_target(inv = test_inv, target_source = c("51", "52"),
+                             crop_to_target = TRUE)
+    }, "outside the competitive zone")
+
+    # test if less trees are returned when specifying crop_to_target
+    expect_lt(nrow(test3), nrow(test2))
+
     # test if plotting with plot_target works
     expect_no_error(plot_target(test2, radius = 5))
   })
@@ -74,7 +83,7 @@ test_that(
       target <- test_inv[c(17, 20, 22:26), ]
       test4 <- define_target(inv = test_inv, target_source = target,
 
-                                                verbose = FALSE)
+                             verbose = FALSE)
     })
     # test if correct rows are returned
     expect_equal(test_inv$id[c(17, 20, 22:26)], test4$id[test4$target])
@@ -92,7 +101,7 @@ test_that(
     expect_warning({
       target1 <- test_inv[c(15:20), ]
       define_target(inv = test_inv, target_source = target1,
-                             verbose = FALSE)
+                    verbose = FALSE)
     }, "More than one set of coordinates in the inventory")
 
     # test for error with duplicate trees in inventory

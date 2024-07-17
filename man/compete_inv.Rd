@@ -20,6 +20,7 @@ compete_inv(
   height_unit = c("m", "cm", "mm"),
   verbose = TRUE,
   tol = 1,
+  crop_to_target = FALSE,
   ...
 )
 }
@@ -106,6 +107,11 @@ within the tolerance to a target tree, no competition indices will be
 calculated for this tree and the function will return a warning.
 \code{tol} defaults to 1 m, but should be chosen depending on the measurement
 accuracy of the GPS coordinates.}
+
+\item{crop_to_target}{logical of length 1. Should the inventory be limited
+to the extent of the target coordinates? If TRUE, the extent of \code{inv} will
+be cropped to the extent of \code{forest_inv} \eqn{\pm} \code{radius + tol} to
+reduce computational load in later steps. Defaults to FALSE.}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }

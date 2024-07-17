@@ -48,6 +48,7 @@
 #'   accuracy of the GPS coordinates.
 #' @param ... additional arguments passed on to [data.table::fread()].
 #' @inheritParams read_inv
+#' @inheritParams define_target
 #'
 #' @details `compete_inv()` calculates one or several distance-dependent tree
 #'   competition indices based on forest inventory data. These can be obtained
@@ -186,6 +187,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
                         height_unit = c("m", "cm", "mm"),
                         verbose = TRUE,
                         tol = 1,
+                        crop_to_target = FALSE,
                         ...) {
 
   # match arguments against the allowed values
@@ -239,7 +241,8 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
     }
     # define target trees
     inv <- define_target(inv = inv, target_source = target_source,
-                         radius = radius, tol = tol, verbose = verbose)
+                         radius = radius, tol = tol, verbose = verbose,
+                         crop_to_target = crop_to_target)
   } else {
     # if inv_source is a target_inv object, use it as inv directly
     inv <- inv_source

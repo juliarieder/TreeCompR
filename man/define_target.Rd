@@ -10,6 +10,7 @@ define_target(
   target_source = "buff_edge",
   radius = 10,
   tol = 1,
+  crop_to_target = FALSE,
   verbose = TRUE
 )
 }
@@ -26,9 +27,7 @@ the corresponding tree is a target tree.
 target trees. In this case, the coordinates are matched against the
 coordinates in \code{inv} and IDs may differ (useful e.g. when target trees
 are defined based on GPS coordinates and matched against an airborne laser
-scanning dataset). In this case, the extent of \code{inv} will be cropped to
-the extent of \code{forest_inv} \eqn{\pm} \code{radius + tol} to reduce
-computational load.
+scanning dataset).
 \item a character vector of length 1 defining the method by which the target
 trees should be determined. Allowed are \code{"buff_edge"} for excluding all
 trees that are at least one search radius from the forest edge,
@@ -51,6 +50,11 @@ identify target trees and the full inventory is from a different data
 source (e.g. ALS data), a higher tolerance value may be required to
 identify the trees depending on the measurement accuracy. Values of 0 mean
 exact matching. Defaults to 1 (match within a 1 m buffer).}
+
+\item{crop_to_target}{logical of length 1. Should the inventory be limited
+to the extent of the target coordinates? If TRUE, the extent of \code{inv} will
+be cropped to the extent of \code{forest_inv} \eqn{\pm} \code{radius + tol} to
+reduce computational load in later steps. Defaults to FALSE.}
 
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}

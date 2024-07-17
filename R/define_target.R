@@ -16,9 +16,7 @@
 #'   target trees. In this case, the coordinates are matched against the
 #'   coordinates in `inv` and IDs may differ (useful e.g. when target trees
 #'   are defined based on GPS coordinates and matched against an airborne laser
-#'   scanning dataset). In this case, the extent of `inv` will be cropped to
-#'   the extent of `forest_inv` \eqn{\pm} `radius + tol` to reduce
-#'   computational load.
+#'   scanning dataset).
 #'   4. a character vector of length 1 defining the method by which the target
 #'   trees should be determined. Allowed are `"buff_edge"` for excluding all
 #'   trees that are at least one search radius from the forest edge,
@@ -38,6 +36,10 @@
 #'   source (e.g. ALS data), a higher tolerance value may be required to
 #'   identify the trees depending on the measurement accuracy. Values of 0 mean
 #'   exact matching. Defaults to 1 (match within a 1 m buffer).
+#' @param crop_to_target logical of length 1. Should the inventory be limited
+#'   to the extent of the target coordinates? If TRUE, the extent of `inv` will
+#'   be cropped to the extent of `forest_inv` \eqn{\pm} `radius + tol` to
+#'   reduce computational load in later steps. Defaults to FALSE.
 #' @param verbose logical of length 1. Should information about progress be
 #'   printed? Defaults to TRUE.
 #'
@@ -116,7 +118,7 @@
 #' }
 #'
 define_target <- function(inv, target_source = "buff_edge", radius = 10,
-                          tol = 1, verbose = TRUE) {
+                          tol = 1, crop_to_target = FALSE, verbose = TRUE) {
   # validate class of inventory
   if(!inherits(inv, "forest_inv")){
     stop(.wr("Please supply forest inventory data in the forest_inv format",
@@ -199,20 +201,6 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
           # handle second inventory
           # set flag for spatial methods
           spatial <- TRUE
-          # test if there are trees outside the relevant range
-          inside <- inv$x >= min(target_source$x) - radius - tol &
-            inv$x <= max(target_source$x) + radius + tol &
-            inv$y >= min(target_source$y) - radius - tol &
-            inv$y <= max(target_source$y) + radius + tol
-          # message if dataset was modified
-          if (any(!inside) && verbose) message(
-            .wr(
-              sum(!inside),
-              "trees outside the competitive zone around the target",
-              " trees were removed.", sum(inside), "trees remain.")
-          )
-          # filter out trees outside of radius
-          inv <- inv[inside, ]
           # get matching coordinates
           closest <- .closest(
             target = target_source[, c("x", "y")],
@@ -254,6 +242,22 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
         "forest, this will lead to strong edge effects. Please make",
         "sure that this is really what you want to do.")
     )
+  }
+  # remove trees outside range of the target trees if crop_to_target = TRUE
+  if (crop_to_target){
+    # test if there are trees outside the relevant range
+    inside <-
+      inv$x %inrange% (range(inv[inv$target,"x"]) + c(-1, +1) * (radius + tol)) &
+      inv$y %inrange% (range(inv[inv$target,]$y) + c(-1, +1) * (radius + tol))
+    # message if dataset was modified
+    if (any(!inside) && verbose) message(
+      .wr(
+        sum(!inside),
+        "trees outside the competitive zone around the target",
+        " trees were removed.", sum(inside), "trees remain.")
+    )
+    # filter out trees outside of radius
+    inv <- inv[inside, ]
   }
   # update class
   class(inv) <- c("target_inv", class(inv))
