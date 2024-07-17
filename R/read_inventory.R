@@ -121,7 +121,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     path <- inv_source
     # try loading inventory with fread
     inv <- try(
-      data.table::fread(file = path, data.table = FALSE, ...)
+      data.table::fread(file = path, data.table = TRUE, ...)
     )
     if (inherits(inv, "try-error")) {
       # if the file cannot be read, return error message about accepted formats.
@@ -156,7 +156,9 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     dbh_mult    <- c(cm = 1, mm = 0.1, m = 100)[dbh_unit]
     height_mult <- c(m = 1, cm = 0.01, mm = 0.001)[height_unit]
     # define empty dataset
-    inv_out <- as.data.frame(matrix(NA, nrow = nrow(inv_source), ncol = 5))
+    inv_out <- data.table::as.data.table(
+      matrix(NA, nrow = nrow(inv_source), ncol = 5)
+      )
     names(inv_out) <- c("id", "x", "y", "dbh", "height")
     # validate ID
     inv_out$id <- .get_cols(
@@ -307,30 +309,14 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 #' @format NULL
 #' @usage NULL
 #' @export
-print.forest_inv <- function(x, ...){
+print.forest_inv <- function(x, digits = 3, topn = 3, ...){
   cat("---------------------------------------",
-      " \n'forest_inv' class inventory dataset: \ncollection of", nrow(x),"observations",
+      " \n'forest_inv' class inventory dataset: \ncollection of",
+      nrow(x),"observations",
       "\n---------------------------------------\n"
   )
-  # create object for printed output
-  out <- x
-  # prepare output
-  if (nrow(x) < 6) {
-    # if there are almost no observations, print the entire dataset
-    print(as.data.frame(out), digits = 3)
-  } else {
-    # else print beginning and end of the data.frame
-    temp <- out[1,]
-    row.names(temp) <- " "
-    for(i in 1:ncol(temp)) temp[, i] <- "..."
-    out[, sapply(out, is.numeric)] <- round(out[, sapply(out, is.numeric)], 3)
-    print(
-      rbind(utils::head(as.data.frame(out), n = 3),
-            temp,
-            utils::tail(as.data.frame(out), n = 3)
-      )
-    )
-  }
+  # print data.table with trees
+  .print_as_dt(x, digits = digits, topn = topn, ...)
   # return object invisibly
   invisible(x)
 }
