@@ -32,11 +32,12 @@
 #' @param radius numeric of length 1. Search radius (in m) around the target
 #'   tree. All neighboring trees within this radius are classified as
 #'   competitors.
-#' @param method character string assigning the method for quantifying
-#'   competition. dbh-distance-dependent methods are `"CI_Hegyi"`, `"CI_RK1"`,
-#'   and `"CI_RK2"`. Height-distance-dependent methods are `"CI_Braathe"`,
-#'   `"CI_RK3"`, and `"CI_RK4"`. `"all_methods"` can be specified to compute
-#'   all the indices that can be calculated with the available data.
+#' @param method character string assigning the competition index functions to
+#' calculate. Can either be a vector with one or several of `"CI_Hegyi"`,
+#'    `"CI_RK1"`,`"CI_RK2"`, `"CI_Braathe"`, `"CI_RK3"`, `"CI_RK4"`,
+#'    `"CI_size"` and/or the names of user-specified functions, or
+#'    `"all_methods"` (the default).`"all_methods"` computes all built-in
+#'   indices that can be calculated with the available data.
 #' @param tol numeric of length 1. Tolerance for the match with the tree
 #'   coordinates. If coordinates are measured in the field with GPS, but
 #'   `inv_source` contains x and y coordinates from a larger number of trees
@@ -48,7 +49,6 @@
 #'   accuracy of the GPS coordinates.
 #' @param ... additional arguments passed on to [data.table::fread()].
 #' @inheritParams read_inv
-#' @inheritParams define_target
 #'
 #' @details `compete_inv()` calculates one or several distance-dependent tree
 #'   competition indices based on forest inventory data. These can be obtained
@@ -97,6 +97,14 @@
 #'    Contreras et al. (2011): \cr
 #'    \eqn{CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
 #'    \mathrm{arctan}(h_{i} / dist_{i})}
+#'
+#'  _Generic size-based Hegyi-type competition indices_
+#'  * CI_size based on Hegyi (1974), but with a user-specified size-related
+#'    variable: \cr
+#'    \eqn{CI_{size} = \sum_{i=1}^{n} size_{i} / (size \cdot dist_{i})}
+#'
+#'  Further indices can be user-specified by developing a corresponding
+#'  function (see [competion_indices] for details).
 #'
 #'  As all these indices are distance-weighted sums of the relative size of all
 #'  competitor trees within the search radius compared to the target tree (or a
@@ -156,6 +164,7 @@
 #'
 #' @seealso [read_inv()] to read forest inventory data,
 #'   [define_target()] for designating target trees,
+#'   [competition_indices] for a list of available indices,
 #'   [plot_target()] to plot target tree positions in `target_inv` and
 #'   `compete_inv` objects.
 #' @export
@@ -179,19 +188,16 @@
 #'         radius = 12, method = "all_methods")
 #' }
 compete_inv <- function(inv_source, target_source = "buff_edge", radius,
-                        method = c("all_methods", "CI_Hegyi", "CI_Braathe",
-                                   "CI_RK1", "CI_RK2", "CI_RK3", "CI_RK4"),
+                        method = "all_methods",
                         x = NULL, y = NULL,
                         dbh = NULL, height = NULL, id = NULL,
                         dbh_unit = c("cm", "m", "mm"),
                         height_unit = c("m", "cm", "mm"),
                         verbose = TRUE,
                         tol = 1,
-                        crop_to_target = FALSE,
                         ...) {
-
-  # match arguments against the allowed values
-  method <- match.arg(method)
+  # validate vector of specified CI methods
+  method <- .validate_method(method)
 
   # if target trees are already defined in inv_source, bypass the following
   # steps and directly compute competition indices
@@ -210,15 +216,8 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
       dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
       names_as_is = TRUE, ...)
 
-    # check if data required to calculate indices are available
-    if (method %in%  c("CI_Hegyi", "CI_RK1", "CI_RK2") &&
-        !"dbh" %in% names(inv)) {
-      stop("Diameter at breast height is required for ", method, ".")
-    }
-    if (method %in%  c("CI_Braathe", "CI_RK3", "CI_RK4") &&
-        !"height" %in% names(inv)) {
-      stop("Tree height of all trees is required for ", method, ".")
-    }
+    # check if method requirements are met
+    method <- .validate_reqs(method, names(inv))
 
     # check if target_source is a length 1 character
     if(inherits(target_source, "character") && length(target_source) == 1){
@@ -242,7 +241,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
     # define target trees
     inv <- define_target(inv = inv, target_source = target_source,
                          radius = radius, tol = tol, verbose = verbose,
-                         crop_to_target = crop_to_target)
+                         crop_to_target = TRUE)
   } else {
     # if inv_source is a target_inv object, use it as inv directly
     inv <- inv_source
@@ -257,22 +256,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
       }
     }
   }
-  # test if there are any duplicated coordinates (resulting in 0 distance -->
-  # singularity in inverse distance weighting)
-  if (any(duplicated(inv[,c("x", "y")]))) {
-    stop(.wr("Dataset contains duplicate coordinates. ",
-             "Please revise tree positions."))
-  }
-  # define methods to calculate if method == "all_methods"
-  if (method == "all_methods"){
-    # preallocate empty vector
-    method <- vector("character")
-    # get names with available data
-    if("dbh" %in% names(inv))
-      method <- c("CI_Hegyi", "CI_RK1", "CI_RK2")
-    if("height" %in% names(inv))
-      method <- c(method, c("CI_Braathe", "CI_RK3", "CI_RK4"))
-  }
+
   # compute matrices required for calculation
   # Euclidean distance matrix
   distance <- with(inv, sqrt(outer(x[target], x, "-") ^ 2 +
@@ -351,6 +335,88 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
   return(out)
 }
 
+
+#' @keywords internal
+#' internal function for validating a list of CI methods
+.validate_method <- function(method){
+  # list built-in methods
+  meths <-c("all_methods", "CI_Hegyi", "CI_RK1", "CI_RK2",
+            "CI_Braathe", "CI_RK3", "CI_RK4", "CI_size")
+
+  # validate user-specified methods
+  user_spec <- method[!method %in%  meths]
+  if (length(user_spec) > 0){
+    for (meth in user_spec){
+      # check if it is a function
+      if (!is.function(meth)) stop(
+        .wr("Invalid competition index function detected:", meth,
+            "is not a  function.")
+      )
+      # check if it hast the correct formal arguments
+      if (any(names(formals(meth)) != c("target", "inv"))){
+        stop(
+          .wr("Invalid competition index function detected:",
+              paste0(meth, "()."),
+              "Competition index functions take 'target' and 'inv' as",
+              "arguments and return a single value: 'function(target, inv)'")
+        )
+      }
+    }
+  }
+  # if all_methods is in the selection, just return all_methods and
+  # user specified methods
+  if ("all_methods" %in% method) method <- c("all_methods", user_spec)
+
+  # return vector with methods
+  method
+}
+
+#' @keywords internal
+#' internal function for validating a list of CI methods
+.validate_reqs <- function(method, vars){
+  # test if explicitly specified methods can be used
+  if (!"all_methods" %in% method){
+    # define method requirements for built-in indices
+    reqs <- c(CI_Hegyi = "dbh", CI_RK1 = "dbh", CI_RK2 = "dbh",
+              CI_Braathe = "height", CI_RK3 = "height", CI_RK4  = "height",
+              CI_size = "size")
+
+    # get user-specified and built-in methods
+    user_spec <- method[!method %in% names(reqs)]
+    built_in <- method[method %in% names(reqs)]
+
+    # find methods with met requirements
+    met <- reqs[reqs %in% vars]
+
+    # find built-in methods in specifications whose requirements are not met
+    unmet <- built_in[!built_in %in% names(met)]
+
+    # stop if there are unmet requirements
+    if (length(unmet) > 0){
+      stop(
+        "The following competition indices require variables ",
+        "not in the inventory: \n",
+        paste(paste0(unmet, " (requires '", reqs[unmet], "')"), collapse = ", ")
+      )
+    }
+  }else { # define methods to calculate if method == "all_methods"
+    # get user-specified methods
+    user_spec <- method[method != "all_methods"]
+    # list all built-in methods
+    names <- list(
+      c("CI_Hegyi", "CI_RK1", "CI_RK2"),
+      c("CI_Braathe", "CI_RK3", "CI_RK4"),
+      c("CI_size")
+    )
+    # get the methods that can be calculated with the available inventory
+    # user specified methods
+    method <- c(
+      unlist(names[c("dbh", "height", "size") %in% vars]),
+      user_spec)
+  }
+  # return validated methods vector
+  return(method)
+}
 
 
 # Define printing method for target_pc objects:
