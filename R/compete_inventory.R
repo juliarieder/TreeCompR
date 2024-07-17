@@ -355,7 +355,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
 #' @format NULL
 #' @usage NULL
 #' @export
-print.compete_inv <- function(x, ...){
+print.compete_inv <- function(x, digits = 3, topn = 3, ...){
   # get description of target source from lookup table
   target <- as.character(
     c(inventory = "second inventory",
@@ -374,30 +374,8 @@ print.compete_inv <- function(x, ...){
       attr(x, "radius"),
       "\n---------------------------------------------------------------------\n"
   )
-  # create object for printed output
-  out <- x
-  # prepare output
-  if (ncol(x) >= 10) {
-    out[, 2] <- "..."
-    names(out)[2] <- "..."
-    out[, 3] <- NULL
-  }
-  if (nrow(x) < 6) {
-    # if there are almost no observations, print the entire dataset
-    print(as.data.frame(out), digits = 3)
-  } else {
-    # else print beginning and end of the data.frame
-    temp <- out[1,]
-    row.names(temp) <- " "
-    for(i in 1:ncol(temp)) temp[, i] <- "..."
-    out[, sapply(out, is.numeric)] <- round(out[, sapply(out, is.numeric)], 3)
-    print(
-      rbind(utils::head(as.data.frame(out), n = 3),
-            temp,
-            utils::tail(as.data.frame(out), n = 3)
-      )
-    )
-  }
+  # print data.table with trees
+  .print_as_dt(x, digits = digits, topn = topn, ...)
   # return object invisibly
   invisible(x)
 }
