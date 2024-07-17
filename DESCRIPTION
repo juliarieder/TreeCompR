@@ -23,7 +23,8 @@ Imports:
     rlang,
     Rfast,
     sf,
-    concaveman
+    concaveman,
+    nabor
 Suggests: 
     lidR,
     ggplot2,

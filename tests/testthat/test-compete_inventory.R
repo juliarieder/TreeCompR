@@ -128,6 +128,7 @@ test_that("Indices work for two file paths", {
       radius = 10,
       method = "all_methods",
       dbh_unit = "m",
+      tol = 0.01, # set to low value to avoid warning b/c close coordinates
       verbose = FALSE),
     regexp = "Defining all trees as target trees"
   )
@@ -270,3 +271,4 @@ test_that("Function works with manual column specifications", {
       verbose = FALSE)
   )
 })
+
