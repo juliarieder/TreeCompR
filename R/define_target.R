@@ -208,13 +208,18 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
           # filter out trees outside of radius
           inv <- inv[inside, ]
           # get matching coordinates
-          closest <- .closest(inv[, c("x", "y")],
-                              target_source[, c("x", "y")],
-                              tol = tol)
+          closest <- TreeCompR:::.closest(
+            target = target_source[, c("x", "y")],
+            inv = inv[, c("x", "y")],
+            tol = tol)
           # check for target trees missing within tolerance
           if (any(is.na(closest))){
-            warning("No matching coordinates found for the following ",
-                    "target tree(s):\n", paste(target_source$id, sep = ", "))
+            warning(
+              "No matching coordinates found for the following ",
+              "target tree(s):\n",
+              paste(target_source$id[is.na(closest)], collapse = ", "),
+              "\n. Revise coordinates and consider increasing 'tol'."
+            )
           }
           # get target trees
           inv$target <- inv$id %in% inv$id[stats::na.omit(closest)]
@@ -452,20 +457,41 @@ plot_target <- function(inv, radius = NULL) {
 
 #' @keywords internal
 #' internal function for identifying the closest point in two set of coordinates
-.closest <- function(xy1, xy2, tol){
-  # get best matches
-  out <- apply(xy2, 1, function(x){
-    d <- sqrt((xy1[,1] - x[1])^2 + (xy1[,2] - x[2])^2)
-    if (!any(d <= tol)) return(NA) else
-      if (sum(d == min(d)) > 1)
-        stop("More than one point is any equally good match.")
-    else(which.min(d))
-  })
-  # check if there are duplicates
-  if (any(duplicated(out)))
-    stop("More than one point is any equally good match.")
+.closest <- function(target, inv, tol){
+  # get nearest neighbors with nabor::knn (k = 2 to speed up,
+  # more than one triggers an error)
+  nn <- nabor::knn(inv, target,  k = 2, radius = tol)
+  # check for duplicates in inventory
+  if (any(dups <- nn$nn.idx[,2] > 0)) {
+    if (any(nn$nn.dists[dups,1] == nn$nn.dists[dups, 2])){
+      stop(
+        .wr("More than one set of coordinates in the inventory is",
+            "an equally good match for at least one target tree.",
+            "Revise coordinates and consider reducing 'tol'.")
+      )
+    } else{
+      warning(
+        .wr("More than one set of coordinates in the inventory is",
+            "within the desired tolerance for at least one target tree.",
+            "Revise coordinates and consider reducing 'tol'.")
+      )
+    }
+  }
+  # prepare output
+  out <- nn$nn.idx[,1]
+  # check for duplicate targets
+  if (any(duplicated(out[!out == 0]))){
+    stop(
+      .wr("More than one target tree has been matched to",
+          "at least one coordinate in the inventory.",
+          "Revise coordinates and consider reducing 'tol'.")
+    )
+  }
+  # set target trees without matches to NA and return output
+  out[out == 0] <- NA
   return(out)
 }
+
 
 
 # Define printing method for target_pc objects:
@@ -473,7 +499,7 @@ plot_target <- function(inv, radius = NULL) {
 #' @format NULL
 #' @usage NULL
 #' @export
-print.target_inv <- function(x, ...){
+print.target_inv <- function(x, digits = 3, topn = 3, ...){
   # get description of target source from lookup table
   target <- as.character(
     c(inventory = "second inventory",
@@ -490,25 +516,9 @@ print.target_inv <- function(x, ...){
       "\nSource of target trees:",target,
       "\n---------------------------------------------------------------\n"
   )
-  # create object for printed output
-  out <- x
-  # prepare output
-  if (nrow(x) < 6) {
-    # if there are almost no observations, print the entire dataset
-    print(as.data.frame(out), digits = 3)
-  } else {
-    # else print beginning and end of the data.frame
-    temp <- out[1,]
-    row.names(temp) <- " "
-    for(i in 1:ncol(temp)) temp[, i] <- "..."
-    out[, sapply(out, is.numeric)] <- round(out[, sapply(out, is.numeric)], 3)
-    print(
-      rbind(utils::head(as.data.frame(out), n = 3),
-            temp,
-            utils::tail(as.data.frame(out), n = 3)
-      )
-    )
-  }
+  # print data.table with trees
+  .print_as_dt(x, digits = digits, topn = topn, ...)
+
   # return object invisibly
   invisible(x)
 }
