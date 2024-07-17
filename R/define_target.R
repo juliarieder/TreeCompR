@@ -144,7 +144,7 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
   if (inherits(target_source, "target_inv")){
     # if a target_inv file was supplied as a target_source, just carry over the
     # target trees and send a message
-    inv$target <- inv$id %in% target_source$id
+    inv$target <- inv$id %in% target_source[target_source$target,]$id
     message(
       .wr("target_source already is of class target_inv.",
           "Target tree IDs specified in target_source are kept.")
