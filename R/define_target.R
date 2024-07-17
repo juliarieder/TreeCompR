@@ -133,7 +133,7 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
   spatial <- FALSE
 
   # handle different cases for target_source
-    if (inherits(target_source, "target_inv")){
+  if (inherits(target_source, "target_inv")){
     # if a target_inv file was supplied as a target_source, just carry over the
     # target trees and send a message
     inv$target <- inv$id %in% target$id
@@ -343,13 +343,20 @@ plot_target <- function(inv, radius = NULL) {
   # reset original parameters if function breaks
   on.exit(graphics::par(op))
   # set graphical parameters for plot
-  graphics::par(mfrow = c(1, 1), mar = c(0,0,2,0))
+  graphics::par(mar = c(0,0,0,0))
+  graphics::layout(
+    mat = matrix(c(1,2,1,3), nrow = 2),
+    widths = c(1, 0.7), heights = c(1, 9))
+  # plot title
+  graphics::plot.new()
+  graphics::text(x = 0.5, y = 0.5,"Plot of tree positions",
+                 cex = 1.5,font = 2)
   # plot points and buffer
   plot(sf::st_buffer(center, dist = radius),
        col = "grey90", lty = 0,
-       xlim = range(coords[,1]) + c(-radius, radius + diff(range(coords[, 1]))),
-       ylim = range(coords[,2]) +  c(-radius, radius),
-       main = "Plot of tree positions")
+       xlim = range(coords[,1]) + c(-radius, radius),
+       ylim = range(coords[,2]) +  c(-radius, radius)
+  )
   plot(center, pch = 16, add = TRUE)
   if(!is.null(border)) plot(border, pch = 1, add = TRUE)
   # get subset of legend
@@ -388,16 +395,17 @@ plot_target <- function(inv, radius = NULL) {
     }
   }
   # plot legend
+  graphics::plot.new()
   if (nrow(leg) == 3){ # plot without lty when no lines are involved
-    with(leg, legend(x = max(coords[,1]) + diff(range(coords[,1]))/3,
-                     y = max(coords[,2]),
-                     pch = pch,  col = col, pt.cex = cex,
-                     legend = label, bty = "n", y.intersp = 1.5))
+    with(leg,
+         legend(x = "center",
+                pch = pch,  col = col, pt.cex = cex,
+                legend = label, bty = "n", y.intersp = 1.5))
   } else{ # plot with lty if lines are involved
-    with(leg, legend(x = max(coords[,1]) + diff(range(coords[,1]))/4,
-                     y = max(coords[,2]) + diff(range(coords[,1]))/4,
-                     pch = pch, lty = lty, col = col, pt.cex = cex,
-                     legend = label, bty = "n", y.intersp = 1.5))
+    with(leg,
+         legend(x = "center",
+                pch = pch, lty = lty, col = col, pt.cex = cex,
+                legend = label, bty = "n", y.intersp = 1.5))
   }
   # reset graphical parameters
   graphics::par(op)
