@@ -130,6 +130,13 @@ test_that(
     }, "No matching coordinates found"
     )
 
+    # test if trying to use a target_inv as target_source results in a message
+    expect_message({
+      define_target(inv = test_inv, target_source = test5,
+                    verbose = FALSE)
+    }, "target_source already is of class target_inv."
+    )
+
     # test if plotting with plot_target works
     expect_no_error(plot_target(test5, radius = 5))
   })
