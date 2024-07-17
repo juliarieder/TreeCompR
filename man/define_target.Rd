@@ -140,6 +140,7 @@ target <- define_target(inv, target_source = "all_trees", radius = 10)
 \seealso{
 \code{\link[=read_inv]{read_inv()}} to read forest inventory data,
 \code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
+\link{competition_indices} for a list of available indices,
 \code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
 \code{compete_inv} objects.
 }

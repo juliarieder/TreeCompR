@@ -66,6 +66,7 @@
 #'
 #' @seealso [define_target()] for designating target trees,
 #'   [compete_inv()] for computing tree competition from inventory data,
+#'   [competition_indices] for a list of available indices,
 #'   [plot_target()] to plot target tree positions in `target_inv` and
 #'   `compete_inv` objects.
 #' @export

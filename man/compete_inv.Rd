@@ -256,6 +256,7 @@ CI <- compete_inv("path/to/invtable.csv", target_source = "buff_edge",
 \seealso{
 \code{\link[=read_inv]{read_inv()}} to read forest inventory data,
 \code{\link[=define_target]{define_target()}} for designating target trees,
+\link{competition_indices} for a list of available indices,
 \code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
 \code{compete_inv} objects.
 }

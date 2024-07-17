@@ -97,6 +97,7 @@
 #'
 #' @seealso [read_inv()] to read forest inventory data,
 #'   [compete_inv()] for computing tree competition from inventory data,
+#'   [competition_indices] for a list of available indices,
 #'   [plot_target()] to plot target tree positions in `target_inv` and
 #'   `compete_inv` objects.
 #' @export
@@ -298,7 +299,8 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
 #'
 #' @seealso [read_inv()] to read forest inventory data,
 #'   [define_target()] for designating target trees,
-#'   [compete_inv()] for computing tree competition from inventory data.
+#'   [compete_inv()] for computing tree competition from inventory data,
+#'   [competition_indices] for a list of available indices.
 #' @export
 #'
 #' @examples

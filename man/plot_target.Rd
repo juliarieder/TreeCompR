@@ -44,5 +44,6 @@ validity of the choice of target trees.
 \seealso{
 \code{\link[=read_inv]{read_inv()}} to read forest inventory data,
 \code{\link[=define_target]{define_target()}} for designating target trees,
-\code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data.
+\code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
+\link{competition_indices} for a list of available indices.
 }

@@ -111,6 +111,7 @@ height_unit = "m")
 \seealso{
 \code{\link[=define_target]{define_target()}} for designating target trees,
 \code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
+\link{competition_indices} for a list of available indices,
 \code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
 \code{compete_inv} objects.
 }
