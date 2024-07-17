@@ -67,9 +67,10 @@ needed for use within functions).}
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
-object of class \code{forest_inv} with x and y coordinates of the tree, a
-unique tree identifier (\code{id}) and tree diameter at breast height (\code{dbh}, in
-cm) and tree height (\code{height}, in m) if available.
+object of class \code{forest_inv}: a modified data.table with with x and
+y coordinates of the tree, a unique tree identifier (\code{id}) and tree diameter
+at breast height (\code{dbh}, in cm) and tree height (\code{height}, in m) if
+available.
 }
 \description{
 Read inventory table sourced from a file path or an object that

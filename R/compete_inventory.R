@@ -66,7 +66,7 @@
 #'   this is almost never a good idea because unless the dataset covers all
 #'   trees in the entire forest, there will be intense edge effects for the
 #'   trees at the edge of the spatial extent of the dataset.
-#'   `read_inv()` allows to define target trees in a number of different ways
+#'   `compete_inv()` allows to define target trees in a number of different ways
 #'   based on the function [define_target()] that is called internally.
 #'
 #'
@@ -149,9 +149,9 @@
 #'    individual trees in natural hardwood stands. For. Ecol. Manage. 6,
 #'    343–360.
 #'
-#' @return object of class`compete_inv`: a modified data.frame with the position
-#'   and size of the designated target tree(s) and one or more competition
-#'   indices depending on chosen method(s).
+#' @return object of class`compete_inv`: a modified data.table with the
+#'   position and size of the designated target tree(s) and one or more
+#'   competition indices depending on chosen method(s).
 #'
 #' @seealso [read_inv()] to read forest inventory data,
 #'   [define_target()] for designating target trees,

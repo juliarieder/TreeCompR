@@ -110,9 +110,9 @@ accuracy of the GPS coordinates.}
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }
 \value{
-object of class\code{compete_inv}: a modified data.frame with the position
-and size of the designated target tree(s) and one or more competition
-indices depending on chosen method(s).
+object of class\code{compete_inv}: a modified data.table with the
+position and size of the designated target tree(s) and one or more
+competition indices depending on chosen method(s).
 }
 \description{
 \code{compete_inv()} computes one or several distance-height- or
@@ -136,7 +136,7 @@ possible to calculate competition indices for all trees in the inventory,
 this is almost never a good idea because unless the dataset covers all
 trees in the entire forest, there will be intense edge effects for the
 trees at the edge of the spatial extent of the dataset.
-\code{read_inv()} allows to define target trees in a number of different ways
+\code{compete_inv()} allows to define target trees in a number of different ways
 based on the function \code{\link[=define_target]{define_target()}} that is called internally.
 \subsection{Available competition indices}{
 
