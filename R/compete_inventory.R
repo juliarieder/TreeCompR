@@ -111,7 +111,7 @@
 #'    \eqn{CI_{size} = \sum_{i=1}^{n} size_{i} / (size \cdot dist_{i})}
 #'
 #'  Further indices can be user-specified by developing a corresponding
-#'  function (see [competion_indices] for details).
+#'  function (see [competition_indices] for details).
 #'
 #'  As all these indices are distance-weighted sums of the relative size of all
 #'  competitor trees within the search radius compared to the target tree (or a
@@ -197,7 +197,7 @@
 compete_inv <- function(inv_source, target_source = "buff_edge", radius,
                         method = "all_methods",
                         x = NULL, y = NULL,
-                        dbh = NULL, height = NULL, id = NULL,
+                        dbh = NULL, height = NULL, size = NULL, id = NULL,
                         dbh_unit = c("cm", "m", "mm"),
                         height_unit = c("m", "cm", "mm"),
                         verbose = TRUE,
@@ -215,13 +215,14 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
     if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
     if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
     if (!is.null(substitute(height))) height <- as.character(substitute(height))
+    if (!is.null(substitute(size)))   size <- as.character(substitute(size))
     if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
 
     # read and validate forest inventory dataset
     inv <- read_inv(
-      inv_source, x = x, y = y, dbh = dbh, height = height, id = id,
-      dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
-      names_as_is = TRUE, ...)
+      inv_source, x = x, y = y, dbh = dbh, height = height, size = size,
+      id = id, dbh_unit = dbh_unit, height_unit = height_unit,
+      verbose = verbose, names_as_is = TRUE, ...)
 
     # check if target_source is a length 1 character
     if(inherits(target_source, "character") && length(target_source) == 1){
@@ -327,7 +328,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
   if (length(user_spec) > 0){
     for (meth in user_spec){
       # check if it is a function
-      if (!is.function(meth)) stop(
+      if (!exists(meth, mode = "function", where = .GlobalEnv)) stop(
         .wr("Invalid competition index function detected:", meth,
             "is not a  function.")
       )

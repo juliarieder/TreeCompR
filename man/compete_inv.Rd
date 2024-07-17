@@ -9,18 +9,18 @@ compete_inv(
   inv_source,
   target_source = "buff_edge",
   radius,
-  method = c("all_methods", "CI_Hegyi", "CI_Braathe", "CI_RK1", "CI_RK2", "CI_RK3",
-    "CI_RK4"),
+  method = "all_methods",
   x = NULL,
   y = NULL,
   dbh = NULL,
   height = NULL,
+  size = NULL,
   id = NULL,
   dbh_unit = c("cm", "m", "mm"),
   height_unit = c("m", "cm", "mm"),
   verbose = TRUE,
   tol = 1,
-  crop_to_target = FALSE,
+  kmax = 100,
   ...
 )
 }
@@ -60,11 +60,12 @@ unless all trees in the entire forest are in the dataset). The standard is
 tree. All neighboring trees within this radius are classified as
 competitors.}
 
-\item{method}{character string assigning the method for quantifying
-competition. dbh-distance-dependent methods are \code{"CI_Hegyi"}, \code{"CI_RK1"},
-and \code{"CI_RK2"}. Height-distance-dependent methods are \code{"CI_Braathe"},
-\code{"CI_RK3"}, and \code{"CI_RK4"}. \code{"all_methods"} can be specified to compute
-all the indices that can be calculated with the available data.}
+\item{method}{character string assigning the competition index functions to
+calculate. Can either be a vector with one or several of \code{"CI_Hegyi"},
+\code{"CI_RK1"},\code{"CI_RK2"}, \code{"CI_Braathe"}, \code{"CI_RK3"}, \code{"CI_RK4"},
+\code{"CI_size"} and/or the names of user-specified functions, or
+\code{"all_methods"} (the default).\code{"all_methods"} computes all built-in
+indices that can be calculated with the available data.}
 
 \item{x}{character of length 1 or name of the variable in \code{inv_source}
 containing the x coordinates of the tree in m. If \code{NULL} (default),
@@ -83,6 +84,10 @@ identify the dbh from the data.}
 containing the height of the tree (by default in m, but   can be defined
 via \code{heigh_unit}). If \code{NULL} (default), the function tries to identify the
 height from the data.}
+
+\item{size}{character of length 1 or name of the variable in \code{inv_source}
+containing a generic size-related variable for \code{\link[=CI_size]{CI_size()}}. If \code{NULL}
+(default), the variable is not assigned.}
 
 \item{id}{character of length 1 or name of the variable in \code{inv_source}
 containing a unique tree ID. If \code{NULL} (default), the function tries to
@@ -108,10 +113,13 @@ calculated for this tree and the function will return a warning.
 \code{tol} defaults to 1 m, but should be chosen depending on the measurement
 accuracy of the GPS coordinates.}
 
-\item{crop_to_target}{logical of length 1. Should the inventory be limited
-to the extent of the target coordinates? If TRUE, the extent of \code{inv} will
-be cropped to the extent of \code{forest_inv} \eqn{\pm} \code{radius + tol} to
-reduce computational load in later steps. Defaults to FALSE.}
+\item{kmax}{integer of length 1. maximum number of nearest neighbors to
+consider for determining the neighbor trees of each tree. Lower values
+speed up computation, which is likely not an issue unlike your inventory
+contains tens of thousands of trees, but is very relevant for big datasets.
+Defaults to 100, which should be reasonable in many forest settings, but
+should be adjusted when there are warnings (especially for large search
+radii).}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }
@@ -175,6 +183,16 @@ Contreras et al. (2011): \cr
 \eqn{CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
    \mathrm{arctan}(h_{i} / dist_{i})}
 }
+
+\emph{Generic size-based Hegyi-type competition indices}
+\itemize{
+\item CI_size based on Hegyi (1974), but with a user-specified size-related
+variable: \cr
+\eqn{CI_{size} = \sum_{i=1}^{n} size_{i} / (size \cdot dist_{i})}
+}
+
+Further indices can be user-specified by developing a corresponding
+function (see \link{competition_indices} for details).
 
 As all these indices are distance-weighted sums of the relative size of all
 competitor trees within the search radius compared to the target tree (or a

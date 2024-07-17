@@ -78,6 +78,13 @@ Contreras et al. (2011): \cr
 \eqn{CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
    \mathrm{arctan}(h_{i} / dist_{i})}
 }
+
+\emph{Generic size-based Hegyi-type competition indices}
+\itemize{
+\item CI_size based on Hegyi (1974), but with a user-specified size-related
+variable: \cr
+\eqn{CI_{size} = \sum_{i=1}^{n} size_{i} / (size \cdot dist_{i})}
+}
 }
 
 \subsection{User-specified competition indices}{

@@ -45,6 +45,13 @@ test_that("read_inv works for data.frame objects", {
   })
   expect_equal(test_inv, test_inv4, ignore_attr = TRUE)
 
+  # reading in works with size
+  expect_no_error({
+    test_inv5 <- read_inv(test, size = DBH, verbose = FALSE)
+  })
+  expect_equal(test_inv$dbh, test_inv5$size, ignore_attr = TRUE)
+
+
   # reading in fails with an error if class of a vector is incorrect
   expect_error({
     test3 <- test

@@ -22,6 +22,9 @@
 #'   containing the height of the tree (by default in m, but   can be defined
 #'   via `heigh_unit`). If `NULL` (default), the function tries to identify the
 #'   height from the data.
+#' @param size character of length 1 or name of the variable in `inv_source`
+#'   containing a generic size-related variable for [CI_size()]. If `NULL`
+#'   (default), the variable is not assigned.
 #' @param id character of length 1 or name of the variable in `inv_source`
 #'   containing a unique tree ID. If `NULL` (default), the function tries to
 #'   identify the ID from the data. If this is not possible, the trees are
@@ -82,7 +85,7 @@
 #' height_unit = "m")
 #' }
 read_inv <- function(inv_source, x = NULL, y = NULL,
-                     dbh = NULL, height = NULL, id = NULL,
+                     dbh = NULL, height = NULL, size = NULL, id = NULL,
                      dbh_unit = c("cm", "m", "mm"),
                      height_unit = c("m", "cm", "mm"),
                      verbose = TRUE, names_as_is = FALSE, ...) {
@@ -99,13 +102,14 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
     if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
     if (!is.null(substitute(height))) height <- as.character(substitute(height))
+    if (!is.null(substitute(size)))   size <- as.character(substitute(size))
     if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
   }
 
   # check class of source tree
   if (inherits(inv_source, "data.frame")){
     inv <- .validate_inv(inv_source, x = x, y = y,
-                         dbh = dbh, height = height, id = id,
+                         dbh = dbh, height = height, size = size, id = id,
                          dbh_unit = dbh_unit, height_unit = height_unit,
                          verbose = verbose)
   } else if (!(is.character(inv_source) && length(inv_source) == 1)){
@@ -134,7 +138,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       )
     } else{ # else validate and return
       inv <- .validate_inv(inv, x = x, y = y,
-                           dbh = dbh, height = height, id = id,
+                           dbh = dbh, height = height, size = size, id = id,
                            dbh_unit = dbh_unit, height_unit = height_unit,
                            verbose = verbose)
     }
@@ -147,7 +151,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 #' @keywords internal
 #' internal function for the validation of forest inventory data
 .validate_inv <- function(inv_source, x = NULL, y = NULL,
-                          dbh = NULL, height = NULL, id = NULL,
+                          dbh = NULL, height = NULL, size = NULL, id = NULL,
                           dbh_unit, height_unit,
                           verbose = TRUE){
   # check if inventory data is already formatted correctly and return if true
@@ -159,9 +163,9 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     height_mult <- c(m = 1, cm = 0.01, mm = 0.001)[height_unit]
     # define empty dataset
     inv_out <- data.table::as.data.table(
-      matrix(NA, nrow = nrow(inv_source), ncol = 5)
+      matrix(NA, nrow = nrow(inv_source), ncol = 6)
       )
-    names(inv_out) <- c("id", "x", "y", "dbh", "height")
+    names(inv_out) <- c("id", "x", "y", "dbh", "height", "size")
     # validate ID
     inv_out$id <- .get_cols(
       data = inv_source,
@@ -180,7 +184,6 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
           "are not allowed as they interfere with define_target().")
       )
     }
-
     # validate x coordinate
     inv_out$x <- .get_cols(
       data = inv_source,
@@ -215,7 +218,16 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       class_in = c("integer", "numeric"),
       class_out = "numeric",
       mult = height_mult,
-      alternative = NULL,
+      fail_if_missing = FALSE # scrap column if not available
+    )
+    # validate tree height
+    inv_out$size <- .get_cols(
+      data = inv_source,
+      which = size,
+      names = NULL,
+      class_in = c("integer", "numeric"),
+      class_out = "numeric",
+      mult = height_mult,
       fail_if_missing = FALSE # scrap column if not available
     )
     # message about used coordinate vectors

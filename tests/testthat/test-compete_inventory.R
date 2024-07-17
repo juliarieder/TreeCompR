@@ -107,6 +107,18 @@ test_that("Indices work for two different forest_inv datasets", {
       verbose = FALSE)
   })
 
+  # compute subset of indices indices
+  expect_no_error({
+    test9 <- compete_inv(
+      inv_source = plot,
+      target_source = target,
+      radius = 10,
+      method = c("CI_Hegyi", "CI_RK3", "CI_RK4"),
+      dbh_unit = "m",
+      height_unit = "m",
+      verbose = FALSE)
+  })
+
   # check if the correct indices are returned
   expect_equal(test1$CI_Hegyi, test8$CI_Hegyi)
   expect_equal(test2$CI_RK1, test8$CI_RK1)
@@ -114,6 +126,8 @@ test_that("Indices work for two different forest_inv datasets", {
   expect_equal(test5$CI_Braathe, test8$CI_Braathe)
   expect_equal(test6$CI_RK3, test8$CI_RK3)
   expect_equal(test7$CI_RK4, test8$CI_RK4)
+  expect_equal(grep("CI_", names(test9), value = TRUE),
+               c("CI_Hegyi", "CI_RK3", "CI_RK4"))
 
   # test plot output
   expect_no_error(plot_target(test8))
@@ -270,5 +284,68 @@ test_that("Function works with manual column specifications", {
       dbh_unit = "m",
       verbose = FALSE)
   )
+})
+
+test_that("Function works for nonstandard indices", {
+  plot <- read.csv(test_path("testdata", "inventory.csv"), sep = ";")
+  plot$test <- plot$DBH * abs(plot$X - plot$Y)
+
+  # test if dataset with size can be loaded
+  expect_contains({
+  # read plot dataset
+  plot <- read_inv(plot, size = test, verbose = FALSE)
+  names(plot)},
+  "size"
+  )
+
+  # test if all possible indices contain size
+  expect_contains({
+    # read plot dataset
+    comp <- compete_inv(plot, verbose = FALSE, radius = 5)
+    names(comp)},
+    "CI_size"
+  )
+  # not all values are zero
+  expect_true(sum(comp[, "CI_size"]) > 0)
+
+  # a function can be defined
+  expect_no_error({
+    assign("CI_inv_Hegyi",
+           function(target, inv) sum(target$dbh * inv$dist / inv$dbh),
+           envir = .GlobalEnv)
+    out <-  compete_inv(plot, verbose = FALSE, radius = 5,
+                        method = c("CI_Hegyi", "CI_inv_Hegyi"))
+  })
+
+  # correct name is shown in table
+  expect_contains(names(out), "CI_inv_Hegyi")
+
+  # custom functions can be mixed with all methods
+  expect_no_error({
+    out <-  compete_inv(plot, verbose = FALSE, radius = 5,
+                        method = c("all_methods", "CI_inv_Hegyi"))
+  })
+
+  # correct names are shown in table
+  expect_contains(names(out), c("CI_Hegyi", "CI_RK1", "CI_RK2",
+    "CI_inv_Hegyi", "CI_size"))
+
+  # a function with the wrong arguments fails
+  expect_error({
+   compete_inv(plot, verbose = FALSE, radius = 5,
+                        method = c("CI_Hegyi", "lm"))
+  }, "Invalid competition index function")
+
+  # not a function fails
+  expect_error({
+    compete_inv(plot, verbose = FALSE, radius = 5,
+                method = c("CI_Hegyi", "CI_Heygi"))
+  },  "Invalid competition index function")
+
+  # duplicate indices are removed
+  expect_length({
+    compete_inv(plot, verbose = FALSE, radius = 5,
+                method = c("CI_Hegyi", "CI_Hegyi"))
+  }, 6)
 })
 

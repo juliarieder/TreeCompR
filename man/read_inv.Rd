@@ -11,6 +11,7 @@ read_inv(
   y = NULL,
   dbh = NULL,
   height = NULL,
+  size = NULL,
   id = NULL,
   dbh_unit = c("cm", "m", "mm"),
   height_unit = c("m", "cm", "mm"),
@@ -43,6 +44,10 @@ identify the dbh from the data.}
 containing the height of the tree (by default in m, but   can be defined
 via \code{heigh_unit}). If \code{NULL} (default), the function tries to identify the
 height from the data.}
+
+\item{size}{character of length 1 or name of the variable in \code{inv_source}
+containing a generic size-related variable for \code{\link[=CI_size]{CI_size()}}. If \code{NULL}
+(default), the variable is not assigned.}
 
 \item{id}{character of length 1 or name of the variable in \code{inv_source}
 containing a unique tree ID. If \code{NULL} (default), the function tries to
