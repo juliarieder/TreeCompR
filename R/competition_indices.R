@@ -129,7 +129,7 @@ CI_size <- function(target, inv){
           "only be calculated when 'height' is available.")
     )
   }
-  sum(inv$height / (target$height * inv$dist))
+  sum(inv$size / (target$size * inv$dist))
 }
 
 
