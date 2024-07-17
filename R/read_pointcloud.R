@@ -261,7 +261,7 @@ print.forest_pc <- function(x, topn = 3, digits = 2, ...){
       "\n---------------------------------------\n"
   )
   # print data.table with points
-  print(round(data.table::as.data.table(x), digits = digits), topn = 3, ...)
+  .print_as_dt(x, digits = digits, topn = topn, ...)
   # return object invisibly
   invisible(x)
 }

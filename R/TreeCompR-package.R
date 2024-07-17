@@ -7,6 +7,7 @@
 #' @importFrom data.table :=
 #' @importFrom data.table fread %inrange%
 #' @importFrom magrittr %>%
+#' @importFrom nabor knn
 #' @importFrom Rfast Round Table
 #' @importFrom rlang .data
 #' @importFrom sf st_as_sf
@@ -27,4 +28,14 @@ NULL
 #' internal function for better wrapping of long messages, warnings and errors
 .wr <- function(..., call){
   paste(strwrap(paste(...), prefix = "", initial = ""), collapse = "\n")
+}
+
+#' @keywords internal
+#' internal function for rapidly output as rounded data tables
+.print_as_dt <- function(x, digits, topn, ...){
+  # identify and round numeric variables to 'digits'
+  numerics <- which(sapply(x, is.numeric))
+  for (i in numerics) x[[i]] <- Rfast::Round(x[[i]], digits)
+  # print as data.table with specified settings
+  print(data.table::as.data.table(x), topn = topn, trunc.cols = TRUE, ...)
 }
