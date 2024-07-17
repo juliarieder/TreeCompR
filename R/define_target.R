@@ -56,10 +56,16 @@
 #'   All further size-related variables in the second set of coordinates are
 #'   ignored as well to make sure that in later steps competition indices will
 #'   be computed with data from the same data source.
+#'   When different target trees are matched to the same tree in the inventory,
+#'   or when two trees in the inventory have the same distance to a target
+#'   tree within 5 cm, the function fails with an error. If two inventory trees
+#'   are within the specified tolerance and the difference is larger, the
+#'   function proceeds with a warning.
 #'   The intended use case for determining target trees in this way is to
 #'   compute tree competition from ALS data based on GPS coordinates of single
-#'   trees in studies that are based on single trees rather than plot-level
-#'   data.
+#'   trees in studies that are based on single tree rather than plot-level
+#'   data, which creates a need for different data sources to compute
+#'   competition.
 #'
 #'   The methods `target_source = "buff_edge"` and
 #'   `target_source = "exclude_edge"` are intended for cases where it is desired
@@ -81,11 +87,11 @@
 #'   Do not use `target_source = "all_trees"` unless you know exactly what you
 #'   are doing!
 #'
-#' @return object of class `target_inv` (inherits from `forest_inv`) with the x
-#'  and y coordinates of the tree, a unique tree identifier (`id`), at least one
-#'  of tree diameter at breast height (`dbh`, in cm) and tree height (`height`,
-#'  in m) and a new logical column `target` specifying whether a tree is
-#'  considered a target tree.
+#' @return object of class `target_inv` (inherits from `forest_inv`): a
+#'  modified data.table with the x and y coordinates of the tree, a unique tree
+#'  identifier (`id`), at least one of tree diameter at breast height (`dbh`,
+#'  in cm) and tree height (`height`,in m) and a new logical column `target`
+#'   specifying whether a tree is defined as a target tree.
 #'
 #' @seealso [read_inv()] to read forest inventory data,
 #'   [compete_inv()] for computing tree competition from inventory data,
@@ -136,7 +142,7 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
   if (inherits(target_source, "target_inv")){
     # if a target_inv file was supplied as a target_source, just carry over the
     # target trees and send a message
-    inv$target <- inv$id %in% target$id
+    inv$target <- inv$id %in% target_source$id
     message(
       .wr("target_source already is of class target_inv.",
           "Target tree IDs specified in target_source are kept.")
@@ -208,7 +214,7 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
           # filter out trees outside of radius
           inv <- inv[inside, ]
           # get matching coordinates
-          closest <- TreeCompR:::.closest(
+          closest <- .closest(
             target = target_source[, c("x", "y")],
             inv = inv[, c("x", "y")],
             tol = tol)
@@ -463,11 +469,12 @@ plot_target <- function(inv, radius = NULL) {
   nn <- nabor::knn(inv, target,  k = 2, radius = tol)
   # check for duplicates in inventory
   if (any(dups <- nn$nn.idx[,2] > 0)) {
-    if (any(nn$nn.dists[dups,1] == nn$nn.dists[dups, 2])){
+    if (any(
+      abs(nn$nn.dists[dups,1] - nn$nn.dists[dups, 2]) < 0.05)){
       stop(
         .wr("More than one set of coordinates in the inventory is",
-            "an equally good match for at least one target tree.",
-            "Revise coordinates and consider reducing 'tol'.")
+            "an equally good match (within 5 cm difference) for at least one",
+            "target tree. Revise coordinates and consider reducing 'tol'.")
       )
     } else{
       warning(

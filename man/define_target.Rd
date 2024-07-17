@@ -56,11 +56,11 @@ exact matching. Defaults to 1 (match within a 1 m buffer).}
 printed? Defaults to TRUE.}
 }
 \value{
-object of class \code{target_inv} (inherits from \code{forest_inv}) with the x
-and y coordinates of the tree, a unique tree identifier (\code{id}), at least one
-of tree diameter at breast height (\code{dbh}, in cm) and tree height (\code{height},
-in m) and a new logical column \code{target} specifying whether a tree is
-considered a target tree.
+object of class \code{target_inv} (inherits from \code{forest_inv}): a
+modified data.table with the x and y coordinates of the tree, a unique tree
+identifier (\code{id}), at least one of tree diameter at breast height (\code{dbh},
+in cm) and tree height (\code{height},in m) and a new logical column \code{target}
+specifying whether a tree is defined as a target tree.
 }
 \description{
 \code{define_target()} takes a \code{forest_inv} dataset and returns an updated forest
@@ -85,10 +85,16 @@ in a buffer of \code{tol} m  (the default is \code{tol = 1}: matching within 1 m
 All further size-related variables in the second set of coordinates are
 ignored as well to make sure that in later steps competition indices will
 be computed with data from the same data source.
+When different target trees are matched to the same tree in the inventory,
+or when two trees in the inventory have the same distance to a target
+tree within 5 cm, the function fails with an error. If two inventory trees
+are within the specified tolerance and the difference is larger, the
+function proceeds with a warning.
 The intended use case for determining target trees in this way is to
 compute tree competition from ALS data based on GPS coordinates of single
-trees in studies that are based on single trees rather than plot-level
-data.
+trees in studies that are based on single tree rather than plot-level
+data, which creates a need for different data sources to compute
+competition.
 
 The methods \code{target_source = "buff_edge"} and
 \code{target_source = "exclude_edge"} are intended for cases where it is desired
