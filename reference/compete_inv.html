@@ -52,18 +52,18 @@ distance-dbh-dependent competition indices based on forest inventory data.</p>
 <span>  <span class="va">inv_source</span>,</span>
 <span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>,</span>
 <span>  <span class="va">radius</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"all_methods"</span>, <span class="st">"CI_Hegyi"</span>, <span class="st">"CI_Braathe"</span>, <span class="st">"CI_RK1"</span>, <span class="st">"CI_RK2"</span>, <span class="st">"CI_RK3"</span>,</span>
-<span>    <span class="st">"CI_RK4"</span><span class="op">)</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"all_methods"</span>,</span>
 <span>  x <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  y <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dbh <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  height <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  size <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dbh_unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cm"</span>, <span class="st">"m"</span>, <span class="st">"mm"</span><span class="op">)</span>,</span>
 <span>  height_unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"cm"</span>, <span class="st">"mm"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  tol <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  crop_to_target <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  kmax <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -112,11 +112,12 @@ competitors.</p></dd>
 
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
-<dd><p>character string assigning the method for quantifying
-competition. dbh-distance-dependent methods are <code>"CI_Hegyi"</code>, <code>"CI_RK1"</code>,
-and <code>"CI_RK2"</code>. Height-distance-dependent methods are <code>"CI_Braathe"</code>,
-<code>"CI_RK3"</code>, and <code>"CI_RK4"</code>. <code>"all_methods"</code> can be specified to compute
-all the indices that can be calculated with the available data.</p></dd>
+<dd><p>character string assigning the competition index functions to
+calculate. Can either be a vector with one or several of <code>"CI_Hegyi"</code>,
+<code>"CI_RK1"</code>,<code>"CI_RK2"</code>, <code>"CI_Braathe"</code>, <code>"CI_RK3"</code>, <code>"CI_RK4"</code>,
+<code>"CI_size"</code> and/or the names of user-specified functions, or
+<code>"all_methods"</code> (the default).<code>"all_methods"</code> computes all built-in
+indices that can be calculated with the available data.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
@@ -143,6 +144,12 @@ identify the dbh from the data.</p></dd>
 containing the height of the tree (by default in m, but   can be defined
 via <code>heigh_unit</code>). If <code>NULL</code> (default), the function tries to identify the
 height from the data.</p></dd>
+
+
+<dt id="arg-size">size<a class="anchor" aria-label="anchor" href="#arg-size"></a></dt>
+<dd><p>character of length 1 or name of the variable in <code>inv_source</code>
+containing a generic size-related variable for <code><a href="competition_indices.html">CI_size()</a></code>. If <code>NULL</code>
+(default), the variable is not assigned.</p></dd>
 
 
 <dt id="arg-id">id<a class="anchor" aria-label="anchor" href="#arg-id"></a></dt>
@@ -179,11 +186,14 @@ calculated for this tree and the function will return a warning.
 accuracy of the GPS coordinates.</p></dd>
 
 
-<dt id="arg-crop-to-target">crop_to_target<a class="anchor" aria-label="anchor" href="#arg-crop-to-target"></a></dt>
-<dd><p>logical of length 1. Should the inventory be limited
-to the extent of the target coordinates? If TRUE, the extent of <code>inv</code> will
-be cropped to the extent of <code>forest_inv</code> \(\pm\) <code>radius + tol</code> to
-reduce computational load in later steps. Defaults to FALSE.</p></dd>
+<dt id="arg-kmax">kmax<a class="anchor" aria-label="anchor" href="#arg-kmax"></a></dt>
+<dd><p>integer of length 1. maximum number of nearest neighbors to
+consider for determining the neighbor trees of each tree. Lower values
+speed up computation, which is likely not an issue unlike your inventory
+contains tens of thousands of trees, but is very relevant for big datasets.
+Defaults to 100, which should be reasonable in many forest settings, but
+should be adjusted when there are warnings (especially for large search
+radii).</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -239,7 +249,12 @@ for all trees with \(h_{i} &gt; h\)</p></li>
 Contreras et al. (2011): <br>
 \(CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
    \mathrm{arctan}(h_{i} / dist_{i})\)</p></li>
-</ul><p>As all these indices are distance-weighted sums of the relative size of all
+</ul><p><em>Generic size-based Hegyi-type competition indices</em></p><ul><li><p>CI_size based on Hegyi (1974), but with a user-specified size-related
+variable: <br>
+\(CI_{size} = \sum_{i=1}^{n} size_{i} / (size \cdot dist_{i})\)</p></li>
+</ul><p>Further indices can be user-specified by developing a corresponding
+function (see <a href="competition_indices.html">competition_indices</a> for details).</p>
+<p>As all these indices are distance-weighted sums of the relative size of all
 competitor trees within the search radius compared to the target tree (or a
 sum of transformations thereof), they are very sensitive to the choice of
 the search radius. It is not generally possible to meaningfully compare
