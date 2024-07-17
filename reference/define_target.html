@@ -121,11 +121,11 @@ printed? Defaults to TRUE.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>object of class <code>target_inv</code> (inherits from <code>forest_inv</code>) with the x
-and y coordinates of the tree, a unique tree identifier (<code>id</code>), at least one
-of tree diameter at breast height (<code>dbh</code>, in cm) and tree height (<code>height</code>,
-in m) and a new logical column <code>target</code> specifying whether a tree is
-considered a target tree.</p>
+    <p>object of class <code>target_inv</code> (inherits from <code>forest_inv</code>): a
+modified data.table with the x and y coordinates of the tree, a unique tree
+identifier (<code>id</code>), at least one of tree diameter at breast height (<code>dbh</code>,
+in cm) and tree height (<code>height</code>,in m) and a new logical column <code>target</code>
+specifying whether a tree is defined as a target tree.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -143,10 +143,16 @@ in a buffer of <code>tol</code> m  (the default is <code>tol = 1</code>: matchin
 All further size-related variables in the second set of coordinates are
 ignored as well to make sure that in later steps competition indices will
 be computed with data from the same data source.
+When different target trees are matched to the same tree in the inventory,
+or when two trees in the inventory have the same distance to a target
+tree within 5 cm, the function fails with an error. If two inventory trees
+are within the specified tolerance and the difference is larger, the
+function proceeds with a warning.
 The intended use case for determining target trees in this way is to
 compute tree competition from ALS data based on GPS coordinates of single
-trees in studies that are based on single trees rather than plot-level
-data.</p>
+trees in studies that are based on single tree rather than plot-level
+data, which creates a need for different data sources to compute
+competition.</p>
 <p>The methods <code>target_source = "buff_edge"</code> and
 <code>target_source = "exclude_edge"</code> are intended for cases where it is desired
 to compute valid competition indices for as many trees as possible while

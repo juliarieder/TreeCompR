@@ -184,9 +184,9 @@ accuracy of the GPS coordinates.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>object of class<code>compete_inv</code>: a modified data.frame with the position
-and size of the designated target tree(s) and one or more competition
-indices depending on chosen method(s).</p>
+    <p>object of class<code>compete_inv</code>: a modified data.table with the
+position and size of the designated target tree(s) and one or more
+competition indices depending on chosen method(s).</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -205,7 +205,7 @@ possible to calculate competition indices for all trees in the inventory,
 this is almost never a good idea because unless the dataset covers all
 trees in the entire forest, there will be intense edge effects for the
 trees at the edge of the spatial extent of the dataset.
-<code><a href="read_inv.html">read_inv()</a></code> allows to define target trees in a number of different ways
+<code>compete_inv()</code> allows to define target trees in a number of different ways
 based on the function <code><a href="define_target.html">define_target()</a></code> that is called internally.</p><div class="section">
 <h3 id="available-competition-indices">Available competition indices<a class="anchor" aria-label="anchor" href="#available-competition-indices"></a></h3>
 
