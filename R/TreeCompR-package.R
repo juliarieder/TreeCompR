@@ -34,7 +34,7 @@ NULL
 #' internal function for rapidly output as rounded data tables
 .print_as_dt <- function(x, digits, topn, ...){
   # identify and round numeric variables to 'digits'
-  numerics <- which(sapply(x, is.numeric))
+  numerics <- which(sapply(x, is.double))
   for (i in numerics) x[[i]] <- Rfast::Round(x[[i]], digits)
   # print as data.table with specified settings
   print(data.table::as.data.table(x), topn = topn, trunc.cols = TRUE, ...)
