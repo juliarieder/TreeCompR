@@ -78,9 +78,10 @@
 </h2>
 <p>Within <code>TreeCompR</code> it is possible to easily derive
 size-distance-dependent competition indices based on inventory data.
-This data can be collected in the field, or derived or modelled from 3D
+This data can be collected in the field, or derived or modeled from 3D
 point clouds. Depending on the input data, there are some necessary
-pre-processing steps. Check out our workflows: <!-- Yo, Digga --></p>
+pre-processing steps. We prepared two tutorials for processing laser
+scanning data to obtain appropriate inventory data:</p>
 <ul>
 <li>From airborne laser scanning data to competition indices:
 vignette(“ALS_inventory”): <a href="https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html">ALS
@@ -156,8 +157,8 @@ capitalization) as size-related variables. The tree ids are taken from
 columns named “id”, “tree_id”, “treeID” or “tree.id” (in any
 capitalization). All special characters besides “.” and “_” are stripped
 from the column names before matching. If <code>verbose = TRUE</code>,
-the function will inform you which columns were automatically
-identifided to avoid errors.</p>
+the function will inform you which columns were automatically identified
+to avoid errors.</p>
 <p>If you have variable names that cannot be automatically recognized,
 you can specify them explicitly with the corresponding arguments either
 as a character string of length 1 with the variable name or by directly

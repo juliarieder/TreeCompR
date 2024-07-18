@@ -130,8 +130,8 @@ multi-row <code>forest_inv</code> class data.table with data for the neighbor tr
 and return a single numeric value. This function will then be called
 internally for each tree and its neighborhood inside <code><a href="compete_inv.html">compete_inv()</a></code>.
 For example, a working implementation of the classical Hegyi index would
-look like this:
-<code>CI_Hegyi &lt;- function(target, inv) sum(inv$dbh / (target$dbh * inv$dist))</code></p>
+look like this:</p>
+<p><code>CI_Hegyi &lt;- function(target, inv) sum(inv$dbh / (target$dbh * inv$dist))</code></p>
 <p>It is advisable to add checks to ensure the function does the right thing
 when it gets passed on empty datasets (e.g. because no trees are in the
 neighborhood of a tree) because <code>sum(NULL)</code> evaluates to <code>0</code> which may not
