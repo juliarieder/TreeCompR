@@ -97,7 +97,11 @@ the function by default takes the columns named "X" and "Y" (or "x" and
 capitalization) as size-related variables. The tree ids are taken from
 columns named "id", "tree_id", "treeID" or "tree.id" (in any
 capitalization). All special characters besides "." and "_" are stripped
-from the column names before matching.
+from the column names before matching. For "size", the variable has to be
+specified explicitly; if not specified no generic size-related variable
+will be selected.
+All other columns in the source dataset are appended to the inventory when
+\code{keep_rest = TRUE}, but they are not validated, type-checked or sanitized.
 
 If no columns with coordinates can be identified, the function fails with
 an error. If no ID column is available, the function assigns a unique
@@ -110,7 +114,7 @@ taking their GPS coordinates manually in the field).
 \examples{
 \dontrun{
 # prepare inventory table for compete_inv()
-inv <- fread(path = "path/to/table.csv")
+inv <- data.table::fread(path = "path/to/table.csv")
 #specify the units of parameters within your input
 inv_table <- read_inv(inv, dbh_unit = "cm", height_unit = "m")
 # Read inventory table directly from directory

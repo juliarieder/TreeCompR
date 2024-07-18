@@ -46,41 +46,45 @@
 #' @param ... additional arguments passed on to [data.table::fread()]
 #'
 #' @details Function for reading and validating forest inventory data.
-#'    Supports any formats readable with [data.table::fread()].
+#'  Supports any formats readable with [data.table::fread()].
 #'
-#'   If provided with tabular data without explicitly specified variable names,
-#'   the function by default takes the columns named "X" and "Y" (or "x" and
-#'   "y") to be the tree coordinates, and looks for columns named "height",
-#'   "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any
-#'   capitalization) as size-related variables. The tree ids are taken from
-#'   columns named "id", "tree_id", "treeID" or "tree.id" (in any
-#'   capitalization). All special characters besides "." and "_" are stripped
-#'   from the column names before matching.
+#'  If provided with tabular data without explicitly specified variable names,
+#'  the function by default takes the columns named "X" and "Y" (or "x" and
+#'  "y") to be the tree coordinates, and looks for columns named "height",
+#'  "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any
+#'  capitalization) as size-related variables. The tree ids are taken from
+#'  columns named "id", "tree_id", "treeID" or "tree.id" (in any
+#'  capitalization). All special characters besides "." and "_" are stripped
+#'  from the column names before matching. For "size", the variable has to be
+#'  specified explicitly; if not specified no generic size-related variable
+#'  will be selected.
+#'  All other columns in the source dataset are appended to the inventory when
+#'  `keep_rest = TRUE`, but they are not validated, type-checked or sanitized.
 #'
-#'   If no columns with coordinates can be identified, the function fails with
-#'   an error. If no ID column is available, the function assigns a unique
-#'   number to each tree (but note that this will make specifying custom target
-#'   trees difficult). It is possible to read in datasets without dbh and
-#'   height, but usually only sensible if these are used as accessory datasets
-#'   for identifying target trees (e.g. if target trees where identified by
-#'   taking their GPS coordinates manually in the field).
+#'  If no columns with coordinates can be identified, the function fails with
+#'  an error. If no ID column is available, the function assigns a unique
+#'  number to each tree (but note that this will make specifying custom target
+#'  trees difficult). It is possible to read in datasets without dbh and
+#'  height, but usually only sensible if these are used as accessory datasets
+#'  for identifying target trees (e.g. if target trees where identified by
+#'  taking their GPS coordinates manually in the field).
 #'
 #' @return object of class `forest_inv`: a modified data.table with with x and
-#' y coordinates of the tree, a unique tree identifier (`id`) and tree diameter
+#'  y coordinates of the tree, a unique tree identifier (`id`) and tree diameter
 #'  at breast height (`dbh`, in cm) and tree height (`height`, in m) if
 #'  available.
 #'
 #' @seealso [define_target()] for designating target trees,
-#'   [compete_inv()] for computing tree competition from inventory data,
-#'   [competition_indices] for a list of available indices,
-#'   [plot_target()] to plot target tree positions in `target_inv` and
-#'   `compete_inv` objects.
+#'  [compete_inv()] for computing tree competition from inventory data,
+#'  [competition_indices] for a list of available indices,
+#'  [plot_target()] to plot target tree positions in `target_inv` and
+#'  `compete_inv` objects.
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' # prepare inventory table for compete_inv()
-#' inv <- fread(path = "path/to/table.csv")
+#' inv <- data.table::fread(path = "path/to/table.csv")
 #' #specify the units of parameters within your input
 #' inv_table <- read_inv(inv, dbh_unit = "cm", height_unit = "m")
 #' # Read inventory table directly from directory
