@@ -33,6 +33,9 @@
 #'   (one of "cm", "m" or "mm". defaults to "cm").
 #' @param height_unit character of length 1. Unit for the diameter measurements
 #'   (one of "m", "cm" or "mm". defaults to "m").
+#' @param keep_rest logical of length 1. Keep additional variables in the
+#'   inventory table besides x, y, dbh, size and id for filtering or further
+#'   computations? Defaults to FALSE.
 #' @param verbose logical of length 1. Should information about progress be
 #'   printed? Defaults to TRUE.
 #' @param names_as_is logical of length 1. If TRUE, only NULL or characters
@@ -88,6 +91,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
                      dbh = NULL, height = NULL, size = NULL, id = NULL,
                      dbh_unit = c("cm", "m", "mm"),
                      height_unit = c("m", "cm", "mm"),
+                     keep_rest = FALSE,
                      verbose = TRUE, names_as_is = FALSE, ...) {
 
   # match function arguments for units and get multipliers
@@ -111,6 +115,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     inv <- .validate_inv(inv_source, x = x, y = y,
                          dbh = dbh, height = height, size = size, id = id,
                          dbh_unit = dbh_unit, height_unit = height_unit,
+                         keep_rest = keep_rest,
                          verbose = verbose)
   } else if (!(is.character(inv_source) && length(inv_source) == 1)){
     stop(.wr(
@@ -140,6 +145,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       inv <- .validate_inv(inv, x = x, y = y,
                            dbh = dbh, height = height, size = size, id = id,
                            dbh_unit = dbh_unit, height_unit = height_unit,
+                           keep_rest = keep_rest,
                            verbose = verbose)
     }
   }
@@ -153,6 +159,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 .validate_inv <- function(inv_source, x = NULL, y = NULL,
                           dbh = NULL, height = NULL, size = NULL, id = NULL,
                           dbh_unit, height_unit,
+                          keep_rest = FALSE,
                           verbose = TRUE){
   # check if inventory data is already formatted correctly and return if true
   if (inherits(inv_source, "forest_inv")){
@@ -164,7 +171,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     # define empty dataset
     inv_out <- data.table::as.data.table(
       matrix(NA, nrow = nrow(inv_source), ncol = 6)
-      )
+    )
     names(inv_out) <- c("id", "x", "y", "dbh", "height", "size")
     # validate ID
     inv_out$id <- .get_cols(
@@ -180,8 +187,8 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       stop("Found the following tree ids: ",
            paste(inv_out$id[forbidden], collapse = ", "),
            "\n\n",
-        .wr("Trees named 'buff_edge', 'exclude_edge' and 'all_trees'",
-          "are not allowed as they interfere with define_target().")
+           .wr("Trees named 'buff_edge', 'exclude_edge' and 'all_trees'",
+               "are not allowed as they interfere with define_target().")
       )
     }
     # validate x coordinate
@@ -230,19 +237,26 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       mult = height_mult,
       fail_if_missing = FALSE # scrap column if not available
     )
+    # get original column names
+    orig <- sapply(inv_out, function(x) ifelse(
+      is.null(attr(x, "original_column")),
+      "automatically generated", attr(x, "original_column")))
     # message about used coordinate vectors
     if(verbose){
-      # get original column names
-      orig <- sapply(inv_out, function(x) ifelse(
-        is.null(attr(x, "original_column")),
-        "automatically generated", attr(x, "original_column")))
-
       message(
         "The following columns were used to create the inventory dataset:\n",
         paste0(names(inv_out), "\t---\t", orig, "\n"))
     }
   }
-
+  # get additional columns
+  if (keep_rest){
+    # get names of variables to keep
+    rest <- setdiff(names(inv_source), orig[orig != "automatically generated"])
+    # update output dataset
+    inv_out <- cbind(
+      inv_out, subset(data.table::as.data.table(inv_source), select = rest)
+    )
+  }
   # set class to forest_inv object
   class(inv_out) <- c("forest_inv", class(inv_out))
   # return the validated inventory object

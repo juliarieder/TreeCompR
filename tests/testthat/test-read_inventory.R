@@ -77,12 +77,38 @@ test_that("read_inv works for data.frame objects", {
   "Found the following tree ids:"
   )
 
-  # reading in without diamete nor height is possible
+  # reading in without diameter or height is possible
   expect_length(read_inv(test[, -4], verbose = FALSE), 3)
+
+  # reading in works with extra columns
+  expect_no_error({
+    test5 <- test
+    test5$extra <- 1:nrow(test5)
+
+    # no parsing of extra column
+    test_inv5 <- read_inv(test5, verbose = FALSE)
+    # keeping the extra column
+    test_inv6 <- read_inv(test5, keep_rest = TRUE, verbose = FALSE)
+  })
+
+  # extra column exists and has the right name
+  expect_equal(
+    names(test_inv6)[!names(test_inv6) %in% names(test_inv5)], "extra")
+
+  # it is possible to create a forest_inv with different column types
+  expect_length({
+    test5$char <- "C"
+    test5$log  <- TRUE
+    test5$fact <- factor(test5$extra)
+    test5$list <- as.list(test5$extra)
+    test_inv7 <- read_inv(test5, keep_rest = TRUE, verbose = FALSE)
+  }, 9)
+
+  # printing the inventory with different column types is possible
+  expect_output(print(test_inv7))
 
   # reading in works if there are no ids - but standard is assigned
   expect_message(read_inv(test[, -1]), "automatically generated")
-
 })
 
 

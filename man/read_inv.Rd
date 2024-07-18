@@ -15,6 +15,7 @@ read_inv(
   id = NULL,
   dbh_unit = c("cm", "m", "mm"),
   height_unit = c("m", "cm", "mm"),
+  keep_rest = FALSE,
   verbose = TRUE,
   names_as_is = FALSE,
   ...
@@ -59,6 +60,10 @@ assigned a unique number. All IDs are coerced to character.}
 
 \item{height_unit}{character of length 1. Unit for the diameter measurements
 (one of "m", "cm" or "mm". defaults to "m").}
+
+\item{keep_rest}{logical of length 1. Keep additional variables in the
+inventory table besides x, y, dbh, size and id for filtering or further
+computations? Defaults to FALSE.}
 
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
