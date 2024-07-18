@@ -16,7 +16,7 @@ comment = "#>"
 
 ## Overview 
 
-Within `TreeCompR` it is possible to easily derive size-distance-dependent competition indices based on inventory data. This data can be collected in the field, or derived or modelled from 3D point clouds. Depending on the input data, there are some necessary pre-processing steps. Check out our workflows: <!-- Yo, Digga -->
+Within `TreeCompR` it is possible to easily derive size-distance-dependent competition indices based on inventory data. This data can be collected in the field, or derived or modeled from 3D point clouds. Depending on the input data, there are some necessary pre-processing steps. We prepared two tutorials for processing laser scanning data to obtain appropriate inventory data:
 
 * From airborne laser scanning data to competition indices: vignette("ALS_inventory"): [ALS workflow](https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html) 
 * From ground-based laser scanning data (from MLS/TLS) to competition indices: [TLS workflow](https://juliarieder.github.io/TreeCompR/articles/TLS_inventory.html) 
@@ -62,7 +62,7 @@ inventory1
 #> 48  53 -7.485 -7.619 20.065
 ```
 
-`read_inv()` does flexibly recognize a large number of different spellings for the common inventory variables. If provided with tabular data without explicitly specified variable names, the function by default takes the columns named "X" and "Y" (or "x" and "y") to be the tree coordinates, and looks for columns named "height", "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any capitalization) as size-related variables. The tree ids are taken from columns named "id", "tree_id", "treeID" or "tree.id" (in any capitalization). All special characters besides "." and "_" are stripped from the column names before matching. If `verbose = TRUE`, the function will inform you which columns were automatically identifided to avoid errors.
+`read_inv()` does flexibly recognize a large number of different spellings for the common inventory variables. If provided with tabular data without explicitly specified variable names, the function by default takes the columns named "X" and "Y" (or "x" and "y") to be the tree coordinates, and looks for columns named "height", "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any capitalization) as size-related variables. The tree ids are taken from columns named "id", "tree_id", "treeID" or "tree.id" (in any capitalization). All special characters besides "." and "_" are stripped from the column names before matching. If `verbose = TRUE`, the function will inform you which columns were automatically identified to avoid errors.
 
 If you have variable names that cannot be automatically recognized, you can specify them explicitly with the corresponding arguments either as a character string of length 1 with the variable name or by directly specifying the name without quotes. 
 For example, assume you have a data set with (metric) UTM coordinates from a Spanish source, i.e. with "dap_cm" (diámetro en altura de pecho) instead of dbh and "altura" instead of height:

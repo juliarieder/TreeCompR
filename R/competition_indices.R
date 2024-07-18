@@ -56,6 +56,7 @@
 #'   internally for each tree and its neighborhood inside `compete_inv()`.
 #'   For example, a working implementation of the classical Hegyi index would
 #'   look like this:
+#'
 #' `CI_Hegyi <- function(target, inv) sum(inv$dbh / (target$dbh * inv$dist))`
 #'
 #'   It is advisable to add checks to ensure the function does the right thing

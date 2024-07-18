@@ -119,7 +119,8 @@ speed up computation, which is likely not an issue unlike your inventory
 contains tens of thousands of trees, but is very relevant for big datasets.
 Defaults to 100, which should be reasonable in many forest settings, but
 should be adjusted when there are warnings (especially for large search
-radii).}
+radii and/or stands with small trees). If \code{kmax} is larger than the number
+of trees in the plot, the latter is passed on as \code{k} to \code{\link[nabor:knn]{nabor::knn()}}.}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }
@@ -150,10 +151,12 @@ possible to calculate competition indices for all trees in the inventory,
 this is almost never a good idea because unless the dataset covers all
 trees in the entire forest, there will be intense edge effects for the
 trees at the edge of the spatial extent of the dataset.
-\code{compete_inv()} allows to define target trees in a number of different ways
-based on the function \code{\link[=define_target]{define_target()}} that is called internally.
+\code{compete_inv()} allows to define target trees in a number of different
+ways based on the function \code{\link[=define_target]{define_target()}} that is called internally.
 \subsection{Available competition indices}{
 
+All competition indices are calculated based on the subset of trees that
+are within the search radius of the target tree.
 The competition indices are computed according to the following
 equations, where \eqn{d_i} and \eqn{h_i} are the dbh and height of neighbor
 tree \eqn{i}, \eqn{d} and \eqn{h} are dbh and height of the target tree,
@@ -193,6 +196,20 @@ variable: \cr
 
 Further indices can be user-specified by developing a corresponding
 function (see \link{competition_indices} for details).
+
+To efficiently deal with large inventory datasets (as can be expected from
+ALS sources), the neighbors within the search radius are computed with
+\code{\link[nabor:knn]{nabor::knn()}}, which is based on based on an efficient C++ implementation
+of the k-nearest neighbor algorithm from
+\href{https://github.com/norlab-ulaval/libnabo}{libnabo}. For this, it is
+required to specify a maximum number of neighbors to take into account
+(\code{kmax}, which is passed to \code{\link[nabor:knn]{nabor::knn()}} as \code{k}) that should be chosen as
+low as possible, but high enough to ensure that it is sufficiently larger
+than the maximum number of trees expected in the search radius. When
+working with small datasets (from classical forest inventories or MLS/TLS
+sources), this will likely not matter, but when working with large ALS
+datasets this implementation can speed up calculation by several orders of
+magnitude.
 
 As all these indices are distance-weighted sums of the relative size of all
 competitor trees within the search radius compared to the target tree (or a
