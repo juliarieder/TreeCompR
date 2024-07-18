@@ -216,6 +216,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
                         dbh = NULL, height = NULL, size = NULL, id = NULL,
                         dbh_unit = c("cm", "m", "mm"),
                         height_unit = c("m", "cm", "mm"),
+                        keep_rest = FALSE,
                         verbose = TRUE,
                         tol = 1, kmax = 100,
                         ...) {
@@ -238,14 +239,14 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
     inv <- read_inv(
       inv_source, x = x, y = y, dbh = dbh, height = height, size = size,
       id = id, dbh_unit = dbh_unit, height_unit = height_unit,
-      verbose = verbose, names_as_is = TRUE, ...)
+      keep_rest = keep_rest, verbose = verbose, names_as_is = TRUE, ...)
 
     # check if target_source is a length 1 character
     if(inherits(target_source, "character") && length(target_source) == 1){
       # if it is a valid file path, read and validate target tree dataset
       if (file.exists(target_source)){
         target_source <- read_inv(
-          target_source, x = x, y = y, verbose = verbose,
+          target_source, x = x, y = y, id = id, verbose = verbose,
           names_as_is = TRUE, ...)
         # else it is passed to define_target as a character string
       }
@@ -254,8 +255,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
     if(inherits(target_source, "data.frame") &&
        !inherits(target_source, "forest_inv")){
       target_source <- read_inv(
-        target_source, x = x, y = y, dbh = dbh, height = height, id = id,
-        dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
+        target_source, x = x, y = y, id = id, verbose = verbose,
         names_as_is = TRUE, ...)
     }
     # define target trees

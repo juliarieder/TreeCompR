@@ -119,7 +119,7 @@ test_that("Indices work for two different forest_inv datasets", {
       verbose = FALSE)
   })
 
-  # check if the correct indices are returned
+  # correct indices are returned
   expect_equal(test1$CI_Hegyi, test8$CI_Hegyi)
   expect_equal(test2$CI_RK1, test8$CI_RK1)
   expect_equal(test3$CI_RK2, test8$CI_RK2)
@@ -290,7 +290,7 @@ test_that("Function works for nonstandard indices", {
   plot <- read.csv(test_path("testdata", "inventory.csv"), sep = ";")
   plot$test <- plot$DBH * abs(plot$X - plot$Y)
 
-  # test if dataset with size can be loaded
+  # dataset with size can be loaded
   expect_contains({
   # read plot dataset
   plot <- read_inv(plot, size = test, verbose = FALSE)
@@ -298,7 +298,7 @@ test_that("Function works for nonstandard indices", {
   "size"
   )
 
-  # test if all possible indices contain size
+  # "all_methods" contains "size"
   expect_contains({
     # read plot dataset
     comp <- compete_inv(plot, verbose = FALSE, radius = 5)
@@ -328,7 +328,30 @@ test_that("Function works for nonstandard indices", {
 
   # correct names are shown in table
   expect_contains(names(out), c("CI_Hegyi", "CI_RK1", "CI_RK2",
-    "CI_inv_Hegyi", "CI_size"))
+                                "CI_inv_Hegyi", "CI_size"))
+
+  # custom functions can be used for extra columns
+  expect_no_error({
+      test <- read.csv(
+        test_path("testdata", "inventory.csv"),
+        sep = ";", dec = "."
+      )
+    test$extra <- grepl("1", test$TreeID)
+
+    # assign function
+    assign("CI_test",
+           function(target, inv) {
+             sum(target$dbh * (inv$dist / inv$dbh)[inv$extra])
+             },
+           envir = .GlobalEnv)
+
+    # create output
+    out1 <-  compete_inv(test, keep_rest = TRUE, verbose = FALSE,
+                        radius = 5, method = c("CI_test"))
+  })
+
+  # output makes sense
+  expect_gt(sum(out1$CI_test), 0)
 
   # a function with the wrong arguments fails
   expect_error({
@@ -347,5 +370,7 @@ test_that("Function works for nonstandard indices", {
     compete_inv(plot, verbose = FALSE, radius = 5,
                 method = c("CI_Hegyi", "CI_Hegyi"))
   }, 6)
+
+  #
 })
 
