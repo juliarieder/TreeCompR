@@ -38,11 +38,6 @@
 #'   computations? Defaults to FALSE.
 #' @param verbose logical of length 1. Should information about progress be
 #'   printed? Defaults to TRUE.
-#' @param names_as_is logical of length 1. If TRUE, only NULL or characters
-#'   are excepted as column names in `x`, `y`, `dbh`, `height` and `id`, and
-#'   the column names are not internally substituted. Defaults to FALSE, which
-#'   should normally be the right choice for interactive use (TRUE is only
-#'   needed for use within functions).
 #' @param ... additional arguments passed on to [data.table::fread()]
 #'
 #' @details Function for reading and validating forest inventory data.
@@ -96,31 +91,20 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
                      dbh_unit = c("cm", "m", "mm"),
                      height_unit = c("m", "cm", "mm"),
                      keep_rest = FALSE,
-                     verbose = TRUE, names_as_is = FALSE, ...) {
+                     verbose = TRUE, ...) {
 
   # match function arguments for units and get multipliers
   dbh_unit    <- match.arg(dbh_unit)
   height_unit <- match.arg(height_unit)
 
-  # parse names if !names_as_is
-  if (!names_as_is){
-    # catch and validate variable names (treated as character if not NULL,
-    # else, NULL is passed on to .validate_inv())
-    if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
-    if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
-    if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
-    if (!is.null(substitute(height))) height <- as.character(substitute(height))
-    if (!is.null(substitute(size)))   size <- as.character(substitute(size))
-    if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
-  }
-
   # check class of source tree
   if (inherits(inv_source, "data.frame")){
-    inv <- .validate_inv(inv_source, x = x, y = y,
-                         dbh = dbh, height = height, size = size, id = id,
-                         dbh_unit = dbh_unit, height_unit = height_unit,
-                         keep_rest = keep_rest,
-                         verbose = verbose)
+    inv <- .validate_inv(
+      inv_source, x = !!enquo(x), y = !!enquo(y), dbh = !!enquo(dbh),
+      height = !!enquo(height), size = !!enquo(size), id = !!enquo(id),
+      dbh_unit = dbh_unit, height_unit = height_unit,
+      keep_rest = keep_rest,
+      verbose = verbose)
   } else if (!(is.character(inv_source) && length(inv_source) == 1)){
     stop(.wr(
       "Format of inv_source not recognized.",
@@ -146,11 +130,12 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
         "field separators etc. for reading.")
       )
     } else{ # else validate and return
-      inv <- .validate_inv(inv, x = x, y = y,
-                           dbh = dbh, height = height, size = size, id = id,
-                           dbh_unit = dbh_unit, height_unit = height_unit,
-                           keep_rest = keep_rest,
-                           verbose = verbose)
+      inv <- .validate_inv(
+        inv, x = !!enquo(x), y = !!enquo(y), dbh = !!enquo(dbh),
+        height = !!enquo(height), size = !!enquo(size), id = !!enquo(id),
+        dbh_unit = dbh_unit, height_unit = height_unit,
+        keep_rest = keep_rest,
+        verbose = verbose)
     }
   }
   # return forst_inv object with correct column number, names and types
@@ -180,7 +165,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     # validate ID
     inv_out$id <- .get_cols(
       data = inv_source,
-      which = id,
+      which = !!enquo(id),
       names = c("id", "treeid", "tree_id", "tree.id"),
       class_out = "character",
       alternative = 1:nrow(inv_source)
@@ -198,7 +183,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     # validate x coordinate
     inv_out$x <- .get_cols(
       data = inv_source,
-      which = x,
+      which = !!enquo(x),
       names = "x",
       class_in = c("integer", "numeric"),
       class_out = "numeric"
@@ -206,7 +191,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     #validate y coordinate
     inv_out$y <- .get_cols(
       data = inv_source,
-      which = y,
+      which =  !!enquo(y),
       names = "y",
       class_in = c("integer", "numeric"),
       class_out = "numeric"
@@ -214,7 +199,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     # validate dbh
     inv_out$dbh <- .get_cols(
       data = inv_source,
-      which = dbh,
+      which =  !!enquo(dbh),
       names = c("dbh", "diameter", "diam", "d"),
       class_in = c("integer", "numeric"),
       class_out = "numeric",
@@ -224,7 +209,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     # validate tree height
     inv_out$height <- .get_cols(
       data = inv_source,
-      which = height,
+      which = !!enquo(height),
       names = c("height", "h", "height_m"),
       class_in = c("integer", "numeric"),
       class_out = "numeric",
@@ -234,7 +219,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     # validate tree height
     inv_out$size <- .get_cols(
       data = inv_source,
-      which = size,
+      which = !!enquo(size),
       names = NULL,
       class_in = c("integer", "numeric"),
       class_out = "numeric",
@@ -280,8 +265,13 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     alternative = NULL,    # alternative value if column not available
     fail_if_missing = TRUE # if column it missing, fail (TRUE) or remove
 ){                     # column (FALSE)
+  # quote column specification
+  which <- enquo(which)
   # if column name is specified, take this column
-  if (!is.null(which)) {
+  if (!rlang::quo_is_null(which)) {
+    #conver to character
+    which <- rlang::as_name(which)
+    # check if exists
     if (!which %in% names(data)) stop("No variable named ", which,
                                       " in dataset.")
     out <- data[[which]]

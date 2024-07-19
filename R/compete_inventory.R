@@ -226,28 +226,20 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
   # if target trees are already defined in inv_source, bypass the following
   # steps and directly compute competition indices
   if(!inherits(inv_source, "target_inv")){
-    # catch and validate variable names (treated as character if not NULL,
-    # else, NULL is passed on to read_inv())
-    if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
-    if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
-    if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
-    if (!is.null(substitute(height))) height <- as.character(substitute(height))
-    if (!is.null(substitute(size)))   size   <- as.character(substitute(size))
-    if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
-
     # read and validate forest inventory dataset
     inv <- read_inv(
-      inv_source, x = x, y = y, dbh = dbh, height = height, size = size,
-      id = id, dbh_unit = dbh_unit, height_unit = height_unit,
-      keep_rest = keep_rest, verbose = verbose, names_as_is = TRUE, ...)
+      inv_source,  x = !!enquo(x), y = !!enquo(y), dbh = !!enquo(dbh),
+      height = !!enquo(height), size = !!enquo(size), id = !!enquo(id),
+      dbh_unit = dbh_unit, height_unit = height_unit,
+      keep_rest = keep_rest, verbose = verbose, ...)
 
     # check if target_source is a length 1 character
     if(inherits(target_source, "character") && length(target_source) == 1){
       # if it is a valid file path, read and validate target tree dataset
       if (file.exists(target_source)){
         target_source <- read_inv(
-          target_source, x = x, y = y, id = id, verbose = verbose,
-          names_as_is = TRUE, ...)
+          target_source, x = !!enquo(x), y = !!enquo(y), id = !!enquo(id),
+          verbose = verbose,  ...)
         # else it is passed to define_target as a character string
       }
     }
@@ -255,8 +247,8 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
     if(inherits(target_source, "data.frame") &&
        !inherits(target_source, "forest_inv")){
       target_source <- read_inv(
-        target_source, x = x, y = y, id = id, verbose = verbose,
-        names_as_is = TRUE, ...)
+        target_source,  x = !!enquo(x), y = !!enquo(y), id = !!enquo(id),
+        verbose = verbose, ...)
     }
     # define target trees
     inv <- define_target(inv = inv, target_source = target_source,
