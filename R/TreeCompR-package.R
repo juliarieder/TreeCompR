@@ -5,11 +5,12 @@
 #' @import dplyr
 #' @importFrom concaveman concaveman
 #' @importFrom data.table :=
-#' @importFrom data.table fread %inrange%
+#' @importFrom data.table fread
+#' @importFrom data.table %inrange%
 #' @importFrom magrittr %>%
 #' @importFrom nabor knn
-#' @importFrom Rfast Round Table
-#' @importFrom rlang .data enquo
+#' @importFrom Rfast Round
+#' @importFrom rlang enquo
 #' @importFrom sf st_as_sf
 #' @importFrom sf st_buffer
 #' @importFrom sf st_drop_geometry
