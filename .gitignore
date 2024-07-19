@@ -4,5 +4,6 @@
 .Ruserdata
 inst/doc
 /Meta/
+/doc
 /tests/testthat/Rplots.pdf
 docs
