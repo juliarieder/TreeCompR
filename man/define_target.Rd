@@ -3,6 +3,7 @@
 \name{define_target}
 \alias{define_target}
 \alias{print.target_inv}
+\alias{rbind.target_inv}
 \title{Define target trees in forest inventory data}
 \usage{
 define_target(

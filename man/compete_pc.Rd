@@ -3,6 +3,7 @@
 \name{compete_pc}
 \alias{compete_pc}
 \alias{print.compete_pc}
+\alias{rbind.compete_pc}
 \title{Quantify tree competition from point clouds}
 \usage{
 compete_pc(

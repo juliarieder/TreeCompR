@@ -437,5 +437,14 @@ print.compete_inv <- function(x, digits = 3, topn = 3, ...){
   invisible(x)
 }
 
+# Define rbind method for forest_inv objects:
+#' @rdname compete_inv
+#' @format NULL
+#' @usage NULL
+#' @export
+rbind.compete_inv <- function(
+    ..., use.names = TRUE, fill = FALSE, idcol = NULL){
+  .rbind_with_class(..., use.names = use.names, fill = fill, idcol = idcol)
+}
 
 

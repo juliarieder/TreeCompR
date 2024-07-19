@@ -46,19 +46,24 @@ test_that("compete_pc works for .txt file point clouds", {
       length(test3), length(test4)),
     c(5,5,7,7))
 
-  # test if center position is correct
+  # center position is correct
   expect_equal(test1$center_position, "crown center")
   expect_equal(test2$center_position, "base")
   expect_equal(test3$center_position, "base")
   expect_equal(test4$center_position, "base")
 
-  # test if different values are returned if different bases are used
+  # different values are returned if different bases are used
   expect_false(test1$CI_cone == test3$CI_cone)
-  # test if the same values are returned for the same base
+  # the same values are returned for the same base
   expect_true(test2$CI_cyl == test3$CI_cyl)
 
-  # test if a larger voxel size results in smaller values
+  # a larger voxel size results in smaller values
   expect_true(all(test3[,c(4,6)] > test4[,c(4,6)]))
+
+  # class is maintained after rbind
+  expect_true(
+    inherits(rbind(test3, test3), "compete_pc")
+  )
 })
 
 

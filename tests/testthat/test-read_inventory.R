@@ -15,6 +15,11 @@ test_that("read_inv works for data.frame objects", {
   expect_equal(dim(test_inv), c(48, 4))
   expect_equal(names(test_inv), c("id", "x", "y", "dbh"))
 
+  # class is maintained after rbind
+  expect_true(
+    inherits(rbind(test_inv, test_inv), "forest_inv")
+  )
+
   # reading in works with explicitly specified names
   expect_no_error({
     test1 <- test

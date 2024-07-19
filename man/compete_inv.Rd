@@ -3,6 +3,7 @@
 \name{compete_inv}
 \alias{compete_inv}
 \alias{print.compete_inv}
+\alias{rbind.compete_inv}
 \title{Quantify size- and distance-dependent competition using inventory data}
 \usage{
 compete_inv(

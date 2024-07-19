@@ -3,6 +3,7 @@
 \name{read_inv}
 \alias{read_inv}
 \alias{print.forest_inv}
+\alias{rbind.forest_inv}
 \title{Read forest inventory data}
 \usage{
 read_inv(

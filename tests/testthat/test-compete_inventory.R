@@ -129,7 +129,12 @@ test_that("Indices work for two different forest_inv datasets", {
   expect_equal(grep("CI_", names(test9), value = TRUE),
                c("CI_Hegyi", "CI_RK3", "CI_RK4"))
 
-  # test plot output
+  # class is maintained after rbind
+  expect_true(
+    inherits(rbind(test1, test1), "compete_inv")
+  )
+
+  # plot output works
   expect_no_error(plot_target(test8))
 })
 

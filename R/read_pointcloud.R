@@ -265,3 +265,14 @@ print.forest_pc <- function(x, topn = 3, digits = 2, ...){
   # return object invisibly
   invisible(x)
 }
+
+# Define rbind method for forest_pc objects:
+#' @rdname read_pc
+#' @format NULL
+#' @usage NULL
+#' @export
+rbind.forest_pc <- function(
+    ..., use.names = TRUE, fill = FALSE, idcol = NULL){
+  .rbind_with_class(..., use.names = use.names, fill = fill, idcol = idcol)
+}
+

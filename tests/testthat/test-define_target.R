@@ -7,6 +7,7 @@ test_that(
                            sep = ";", dec = ".", verbose = FALSE)
     })
 
+
     # test if target can be defined for a single observations
     expect_no_error({
       test1 <- define_target(inv = test_inv,
@@ -17,6 +18,10 @@ test_that(
     # test if type is passed on
     expect_equal(attr(test1, "target_type"), "character")
 
+    # class is maintained after rbind
+    expect_true(
+      inherits(rbind(test1[1:3,], test1[1:3,]), "target_inv")
+    )
 
     # test if target can be defined for multiple observations
     expect_no_error({

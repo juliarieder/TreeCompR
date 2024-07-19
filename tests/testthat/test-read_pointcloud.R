@@ -11,6 +11,12 @@ test_that("reading a tree point cloud in txt format works", {
     inherits(test_tree, "forest_pc")
   )
 
+  # class is maintained after rbind
+  expect_true(
+    inherits(rbind(test_tree[1:3,], test_tree[1:3,]), "forest_pc")
+  )
+
+
   # test if loaded object has the correct dimensions
   expect_equal(
     dim(test_tree),

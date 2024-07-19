@@ -3,6 +3,7 @@
 \name{read_pc}
 \alias{read_pc}
 \alias{print.forest_pc}
+\alias{rbind.forest_pc}
 \title{Read trees and neighborhoods from point cloud data.}
 \usage{
 read_pc(pc_source, verbose = TRUE, xlim = NULL, ylim = NULL, zlim = NULL, ...)

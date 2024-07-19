@@ -326,7 +326,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 }
 
 
-# Define printing method for forest_pc objects:
+# Define printing method for forest_inv objects:
 #' @rdname read_inv
 #' @format NULL
 #' @usage NULL
@@ -343,3 +343,12 @@ print.forest_inv <- function(x, digits = 3, topn = 3, ...){
   invisible(x)
 }
 
+# Define rbind method for forest_inv objects:
+#' @rdname read_inv
+#' @format NULL
+#' @usage NULL
+#' @export
+rbind.forest_inv <- function(
+    ..., use.names = TRUE, fill = FALSE, idcol = NULL){
+  .rbind_with_class(..., use.names = use.names, fill = fill, idcol = idcol)
+}

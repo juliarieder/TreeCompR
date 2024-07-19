@@ -40,3 +40,21 @@ NULL
   # print as data.table with specified settings
   print(data.table::as.data.table(x), topn = topn, trunc.cols = TRUE, ...)
 }
+
+#' @keywords internal
+#' internal function for data.table rbinds that maintain the class of the input
+.rbind_with_class <- function(
+    ..., use.names = TRUE, fill = FALSE, idcol = NULL){
+  # get list of elements
+  l <- list(...)
+  # get class of first argument (others are coerced to that type)
+  cl <- class(l[[1]])
+  # bind rows as in data.table
+  l <- lapply(l, function(x) if (is.list(x)) x else
+    data.table::as.data.table(x))
+  out <- data.table::rbindlist(l, use.names, fill, idcol)
+  # re-assign class (rbindlist removes class information)
+  class(out) <- cl
+  # return output
+  out
+}
