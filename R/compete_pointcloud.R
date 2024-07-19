@@ -274,7 +274,7 @@ compete_pc <- function(forest_source, tree_source,
   neighbor <- hood[!tree, on = c("x", "y", "z")] / (10 ^ acc_digits)
 
   # prepare data.frame for results
-  results <- data.frame(
+  results <- data.table::data.table(
     target = tree_name,
     height_target = h,
     center_position = ifelse(
@@ -306,7 +306,7 @@ compete_pc <- function(forest_source, tree_source,
   if (comp_method == "cylinder" | comp_method == "both"){
     # compute distance from central position
     voxel2 <- voxel[, `:=`(dist = sqrt((x - pos["x"]) ^ 2 +
-                                        (y - pos["y"]) ^ 2))]
+                                         (y - pos["y"]) ^ 2))]
     # append voxel count inside the cylinder and cylinder radius to results
     results$CI_cyl <- with(voxel2, sum(dist <= cyl_r))
     results$cyl_r <- cyl_r
@@ -337,34 +337,28 @@ compete_pc <- function(forest_source, tree_source,
 #' @format NULL
 #' @usage NULL
 #' @export
-print.compete_pc <- function(x, ...){
+print.compete_pc <- function(x, digits = 3, topn = 3, ...){
   # get tree name or number of observations
   target <- ifelse(nrow(x) == 1,
                    paste0("'", x$target, "'"),
                    paste(nrow(x), "trees"))
   # print header
-  cat(" ------------------------------------------------------------------\n",
-      "Point cloud based competition indices for", target, "\n",
-      "------------------------------------------------------------------\n")
-  # create object for printed output
-  out <- x
-  # print body
-  if (nrow(x) < 6) {
-    # if there are almost no observations, print the entire dataset
-    print(as.data.frame(out), digits = 3)
-  } else {
-    # else print beginning and end of the data.frame
-    temp <- out[1,]
-    row.names(temp) <- " "
-    for(i in 1:ncol(temp)) temp[, i] <- "..."
-    out[, sapply(out, is.numeric)] <- round(out[, sapply(out, is.numeric)], 3)
-    print(
-      rbind(utils::head(as.data.frame(out), n = 3),
-            temp,
-            utils::tail(as.data.frame(out), n = 3)
-      )
-    )
-  }
+  cat(
+    "------------------------------------------------------------------\n",
+    "Point cloud based competition indices for", target,
+    "\n------------------------------------------------------------------\n")
+  # print data.table with points
+  .print_as_dt(x, digits = digits, topn = topn, ...)
   # return object invisibly
   invisible(x)
+}
+
+# Define rbind method for forest_pc objects:
+#' @rdname compete_pc
+#' @format NULL
+#' @usage NULL
+#' @export
+rbind.compete_pc <- function(
+    ..., use.names = TRUE, fill = FALSE, idcol = NULL){
+  .rbind_with_class(..., use.names = use.names, fill = fill, idcol = idcol)
 }
