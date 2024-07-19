@@ -9,7 +9,7 @@
 #' @importFrom magrittr %>%
 #' @importFrom nabor knn
 #' @importFrom Rfast Round Table
-#' @importFrom rlang .data
+#' @importFrom rlang .data enquo
 #' @importFrom sf st_as_sf
 #' @importFrom sf st_buffer
 #' @importFrom sf st_drop_geometry
