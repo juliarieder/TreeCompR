@@ -195,21 +195,64 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Quantify the Hegyi index for specified target trees with search radius 10m
-#' CI <- compete_inv("path/to/invtable.csv",
-#'   "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi")
-#' # Quantify the Braathe index for specified target trees with search radius
-#' #10m and adjust
-#' CI <- compete_inv("path/to/invtable.csv",
-#'   "path/to/target_trees.csv", radius = 10, method = "CI_Braathe")
-#' # Specify the units of dbh or height of your input data
-#' CI <- compete_inv("path/to/invtable.csv",
-#'   "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi",
-#'   dbh_unit = "m", height_unit = "m")
-#' # Quantify all available indices for all trees within the plot that are one
-#' #search radius away from plot edge
-#' CI <- compete_inv("path/to/invtable.csv", target_source = "buff_edge",
-#'         radius = 12, method = "all_methods")
+#' # get target trees
+#' targets4 <- readr::read_csv("data/inventory4.csv") %>%
+#'   dplyr::filter(plot_id == "Plot 1") %>%
+#'   read_inv(dbh = diam, verbose = FALSE) %>%
+#'   define_target(target_source = "buff_edge", radius = 8)
+#'
+#' # compute Hegyi index based on existing target_inv object
+#' CI1 <- compete_inv(inv_source = targets4, radius = 8,
+#'                    method = "CI_Hegyi")
+#'
+#' # compute Hegyi based on a file source
+#' CI2 <- compete_inv(
+#'   inv_source = "data/inventory5.csv",
+#'   target_source = "buff_edge",
+#'   radius = 12,
+#'   method = "CI_Hegyi",
+#'   x = Koord_x,
+#'   y = Koord_y,
+#'   id = Baumname,
+#'   dbh = Durchmesser,
+#'   sep = ";",
+#'   dec = ","
+#' )
+#'
+#' # compute all built-in indices that are possible with a dataset
+#' (CI3 <- compete_inv(inv_source = targets4,
+#'                     radius = 8, method = "all_methods"))
+#'
+#' # new implementation of Hegyi competition index
+#' CI_Hegyi_new <- function(target, neigh)
+#'   sum(neigh$dbh / (target$dbh * neigh$dist))
+#'
+#' # R1 index only for trees taller than the target tree
+#' CI_RK1_tall <- function(target, neigh)
+#'   CI_RK1(target, neigh[neigh$height > target$height, ])
+#'
+#' # get output for new indices
+#' compete_inv(inv_source = targets4, radius = 8,
+#'             method = c("CI_Hegyi", "CI_Hegyi_new", "CI_RK1_tall"))
+#'
+#' # partial Hegyi index for oak
+#' CI_Hegyi_QURO <- function(target, neigh)
+#'   CI_Hegyi(target, neigh[neigh$species == "Quercus robur", ])
+#' # partial Hegyi index for hornbeam
+#' CI_Hegyi_CABE <- function(target, neigh)
+#'   CI_Hegyi(target, neigh[neigh$species == "Carpinus betulus", ])
+#' # partial Hegyi index for ash
+#' CI_Hegyi_FREC <- function(target, neigh)
+#'   CI_Hegyi(target, neigh[neigh$species == "Fraxinus excelsior", ])
+#'
+#' # load dataset with species
+#' inv_species <- read_inv("data/inventory6.csv", keep_rest = TRUE)
+#' inv_species
+#'
+#' # compute species-decomposed Hegyi indices
+#' comp_species <- compete_inv(
+#'   inv_source = inv_species, target_source = "buff_edge", radius = 12,
+#'
 #' }
 compete_inv <- function(inv_source, target_source = "buff_edge", radius,
                         method = "all_methods",

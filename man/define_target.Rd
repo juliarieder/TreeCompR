@@ -125,6 +125,9 @@ are doing!
 }
 \examples{
 \dontrun{
+# read inventory
+inventory1 <- read_inv(inv_source = "data/inventory1.csv", dbh_unit = "m")
+
 # designate target trees based on character vector with tree ids
 targets1 <- define_target(
   inv = inventory1,
@@ -141,6 +144,11 @@ targets2 <- define_target(
 # read target tree positions
 target_pos <- read_inv("data/target_tree_gps.csv",
                        x = gps_x, y = gps_y, verbose = FALSE)
+
+# read inventory
+inventory4 <- readr::read_csv("data/inventory4.csv") \%>\%
+  dplyr::filter(plot_id == "Plot 1") \%>\%
+  read_inv(dbh = diam, verbose = FALSE)
 
 # define target trees
 targets3 <- define_target(
