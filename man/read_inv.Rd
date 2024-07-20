@@ -107,13 +107,49 @@ taking their GPS coordinates manually in the field).
 }
 \examples{
 \dontrun{
-# prepare inventory table for compete_inv()
-inv <- data.table::fread(path = "path/to/table.csv")
-#specify the units of parameters within your input
-inv_table <- read_inv(inv, dbh_unit = "cm", height_unit = "m")
-# Read inventory table directly from directory
-inv_table <- read_inv(inv_source = "path/to/table.csv", dbh_unit = "cm",
-height_unit = "m")
+# read inventory with diameter and height units set to m
+inventory1 <- read_inv(
+  inv_source = "data/inventory1.csv",
+  dbh_unit = "m")
+
+# read inventory with custom (Spanish) column titles
+inventory2 <- read_inv(
+  inv_source = "data/inventory2.csv",
+  x = utmx,
+  y = utmy,
+  dbh = dap_cm,
+  height = altura,
+  dbh_unit = "cm",
+  height_unit = "m")
+
+
+# read inventory with custom decimal and column separators
+inventory3 <- read_inv(
+  inv_source = "data/inventory3.csv",
+  dec = ",",
+  sep = ";",
+  verbose = FALSE)
+
+# read dataset outside read_inv and filter to a single plot
+dat <- readr::read_csv("data/inventory4.csv") \%>\%
+  dplyr::filter(plot_id == "Plot 1")
+
+# use read_inv to convert to a forest_inv object that works with TreeCompR functions
+inventory4 <- read_inv(
+  inv_source = dat,
+  dbh = diam,
+  dbh_unit = "cm",
+  height_unit = "m",
+  verbose = FALSE)
+
+# read same inventory without dropping columns
+inventory4a <- read_inv(
+  inv_source = dat,
+  dbh = diam,
+  dbh_unit = "cm",
+  height_unit = "m",
+  keep_rest = TRUE,
+  verbose = FALSE)
 }
 }
 \seealso{

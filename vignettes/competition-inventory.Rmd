@@ -16,58 +16,69 @@ comment = "#>"
 
 ## Overview 
 
-Within `TreeCompR` it is possible to easily derive size-distance-dependent competition indices based on inventory data. This data can be collected in the field, or derived or modeled from 3D point clouds. Depending on the input data, there are some necessary pre-processing steps. We prepared two tutorials for processing laser scanning data to obtain appropriate inventory data:
+With `TreeCompR`, it is possible to easily compute size-distance-dependent competition indices based on inventory data. This data can be collected in the field, or derived or modeled from 3D point clouds. Depending on the input data, there are some necessary pre-processing steps. We prepared two tutorials for processing laser scanning data to obtain appropriate inventory data:
 
 * From airborne laser scanning data to competition indices: vignette("ALS_inventory"): [ALS workflow](https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html) 
 * From ground-based laser scanning data (from MLS/TLS) to competition indices: [TLS workflow](https://juliarieder.github.io/TreeCompR/articles/TLS_inventory.html) 
 
 
 ## Analyzing inventory data with TreeCompR
-To illustrate how TreeCompR can be included inside a tidy workflow, we will make use of [tidyverse](https://www.tidyverse.org/) function throughout the tutorial:
+To illustrate how `TreeCompR` can be included inside a tidy workflow, we will make use of [tidyverse](https://www.tidyverse.org/) functions throughout the tutorial:
 
 ```{r setup, eval=FALSE}
 library(TreeCompR)
 library(tidyverse)
 ```
 
-However, we will explicitly quote the corresponding package for all functions used in the tutorial in the form of `purrr::map()` for all functions besides the `magrittr` pipe operator `%>%`.
+To highlight where they are coming from, we will explicitly quote the corresponding package for all functions used in the tutorial in the form of `purrr::map()` for all functions besides the `magrittr` pipe operator `%>%`.
 
 ### Reading in forest inventory data with with `read_inv()`
-The inventory data must contain x and y coordinates of the individual trees, and to be able to compute competition have to contain at least one more size-related variable (e.g. height or diameter at breast height). 
+To be able to be parsed as a `forest_inv` object, inventory data must contain x and y coordinates of the individual trees, and to be able to compute competition they must to contain at least one size-related variable (e.g. height or diameter at breast height, or others when working with custom indices). 
 
-To ensure that the inventory data is assigned correctly, inspect the data thoroughly. Make sure to specify the units for dbh and height if they differ from the default, which is cm for dbh and m for height. Tree coordinates should __always__ be specified in m. You can either use `read_inv()` to validate your inventory data and convert them to an object type used by the `TreeCompR` functions, or directly pass data.frames or paths to files to `compete_inv()`. The former is especially useful if you have data with non-standard column names or data structures and want to fully control how they are parsed.
-
+To ensure that the inventory data is assigned correctly, inspect the data thoroughly. Make sure to specify the units for dbh and height if they differ from the default, which is cm for dbh and m for height. Tree coordinates should __always__ be specified in m. You can either use `read_inv()` to validate data.frames or paths to files with inventory data and convert them to an object type used by the `TreeCompR` functions, or directly pass them to `compete_inv()`. The former is especially useful if you have data with non-standard column names or data structures and want to have full control over how they are parsed.
 
 In a simple case, reading data with `read_inv()` with standard settings (except for the metric tree diameters) looks like this:
 
 ```{r read-inv1, eval=FALSE, message=FALSE, warning=FALSE}
+# read inventory with diameter units set to m
 inventory1 <- read_inv(
   inv_source = "data/inventory1.csv",
-  dbh_unit = "m",
-  height_unit = "m")
+  dbh_unit = "m")
+#> The following columns were used to create the inventory dataset:
+#> id     ---	ID
+#> x      ---	X
+#> y      ---	Y
+#> dbh    ---	DBH
+```
 
+If `verbose = TRUE` (the default), `read_inv()` prints the names of the main inventory variables from the original data set. This is helpful as a sanity check for the automatic column detection. 
 
+`read_inv()` does flexibly recognize a large number of different spellings for the common inventory variables. If provided with tabular data without explicitly specified variable names, the function by default takes the columns named "X" and "Y" (or "x" and "y") to be the tree coordinates, and looks for columns named "height", "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any capitalization) as size-related variables. The tree ids are taken from columns named "id", "tree_id", "treeID" or "tree.id" (in any capitalization). All special characters besides "." and "_" are stripped from the column names before matching. If `verbose = TRUE`, the function will inform you which columns were automatically identified to avoid errors.
+
+The resulting object looks like this (basically a data.table object that is printed with a header to easily identify it as a "forest_inv" object). 
+``` {r read-inv1a, eval=FALSE, message=FALSE, warning=FALSE}
 inventory1
 #> ---------------------------------------  
 #> 'forest_inv' class inventory dataset: 
-#> collection of 48 observations 
+#> collection of 63 observations 
 #> ---------------------------------------
-#>     id      x      y    dbh
-#> 1    1 15.181 -2.979 35.275
-#> 2    2 13.097  0.193 20.068
-#> 3    3 12.633 -9.445 35.333
-#>    ...    ...    ...    ...
-#> 46  51 -1.639 -4.842 12.605
-#> 47  52 -6.409 -4.722  6.035
-#> 48  53 -7.485 -7.619 20.065
+#>         id      x      y    dbh
+#>     <char>  <num>  <num>  <num>
+#>  1:  22461  1.009  0.908  5.047
+#>  2:  22462 11.683  1.449  6.786
+#>  3:  22541  6.770  2.155  4.675
+#> ---                            
+#> 61:  24508  9.390 28.357 40.283
+#> 62:  24545  5.350 27.977 32.405
+#> 63:  24611 16.750 28.615 43.841
 ```
 
-`read_inv()` does flexibly recognize a large number of different spellings for the common inventory variables. If provided with tabular data without explicitly specified variable names, the function by default takes the columns named "X" and "Y" (or "x" and "y") to be the tree coordinates, and looks for columns named "height", "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any capitalization) as size-related variables. The tree ids are taken from columns named "id", "tree_id", "treeID" or "tree.id" (in any capitalization). All special characters besides "." and "_" are stripped from the column names before matching. If `verbose = TRUE`, the function will inform you which columns were automatically identified to avoid errors.
 
 If you have variable names that cannot be automatically recognized, you can specify them explicitly with the corresponding arguments either as a character string of length 1 with the variable name or by directly specifying the name without quotes. 
 For example, assume you have a data set with (metric) UTM coordinates from a Spanish source, i.e. with "dap_cm" (diámetro en altura de pecho) instead of dbh and "altura" instead of height:
 
 ```{r read-inv2, message=FALSE, warning=FALSE, eval=FALSE}
+# read inventory with custom (Spanish) column titles
 inventory2 <- read_inv(
   inv_source = "data/inventory2.csv",  
   x = utmx,
@@ -76,68 +87,115 @@ inventory2 <- read_inv(
   height = altura,
   dbh_unit = "cm", 
   height_unit = "m")
-#> ---------------------------------------  
-#> 'forest_inv' class inventory dataset: 
-#> collection of 48 observations 
-#> ---------------------------------------
-#>     id      x      y    dbh
-#> 1    1 15.181 -2.979 35.275
-#> 2    2 13.097  0.193 20.068
-#> 3    3 12.633 -9.445 35.333
-#>    ...    ...    ...    ...
-#> 46  51 -1.639 -4.842 12.605
-#> 47  52 -6.409 -4.722  6.035
-#> 48  53 -7.485 -7.619 20.065
+#> The following columns were used to create the inventory dataset:
+#> id     ---	automatically generated
+#> x      ---	utmx
+#> y      ---	utmy
+#> dbh    ---	dap_cm
+#> height ---	altura
 ```
 
-Non-standard field separators etc. can be internally passed on to `data.table::fread()` via the `...` arguments to read more exotic formats such as the semicolon-separated ".csv" files with commas as decimal separators used for example in Germany. 
+Note that in this case, the function automatically generated an "id" column with ascending numbers as there was nothing in the raw data that could be automatically identified as an ID:
+
+```{r read-inv2a, message=FALSE, warning=FALSE, eval=FALSE}
+inventory2
+#> ---------------------------------------  
+#> 'forest_inv' class inventory dataset: 
+#> collection of 88 observations 
+#> ---------------------------------------
+#>         id      x      y    dbh height
+#>     <char>  <num>  <num>  <num>  <num>
+#>  1:      1  0.573  0.168  7.232 13.168
+#>  2:      2 19.330  0.844  8.064 11.565
+#>  3:      3 10.182  0.383 10.779 13.615
+#> ---                                   
+#> 86:     86 12.829 29.278  3.713  7.780
+#> 87:     87 26.712 29.375  1.641  4.306
+#> 88:     88  6.962 29.644  4.585 10.219
+```
+
+Non-standard field separators etc. can be internally passed on to `data.table::fread()` via the `...` arguments to read more exotic formats such as the semicolon-separated ".csv" files with commas as decimal separators used for example in Germany. If the units are not specified explicitly, it is assumed that they are in the standard units (m for height and cm for diameter) and do not need conversion.
 
 ```{r read-inv3, message=FALSE, warning=FALSE, eval=FALSE}
-inventory1 <- read_inv(
+# read inventory with custom decimal and column separators
+inventory3 <- read_inv(
   inv_source = "data/inventory3.csv", 
-  dbh_unit = "m", 
-  height_unit = "m", 
   dec = ",",
-  sep = ";")
-#> ---------------------------------------  
-#> 'forest_inv' class inventory dataset: 
-#> collection of 48 observations 
-#> ---------------------------------------
-#>     id      x      y    dbh
-#> 1    1 15.181 -2.979 35.275
-#> 2    2 13.097  0.193 20.068
-#> 3    3 12.633 -9.445 35.333
-#>    ...    ...    ...    ...
-#> 46  51 -1.639 -4.842 12.605
-#> 47  52 -6.409 -4.722  6.035
-#> 48  53 -7.485 -7.619 20.065
+  sep = ";", 
+  verbose = FALSE)
 ```
 
-In many cases, pre-processing of the inventories based on other variables than coordinates and tree size is necessary. For that reason, it is possible to read in any objects that inherit from class `data.frame` (e.g., tibbles, data.tables or actual data.frames) with `read_inv()`:
+In many cases, pre-processing of the inventories based on other variables than coordinates and tree size is necessary. For that reason, it is possible to read in any objects that inherit from class `data.frame` (e.g., tibbles, data.tables or actual data.frames) with `read_inv()`. In this example, a dataset is first read in externally and filtered to get data of only one of the plots in the dataset and then read in.
 
 ```{r read-inv4, message=FALSE, warning=FALSE, eval=FALSE}
-# read dataset outside read_inv and filter to the plot in question
+# read dataset outside read_inv and filter to a single plot
 dat <- readr::read_csv("data/inventory4.csv") %>% 
-  filter(plot_id == "Plot 1")
+  dplyr::filter(plot_id == "Plot 1")
+dat
+#> # A tibble: 131 × 7
+#>    plot_id tree_id       x        y  diam     h canopy_area
+#>    <chr>     <dbl>   <dbl>    <dbl> <dbl> <dbl>       <dbl>
+#>  1 Plot 1    20492 563149. 5508576. 26.0  27.4        0.755
+#>  2 Plot 1    20526 563176. 5508576. 28.2  27.5        0.814
+#>  3 Plot 1    20559 563144. 5508577. 50.1  33.7        0.451
+#>  4 Plot 1    20563 563172. 5508576. 24.6  21.1        0.447
+#>  5 Plot 1    20593 563141. 5508577. 43.4  30.1        2.04 
+#>  6 Plot 1    20594 563146. 5508577. 38.9  35.5        2.56 
+#>  7 Plot 1    20630 563160. 5508577. 33.2  30.3        1.22 
+#>  8 Plot 1    20731 563166. 5508578.  7.28  9.15       0.680
+#>  9 Plot 1    20769 563133. 5508579.  4.27  6.62       0.568
+#> 10 Plot 1    20771 563145. 5508579. 42.7  31.8        0.946
+#> # ℹ 121 more rows
+#> # ℹ Use `print(n = ...)` to see more rows
   
 # use read_inv to convert to a forest_inv object that works with TreeCompR functions
 inventory4 <- read_inv(
   inv_source = dat,
-  dbh = DAP,
+  dbh = diam,
   dbh_unit = "cm", 
-  height_unit = "m")
+  height_unit = "m", 
+  verbose = FALSE)
+inventory4
 #> ---------------------------------------  
 #> 'forest_inv' class inventory dataset: 
-#> collection of 48 observations 
+#> collection of 131 observations 
 #> ---------------------------------------
-#>     id      x      y    dbh
-#> 1    1 15.181 -2.979 35.275
-#> 2    2 13.097  0.193 20.068
-#> 3    3 12.633 -9.445 35.333
-#>    ...    ...    ...    ...
-#> 46  51 -1.639 -4.842 12.605
-#> 47  52 -6.409 -4.722  6.035
-#> 48  53 -7.485 -7.619 20.065
+#>          id        x       y    dbh height
+#>      <char>    <num>   <num>  <num>  <num>
+#>   1:  20492 563148.6 5508576 25.966 27.448
+#>   2:  20526 563175.9 5508576 28.151 27.527
+#>   3:  20559 563144.0 5508577 50.075 33.730
+#>  ---                                      
+#> 129:  24253 563163.7 5508624 35.541 28.049
+#> 130:  24254 563172.3 5508623 46.562 32.352
+#> 131:  24255 563176.8 5508625 59.293 32.698
+```
+
+If there are additional columns that should be kept in the forest inventory dataset (such as the canopy area in this case), it is possible to specify `keep_rest = TRUE`:
+
+```{r read-inv4a, message=FALSE, warning=FALSE, eval=FALSE}
+# read same inventory without dropping columns
+inventory4a <- read_inv(
+  inv_source = dat,
+  dbh = diam,
+  dbh_unit = "cm", 
+  height_unit = "m", 
+  keep_rest = TRUE,
+  verbose = FALSE)
+inventory4a
+#> ---------------------------------------  
+#> 'forest_inv' class inventory dataset: 
+#> collection of 131 observations 
+#> ---------------------------------------
+#>          id        x       y    dbh height plot_id canopy_area
+#>      <char>    <num>   <num>  <num>  <num>  <char>       <num>
+#>   1:  20492 563148.6 5508576 25.966 27.448  Plot 1       0.755
+#>   2:  20526 563175.9 5508576 28.151 27.527  Plot 1       0.814
+#>   3:  20559 563144.0 5508577 50.075 33.730  Plot 1       0.451
+#>  ---                                                          
+#> 129:  24253 563163.7 5508624 35.541 28.049  Plot 1       0.602
+#> 130:  24254 563172.3 5508623 46.562 32.352  Plot 1       7.765
+#> 131:  24255 563176.8 5508625 59.293 32.698  Plot 1       0.634
 ```
 
 ### Designating target trees with `define_target()`
