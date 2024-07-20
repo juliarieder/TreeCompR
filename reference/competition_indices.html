@@ -48,19 +48,19 @@ with <code><a href="compete_inv.html">compete_inv()</a></code>.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">CI_Hegyi</span><span class="op">(</span><span class="va">target</span>, <span class="va">inv</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">CI_Hegyi</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">CI_Braathe</span><span class="op">(</span><span class="va">target</span>, <span class="va">inv</span><span class="op">)</span></span>
+<span><span class="fu">CI_Braathe</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">CI_size</span><span class="op">(</span><span class="va">target</span>, <span class="va">inv</span><span class="op">)</span></span>
+<span><span class="fu">CI_size</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">CI_RK1</span><span class="op">(</span><span class="va">target</span>, <span class="va">inv</span><span class="op">)</span></span>
+<span><span class="fu">CI_RK1</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">CI_RK2</span><span class="op">(</span><span class="va">target</span>, <span class="va">inv</span><span class="op">)</span></span>
+<span><span class="fu">CI_RK2</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">CI_RK3</span><span class="op">(</span><span class="va">target</span>, <span class="va">inv</span><span class="op">)</span></span>
+<span><span class="fu">CI_RK3</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">CI_RK4</span><span class="op">(</span><span class="va">target</span>, <span class="va">inv</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">CI_RK4</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -74,11 +74,11 @@ the target tree (i.e. ´x´, ´y´, as well as ´dbh´, ´height´, ´size´ and
 other size-related attributes).</p></dd>
 
 
-<dt id="arg-inv">inv<a class="anchor" aria-label="anchor" href="#arg-inv"></a></dt>
-<dd><p><code>forest_inv</code> class data.table object containing all the variables
-needed to calculate the corresponding competition index for all neighbor
-trees in the search radius of the target tree (i.e. ´x´, ´y´, as well as
-´dbh´, ´height´, ´size´ and/or other size-related attributes), that
+<dt id="arg-neigh">neigh<a class="anchor" aria-label="anchor" href="#arg-neigh"></a></dt>
+<dd><p><code>forest_inv</code> class data.table object containing all the
+variables needed to calculate the corresponding competition index for all
+neighbor trees in the search radius of the target tree (i.e. ´x´, ´y´, as
+well as´dbh´, ´height´, ´size´ and/or other size-related attributes), that
 moreover includes their distance to the target tree in m (<code>dist</code>).</p></dd>
 
 </dl></div>
@@ -125,13 +125,13 @@ variable: <br>
 
 <p>The creation of new user-specified competition indices is easily possible,
 the only requirement is that they take two argument, <code>target</code> (a single-row
-<code>forest_inv</code> class data.table with data for the target tree) and <code>inv</code> (a
-multi-row <code>forest_inv</code> class data.table with data for the neighbor trees),
-and return a single numeric value. This function will then be called
+<code>forest_inv</code> class data.table with data for the target tree) and <code>neigh</code>
+(a multi-row <code>forest_inv</code> class data.table with data for the neighbor
+trees), and return a single numeric value. This function will then be called
 internally for each tree and its neighborhood inside <code><a href="compete_inv.html">compete_inv()</a></code>.
 For example, a working implementation of the classical Hegyi index would
 look like this:</p>
-<p><code>CI_Hegyi &lt;- function(target, inv) sum(inv$dbh / (target$dbh * inv$dist))</code></p>
+<p><code>CI_Hegyi &lt;- function(target, neigh) sum(neigh$dbh / (target$dbh * neigh$dist))</code></p>
 <p>It is advisable to add checks to ensure the function does the right thing
 when it gets passed on empty datasets (e.g. because no trees are in the
 neighborhood of a tree) because <code>sum(NULL)</code> evaluates to <code>0</code> which may not
