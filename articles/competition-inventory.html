@@ -154,24 +154,24 @@ capitalization). All special characters besides “.” and “_” are stripped
 from the column names before matching. If <code>verbose = TRUE</code>,
 the function will inform you which columns were automatically identified
 to avoid errors.</p>
-<p>The resulting object looks like this (basically a data.table object
-that is printed with a header to easily identify it as a “forest_inv”
-object).</p>
+<p>The resulting “forest_inv” object looks like this (basically a
+modified data.table object that is printed with a header to easily
+identify its class).</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">inventory1</span></span>
 <span><span class="co">#&gt; ---------------------------------------  </span></span>
 <span><span class="co">#&gt; 'forest_inv' class inventory dataset: </span></span>
 <span><span class="co">#&gt; collection of 63 observations </span></span>
 <span><span class="co">#&gt; ---------------------------------------</span></span>
-<span><span class="co">#&gt;         id      x      y    dbh</span></span>
-<span><span class="co">#&gt;     &lt;char&gt;  &lt;num&gt;  &lt;num&gt;  &lt;num&gt;</span></span>
-<span><span class="co">#&gt;  1:  22461  1.009  0.908  5.047</span></span>
-<span><span class="co">#&gt;  2:  22462 11.683  1.449  6.786</span></span>
-<span><span class="co">#&gt;  3:  22541  6.770  2.155  4.675</span></span>
-<span><span class="co">#&gt; ---                            </span></span>
-<span><span class="co">#&gt; 61:  24508  9.390 28.357 40.283</span></span>
-<span><span class="co">#&gt; 62:  24545  5.350 27.977 32.405</span></span>
-<span><span class="co">#&gt; 63:  24611 16.750 28.615 43.841</span></span></code></pre></div>
+<span><span class="co">#&gt;             id      x      y    dbh</span></span>
+<span><span class="co">#&gt;         &lt;char&gt;  &lt;num&gt;  &lt;num&gt;  &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1: FASY-43-01  1.009  0.908  5.047</span></span>
+<span><span class="co">#&gt;  2: ACPL-43-02 11.683  1.449  6.786</span></span>
+<span><span class="co">#&gt;  3: SOAU-43-03  6.770  2.155  4.675</span></span>
+<span><span class="co">#&gt; ---                                </span></span>
+<span><span class="co">#&gt; 61: FASY-43-61  9.390 28.357 40.283</span></span>
+<span><span class="co">#&gt; 62: FASY-43-62  5.350 27.977 32.405</span></span>
+<span><span class="co">#&gt; 63: FASY-43-63 16.750 28.615 43.841</span></span></code></pre></div>
 <p>If you have variable names that cannot be automatically recognized,
 you can specify them explicitly with the corresponding arguments either
 as a character string of length 1 with the variable name or by directly
@@ -316,23 +316,75 @@ them based on logical vectors, you can supply another
 that contains their coordinates, or finally with a character string
 specifying a method to define the target trees (“buff_edge”,
 “exclude_edge” and “all_trees”).</p>
+<div class="section level4">
+<h4 id="designating-targets-based-on-subsetting">Designating targets based on subsetting<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-subsetting"></a>
+</h4>
 <p>Defining targets with a vector of tree IDs could look like this,
 assuming you want to compute competition indices for 3 adjacent
 <em>Fagus sylvatica</em> trees and this is your naming scheme:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># set target trees based on vector with tree ids</span></span>
+<code class="sourceCode R"><span><span class="co"># set target trees based on character vector with tree ids</span></span>
 <span><span class="va">targets1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
 <span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
-<span>  target_source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"FASY-43-27"</span>, <span class="st">"FASY-43-28"</span>, <span class="st">"FASY-43-29"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span>  target_source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"FASY-43-24"</span>, <span class="st">"FASY-43-27"</span>, <span class="st">"FASY-43-30"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">targets1</span></span>
+<span><span class="co">#&gt; --------------------------------------------------------------- </span></span>
+<span><span class="co">#&gt; 'target_inv' class inventory dataset with defined target trees: </span></span>
+<span><span class="co">#&gt; collection of 63 observations containing 3 target trees. </span></span>
+<span><span class="co">#&gt; Source of target trees: character vector </span></span>
+<span><span class="co">#&gt; ---------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;             id      x      y    dbh target</span></span>
+<span><span class="co">#&gt;         &lt;char&gt;  &lt;num&gt;  &lt;num&gt;  &lt;num&gt; &lt;lgcl&gt;</span></span>
+<span><span class="co">#&gt;  1: FASY-43-01  1.009  0.908  5.047  FALSE</span></span>
+<span><span class="co">#&gt;  2: ACPL-43-02 11.683  1.449  6.786  FALSE</span></span>
+<span><span class="co">#&gt;  3: SOAU-43-03  6.770  2.155  4.675  FALSE</span></span>
+<span><span class="co">#&gt; ---                                       </span></span>
+<span><span class="co">#&gt; 61: FASY-43-61  9.390 28.357 40.283  FALSE</span></span>
+<span><span class="co">#&gt; 62: FASY-43-62  5.350 27.977 32.405  FALSE</span></span>
+<span><span class="co">#&gt; 63: FASY-43-63 16.750 28.615 43.841  FALSE</span></span></code></pre></div>
+<p>Objects of class “target_inv” are “forest_inv” type forest inventory
+datasets that have an additional target column with a logical “target”
+vector that identifies the target trees.</p>
+<p>To visually inspect the position of the designated target trees
+relative to the other trees in the neighbourhood, you can use the
+function <code><a href="../reference/plot_target.html">plot_target()</a></code>, which automatically displays the
+relevant information depending on the <code>target_source</code> setting
+for both <code>target_inv</code> datasets and the output of
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code> itself. Here is a plot of the target trees
+with a buffer of 10 m which is fully surrounded by other trees, showing
+that it is possible to calculate competition indices with a 10 m search
+radius for the three targets:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets1</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p><img src="../reference/figures/targets1.png" alt="plot_trees" width="600"></p>
+<p>The purpose of this function is to provide a fast tool for visual
+inspection rather than to create beautiful visual output. As all the
+data for the plot are contained in the <code>target_inv</code> object,
+more appealing (e.g., <a href="https://ggplot2.tidyverse.org/" class="external-link">ggplot2</a>-based) visualizations
+are left as an exercise to the user.</p>
 <p>You might also want to define target trees based on a logical
 criterion, for instance for all trees whose ID contains “FASY”:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># set target trees based on logical vector</span></span>
 <span><span class="va">targets2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
 <span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
 <span>  target_source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"FASY"</span>, <span class="va">inventory1</span><span class="op">$</span><span class="va">id</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span>  <span class="op">)</span></span>
+<span><span class="co"># visual inspection</span></span>
+<span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets1</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
+<p><img src="../reference/figures/targets2.png" alt="plot_trees" width="600"></p>
+<p>In this case, the plot of the target trees shows that many of the
+target trees are situated on the plot border, which would result in edge
+effects. In such cases, we strongly advice against computing indices for
+these trees (see below). To avoid calculating competition indices in
+situations where it is not appropriate, we recommend to make plotting
+with <code><a href="../reference/plot_target.html">plot_target()</a></code> a standard step of your workflow.</p>
+</div>
+<div class="section level4">
+<h4 id="designating-targets-based-on-coordinates-from-other-data-sources">Designating targets based on coordinates from other data
+sources<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-coordinates-from-other-data-sources"></a>
+</h4>
 <p>In many cases you will have target tree coordinates that come from a
 different data source and have a different accuracy than the inventory
 data, for instance when you perform a ground-based study focusing on
@@ -349,20 +401,48 @@ likely automatically generated anyway) and matching is based only on the
 closest trees with in a buffer of <code>tol</code> m (the default is
 <code>tol = 1</code>: matching within 1 m). All further size-related
 variables in the second set of coordinates are ignored as well to ensure
-the competition indices are based on the same data source:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># read target tree positions</span></span>
-<span><span class="va">target_pos</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="st">"data/target_tree_gps.csv"</span>, x <span class="op">=</span> <span class="va">gps_x</span>, y <span class="op">=</span> <span class="va">gps_y</span><span class="op">)</span></span>
+the competition indices are based on the same data source. Here, GPS
+coordinates for 15 trees are read in and matched against the data in the
+inventory.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># designate target trees based on GPS coordinates</span></span>
+<span><span class="co"># read target tree positions</span></span>
+<span><span class="op">(</span><span class="va">target_pos</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span></span>
+<span>  <span class="st">"data/target_tree_gps.csv"</span>, x <span class="op">=</span> <span class="va">gps_x</span>, y <span class="op">=</span> <span class="va">gps_y</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ---------------------------------------  </span></span>
+<span><span class="co">#&gt; 'forest_inv' class inventory dataset: </span></span>
+<span><span class="co">#&gt; collection of 15 observations </span></span>
+<span><span class="co">#&gt; ---------------------------------------</span></span>
+<span><span class="co">#&gt;          id        x       y</span></span>
+<span><span class="co">#&gt;      &lt;char&gt;    &lt;num&gt;   &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1: FASY-01 563157.6 5508615</span></span>
+<span><span class="co">#&gt;  2: FASY-02 563141.8 5508602</span></span>
+<span><span class="co">#&gt;  3: FASY-03 563147.0 5508610</span></span>
+<span><span class="co">#&gt; ---                         </span></span>
+<span><span class="co">#&gt; 13: FASY-13 563161.4 5508611</span></span>
+<span><span class="co">#&gt; 14: FASY-14 563154.7 5508609</span></span>
+<span><span class="co">#&gt; 15: FASY-15 563140.0 5508607</span></span>
+<span></span>
 <span><span class="co"># define target trees</span></span>
 <span><span class="va">targets3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
 <span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
 <span>  target_source <span class="op">=</span> <span class="va">target_pos</span>,</span>
 <span>  tol <span class="op">=</span> <span class="fl">1</span> <span class="co"># match within 1 m accuracy</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
-<p>If no trees in the inventory are in the desired distance of one or
-more of your target trees, you will receive a warning, while if there is
-more than one equally good match for a target tree, the function will
-fail with an error.</p>
+<span>  <span class="op">)</span></span>
+<span><span class="co"># visual inspection</span></span>
+<span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets3</span>, radius <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span></code></pre></div>
+<p><img src="../reference/figures/targets3.png" alt="plot_trees" width="600"></p>
+<p>For the intended 8 m search radius, these coordinates are
+appropriate.</p>
+<p>If no trees in the inventory are within the desired tolerance of one
+or more of your target trees, or if several target trees are in within
+the tolerance, you will receive a warning. If there is more than one
+tree that is an equally good match for a target tree within 5 cm
+difference, the function will fail with an error.</p>
+</div>
+<div class="section level4">
+<h4 id="designating-targets-based-on-spatial-arrangement">Designating targets based on spatial arrangement<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-spatial-arrangement"></a>
+</h4>
 <p>In many cases, there will be no list of a priori specified target
 trees, and the aim will be to calculate valid competition indices for as
 many trees as possible. In these cases, we recommend to use
@@ -383,26 +463,47 @@ a larger number of plots, consider e.g. mapping over the plots with
 [purrr::map()] to compute the output step by step.</p>
 <p>Here is an example of how to identify all potential target trees that
 run in no risk of excluding potential edge trees when computing
-competition indices with a search radius of 10 m:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">targets4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
-<span>  inv <span class="op">=</span> <span class="va">inventory1</span>, </span>
+competition indices for the same tree as in the previous example, again
+with a search radius of 8 m:</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># designate target trees with a 10 m buffer to the plot border</span></span>
+<span><span class="va">targets4</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
+<span>  inv <span class="op">=</span> <span class="va">inventory4</span>, </span>
 <span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
-<span>  radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="va">targets4</span></span>
-<span><span class="co">#&gt; --------------------------------------------------------------- </span></span>
-<span><span class="co">#&gt; 'target_inv' class inventory dataset with defined target trees: </span></span>
-<span><span class="co">#&gt; collection of 48 observations </span></span>
-<span><span class="co">#&gt; Source of target trees: buffer around edge </span></span>
-<span><span class="co">#&gt; ---------------------------------------------------------------</span></span>
-<span><span class="co">#&gt;     id      x      y    dbh target</span></span>
-<span><span class="co">#&gt; 1    1 15.181 -2.979 35.275  FALSE</span></span>
-<span><span class="co">#&gt; 2    2 13.097  0.193 20.068  FALSE</span></span>
-<span><span class="co">#&gt; 3    3 12.633 -9.445 35.333  FALSE</span></span>
-<span><span class="co">#&gt;    ...    ...    ...    ...    ...</span></span>
-<span><span class="co">#&gt; 46  51 -1.639 -4.842 12.605  FALSE</span></span>
-<span><span class="co">#&gt; 47  52 -6.409 -4.722  6.035  FALSE</span></span>
-<span><span class="co">#&gt; 48  53 -7.485 -7.619 20.065  FALSE</span></span></code></pre></div>
+<span>  radius <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="co"># visual inspection</span></span>
+<span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets4</span><span class="op">)</span></span></code></pre></div>
+<p><img src="../reference/figures/targets4.png" alt="plot_trees" width="600"></p>
+<p>In this case, the radius does not have to specified in
+<code><a href="../reference/plot_target.html">plot_target()</a></code> as the radius used for the buffer is stored
+in the attributes of the “target_inv” object.</p>
+<p>Doing the same with <code>target_source = "exclude_edge"</code>
+results in the following:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># designate target trees by only excluding the plot border</span></span>
+<span><span class="va">targets5</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
+<span>  inv <span class="op">=</span> <span class="va">inventory4</span>, </span>
+<span>  target_source <span class="op">=</span> <span class="st">"exclude_edge"</span>,</span>
+<span>  radius <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="co"># visual inspection</span></span>
+<span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets5</span><span class="op">)</span></span></code></pre></div>
+<p><img src="../reference/figures/targets5.png" alt="plot_trees" width="600"></p>
+<p>It can be seen that only the trees that are directly on the plot
+border were removed. The radius in this case is again passed on to
+<code><a href="../reference/plot_target.html">plot_target()</a></code>, but in this case only used to determine the
+minimum possible distance between two edge trees for the concave hull
+algorithm. This method of determining edge trees is considerably less
+restrictive than “buff_edge”, and in this case resulted in a large
+number of trees with buffers extending further than the plot. We
+therefore recommend to be careful with this setting.</p>
+<p>If a certain amount of overlap between the plot border and buffers of
+individual trees is permitted it is usually better to use “buff_edge”
+with a radius below the intended search radius as it maintains a
+constant distance.</p>
+</div>
+<div class="section level4">
+<h4 id="designating-all-trees-as-targets">Designating all trees as targets<a class="anchor" aria-label="anchor" href="#designating-all-trees-as-targets"></a>
+</h4>
 <p>While it is possible to compute competition indices for all trees
 (<code>target_source = "all_trees"</code>), this results in a warning
 and should only be done if there <strong>very good reasons</strong> to
@@ -411,24 +512,24 @@ forest edge, as otherwise there will be <em>intense</em> edge effects:
 for a tree on a straight plot edge, on average nearly half and for a
 tree in an edge position in a rectangular plot 3/4 of the competitors
 will be missing in the data!</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># designate all trees as target trees</span></span>
+<span><span class="va">targets6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
+<span>  inv <span class="op">=</span> <span class="va">inventory4</span>, </span>
+<span>  target_source <span class="op">=</span> <span class="st">"all_trees"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning message:</span></span>
+<span><span class="co">#&gt; In define_target(inv = inventory4, target_source = "all_trees") :</span></span>
+<span><span class="co">#&gt;   Defining all trees as target trees is rarely a good idea. Unless your</span></span>
+<span><span class="co">#&gt; forest inventory contains all trees in the forest, this will lead to strong</span></span>
+<span><span class="co">#&gt; edge effects. Please make sure that this is really what you want to do.</span></span>
+<span></span>
+<span><span class="co"># visual inspection</span></span>
+<span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets6</span>, radius <span class="op">=</span> <span class="fl">8</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Warning message:</span></span>
+<span><span class="co">#&gt; In plot_target(targets6, radius = 8) :</span></span>
+<span><span class="co">#&gt;   All trees in the dataset are defined as as target trees.</span></span></code></pre></div>
+<p><img src="../reference/figures/targets6.png" alt="plot_trees" width="600"></p>
 </div>
-<div class="section level3">
-<h3 id="inspecting-the-target-selection-with-plot_target">Inspecting the target selection with <code>plot_target()</code><a class="anchor" aria-label="anchor" href="#inspecting-the-target-selection-with-plot_target"></a>
-</h3>
-<p>To visually inspect the position of the designated target trees
-relative to the other trees in the neighbourhood, you can use the
-function <code><a href="../reference/plot_target.html">plot_target()</a></code>, which automatically displays the
-relevant information depending on the <code>target_source</code> setting
-for both <code>target_inv</code> datasets and the output of
-<code><a href="../reference/compete_inv.html">compete_inv()</a></code> itself:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets4</span><span class="op">)</span></span></code></pre></div>
-<p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="500"></p>
-<p>The purpose of this function is to provide a fast tool for visual
-inspection rather than to create beautiful visual output. As all the
-data for the plot are contained in the <code>target_inv</code> object,
-more appealing (e.g., <a href="https://ggplot2.tidyverse.org/" class="external-link">ggplot2</a>-based) visualizations
-are left as an exercise to the user.</p>
 </div>
 <div class="section level3">
 <h3 id="computing-competition-indices-with-compete_inv">Computing competition indices with <code>compete_inv()</code><a class="anchor" aria-label="anchor" href="#computing-competition-indices-with-compete_inv"></a>
@@ -450,7 +551,7 @@ results.</p>
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code>, which then ignores the target_source
 argument and all further arguments that are passed on to
 <code><a href="../reference/read_inv.html">read_inv()</a></code> and <code><a href="../reference/define_target.html">define_target()</a></code>.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
 <span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
@@ -464,7 +565,7 @@ competition index from a data from a .csv source with non-standard
 column names and decimal and field separators (in this example, from a
 German file source) and then get reasonable target trees via
 <code>target_source = "buff_edge"</code>:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">CI1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span></span>
 <span>  inv_source <span class="op">=</span> <span class="st">"data/inventory5.csv"</span>,</span>
 <span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>,</span>
@@ -496,14 +597,14 @@ equations, where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>i</mi></msub><annotation encoding="application/x-tex">d_i</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>h</mi><mi>i</mi></msub><annotation encoding="application/x-tex">h_i</annotation></semantics></math>
-are the dbh and height of neighbor tree
+are the dbh and height of neighbour tree
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>h</mi><annotation encoding="application/x-tex">h</annotation></semantics></math>
 are dbh and height of the target tree, and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">dist_i</annotation></semantics></math>
-is the distance from neighbor tree
+is the distance from neighbour tree
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
 to the target tree.</p>
 <p><strong>Diameter-based competition indices</strong></p>
@@ -530,7 +631,7 @@ by their distance to the target tree.</p>
 <p>If <code>method = "all_methods"</code> (the standard setting),
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code> computes all indices that can be computed
 with the data available in the inventory.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
 <span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
@@ -547,7 +648,7 @@ with the data available in the inventory.</p>
 </h2>
 <p>All indices that can be calculated with <code><a href="../reference/compete_inv.html">compete_inv()</a></code>
 are based on a distance-weighted sum of the relative size of all
-neighbor trees within the search radius compared to the size of the
+neighbour trees within the search radius compared to the size of the
 central tree, or a sum of a transformation thereof. As the search radius
 determines how many trees are included for calculating these metric for
 each tree, all these distance-based competition indices are extremely
