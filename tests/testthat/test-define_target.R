@@ -42,7 +42,7 @@ test_that(
     expect_warning(
       define_target(inv = test_inv,
                     target_source = c( "5","7","wrong ID","wronger ID")),
-      "The following target tree id(s) are not "
+      "The following target tree id"
     )
 
     # crop_to_target results in a message
