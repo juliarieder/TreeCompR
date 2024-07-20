@@ -534,39 +534,83 @@ will be missing in the data!</p>
 <div class="section level3">
 <h3 id="computing-competition-indices-with-compete_inv">Computing competition indices with <code>compete_inv()</code><a class="anchor" aria-label="anchor" href="#computing-competition-indices-with-compete_inv"></a>
 </h3>
+<div class="section level4">
+<h4 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
+</h4>
 <p><code><a href="../reference/compete_inv.html">compete_inv()</a></code> is very flexible with its input, in
 essence directly accepting everything that can also be loaded with
 <code><a href="../reference/read_inv.html">read_inv()</a></code> and also passing additional settings for column
-specifications etc. on to this function, which is used to load the data
-internally. Also all options for <code>target_source</code> that can be
-set in <code><a href="../reference/define_target.html">define_target()</a></code> can be directly specified in
-<code><a href="../reference/compete_inv.html">compete_inv()</a></code>, and in most cases this function will likely
-be called directly unless there are reasons to perform the other steps
-explicitly, for instance, because the data structure and formatting
-differ between the inventory and target files or because an inspection
-of the target settings is desired <em>before</em> computing the
-results.</p>
+specifications etc. on to this function, which is then used to load the
+data internally. In addition, all options for <code>target_source</code>
+that can be set in <code><a href="../reference/define_target.html">define_target()</a></code> can be directly
+specified in <code><a href="../reference/compete_inv.html">compete_inv()</a></code>. In consequence, in most use
+cases this function will likely be called directly unless there are
+reasons to perform the other steps explicitly, for instance, because the
+data structure and formatting differ between the inventory and target
+files and require different sets of custom column name settings, or
+because an inspection of the target settings and spatial configuration
+is desired <em>before</em> computing the results (which is certainly a
+good idea for large datasets).</p>
+<p>To identify the neighbor trees within the search radius of each
+target true, <code><a href="../reference/compete_inv.html">compete_inv()</a></code>uses the function
+<code>knn()</code> from package [nabor]<a href="https://github.com/jefferis/nabor" class="external-link uri">https://github.com/jefferis/nabor</a>) that is based on a
+very efficient C++ implementation of the k-nearest neighbor algorithm
+from <a href="https://github.com/norlab-ulaval/libnabo" class="external-link">libnabo</a>.
+This makes it possible to deal with very large inventory datasets in a
+relatively fast way as the pairwise distances of far-away trees are
+never actually evaluated. In order to do this, it is necessary to
+specify a maximum number of nearest neighbors to consider for each tree,
+which has to be sufficiently larger than the maximum number of trees
+expected in a search radius (<code>kmax</code>, by default 999). The
+function then identifies which among the nearest neighbors are within
+the search radius.</p>
+<p>For most datasets, the choice of <code>kmax</code> will not play a
+role as search radii large enough to contain that many trees rarely make
+sense from a biological perspective, and because in many cases
+performance differences between different values of <code>kmax</code>
+will hardly be notable. However, for very large inventory datasets, as
+can be expected when working with ALS data sources, The performance
+difference compared to the regular pairwise-distance-based
+implementations as e.g. <code><a href="https://r-spatial.github.io/sf/reference/geos_binary_pred.html" class="external-link">sf::st_is_within_distance()</a></code> can be
+several orders of magnitude. As a practical example, evaluating
+<code><a href="https://r-spatial.github.io/sf/reference/geos_binary_pred.html" class="external-link">sf::st_is_within_distance()</a></code> with a search radius of 10 m
+for 38,522 trees from an ALS inventory on a modern laptop took 750.73
+sec (around 12 min 31 sec), while computing the Braathe index with the
+same settings for all these trees with<code><a href="../reference/compete_inv.html">compete_inv()</a></code> took
+16.38 seconds.</p>
 <p>If target trees have already been specified with
 <code>target_inv()</code>, the outcome can directly be passed to
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code>, which then ignores the target_source
 argument and all further arguments that are passed on to
 <code><a href="../reference/read_inv.html">read_inv()</a></code> and <code><a href="../reference/define_target.html">define_target()</a></code>.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># compute Hegyi index based on existing 'target_inv' object</span></span>
+<span> <span class="op">(</span><span class="va">CI1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">8</span>, </span>
+<span>                    method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
 <span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
-<span><span class="co">#&gt; Collection of data for 1 target and 47 edge trees. </span></span>
-<span><span class="co">#&gt; Source of target trees: buffer around edge    Search radius: 10 </span></span>
+<span><span class="co">#&gt; Results for 43 target trees based on an inventory with 131 trees. </span></span>
+<span><span class="co">#&gt; Source of target trees: buffer around edge    Search radius: 8 m</span></span>
 <span><span class="co">#&gt; ---------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt;    id     x      y  dbh CI_Hegyi</span></span>
-<span><span class="co">#&gt; 44 48 0.102 -0.494 24.4     4.39</span></span></code></pre></div>
-<p>Otherwise, it is for example possible to calculate the Hegyi
-competition index from a data from a .csv source with non-standard
-column names and decimal and field separators (in this example, from a
-German file source) and then get reasonable target trees via
-<code>target_source = "buff_edge"</code>:</p>
+<span><span class="co">#&gt;         id        x       y    dbh height CI_Hegyi</span></span>
+<span><span class="co">#&gt;     &lt;char&gt;    &lt;num&gt;   &lt;num&gt;  &lt;num&gt;  &lt;num&gt;    &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  21277 563160.3 5508586  9.863 12.098    0.952</span></span>
+<span><span class="co">#&gt;  2:  21512 563166.9 5508589 11.917 12.720    4.971</span></span>
+<span><span class="co">#&gt;  3:  21581 563158.5 5508589 12.085 14.659    0.937</span></span>
+<span><span class="co">#&gt; ---                                               </span></span>
+<span><span class="co">#&gt; 41:  23501 563157.4 5508615 26.787 27.172    2.286</span></span>
+<span><span class="co">#&gt; 42:  23582 563139.6 5508616  9.186 11.461    6.138</span></span>
+<span><span class="co">#&gt; 43:  23652 563141.8 5508616 11.017 13.886    5.866</span></span></code></pre></div>
+<p>The resulting “compete_inv” object contains only the target trees,
+and has one additional column for each computed competition index.
+Information about the neighbor trees as well as information about the
+methods are stored as attributes.</p>
+<p>In addition to analyses based on existing “target_inv” objects, it is
+possible to read data from file, for example from a “.csv” source with
+non-standard column names and decimal and field separators (in this
+example, from a German file source):</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CI1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">CI2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span></span>
 <span>  inv_source <span class="op">=</span> <span class="st">"data/inventory5.csv"</span>,</span>
 <span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>,</span>
 <span>  radius <span class="op">=</span> <span class="fl">10</span>, </span>
@@ -577,10 +621,19 @@ German file source) and then get reasonable target trees via
 <span>  dbh <span class="op">=</span> <span class="va">Durchmesser</span>,</span>
 <span>  sep <span class="op">=</span> <span class="st">";"</span>,</span>
 <span>  dec <span class="op">=</span> <span class="st">","</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
+<span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; The following columns were used to create the inventory dataset:</span></span>
+<span><span class="co">#&gt; id     ---   Baumname</span></span>
+<span><span class="co">#&gt; x      ---   Koord_x</span></span>
+<span><span class="co">#&gt; y      ---   Koord_y</span></span>
+<span><span class="co">#&gt; dbh  --- Durchmesser</span></span></code></pre></div>
 <p>The output of this function can then again be inspected in the same
-way as above using <code>plot_target(CI1)</code> to make sure the
-selection of target trees make sense.</p>
+way as above using <code><a href="../reference/plot_target.html">plot_target()</a></code> to make sure the selection
+of target trees make sense:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">CI2</span><span class="op">)</span></span></code></pre></div>
+<p><img src="../reference/figures/comp1.png" alt="plot_trees" width="600"></p>
+</div>
 <div class="section level4">
 <h4 id="available-competition-indices">Available competition indices<a class="anchor" aria-label="anchor" href="#available-competition-indices"></a>
 </h4>
@@ -609,21 +662,29 @@ is the distance from neighbour tree
 to the target tree.</p>
 <p><strong>Diameter-based competition indices</strong></p>
 <p><strong>CI_Hegyi</strong> introduced by Hegyi (1974):
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>H</mi><mi>e</mi><mi>g</mi><mi>y</mi><mi>i</mi></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>d</mi><mi>i</mi></msub><mi>/</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>d</mi><mo>⋅</mo><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{Hegyi} = \sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})</annotation></semantics></math><strong>CI_RK1</strong> according to CI1 Rouvinen &amp; Kuuluvainen
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>H</mi><mi>e</mi><mi>g</mi><mi>y</mi><mi>i</mi></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>d</mi><mi>i</mi></msub><mrow><mi>d</mi><mo>⋅</mo><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CI_{Hegyi} = \sum_{i=1}^{n} \frac{d_{i}} {d \cdot dist_{i}}</annotation></semantics></math><strong>CI_RK1</strong> according to CI1 Rouvinen &amp; Kuuluvainen
 (1997):
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>1</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>d</mi><mi>i</mi></msub><mi>/</mi><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK1} = \sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})</annotation></semantics></math><strong>CI_RK2</strong> according to CI3 in Rouvinen &amp; Kuuluvainen
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>1</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>d</mi><mi>i</mi></msub><mrow><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK1} = \sum_{i=1}^{n} \mathrm{arctan}\left(\frac{d_{i} } {dist_{i}}\right)</annotation></semantics></math><strong>CI_RK2</strong> according to CI3 in Rouvinen &amp; Kuuluvainen
 (1997):
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>2</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>d</mi><mi>i</mi></msub><mi>/</mi><mi>d</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>⋅</mo><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>d</mi><mi>i</mi></msub><mi>/</mi><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK2} =\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i} / dist_{i})</annotation></semantics></math></p>
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>2</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>d</mi><mi>i</mi></msub><mi>d</mi></mfrac><mo>⋅</mo><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>d</mi><mi>i</mi></msub><mrow><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK2} =\sum_{i=1}^{n} \frac{d_{i}}{d} \cdot \mathrm{arctan}\left(\frac{d_{i} } {dist_{i}}\right)</annotation></semantics></math></p>
 <p><strong>Height-based competition indices</strong></p>
 <p><strong>CI_Braathe</strong> according to Braathe (1980):
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>B</mi><mi>r</mi><mi>a</mi><mi>a</mi><mi>t</mi><mi>h</mi><mi>e</mi></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><msub><mi>h</mi><mi>i</mi></msub><mi>/</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>h</mi><mo>⋅</mo><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{Braathe} = \sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})</annotation></semantics></math><strong>CI_RK3</strong> according to CI5 in Rouvinen &amp; Kuuluvainen
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>B</mi><mi>r</mi><mi>a</mi><mi>a</mi><mi>t</mi><mi>h</mi><mi>e</mi></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>h</mi><mi>i</mi></msub><mrow><mi>h</mi><mo>⋅</mo><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CI_{Braathe} = \sum_{i=1}^{n} \frac{h_{i}}{h \cdot dist_{i}}</annotation></semantics></math><strong>CI_RK3</strong> according to CI5 in Rouvinen &amp; Kuuluvainen
 (1997):
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>3</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mi>i</mi></msub><mi>/</mi><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK3} = \sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i})</annotation></semantics></math>
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>3</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>h</mi><mi>i</mi></msub><mrow><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK3} = \sum_{i=1}^{n}  \mathrm{arctan}\left(\frac{h_{i}}{ dist_{i}}\right)</annotation></semantics></math>
 for all trees with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>i</mi></msub><mo>&gt;</mo><mi>h</mi></mrow><annotation encoding="application/x-tex">h_{i} &gt; h</annotation></semantics></math></p>
-<p><strong>CI_RK4</strong> based on CI3 in Rouvinen &amp; Kuuluvainen
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>i</mi></msub><mo>&gt;</mo><mi>h</mi></mrow><annotation encoding="application/x-tex">h_{i} &gt; h</annotation></semantics></math><strong>CI_RK4</strong> based on CI3 in Rouvinen &amp; Kuuluvainen
 (1997) and Contreras et al. (2011):
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>4</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mi>i</mi></msub><mi>/</mi><mi>h</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>⋅</mo><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>h</mi><mi>i</mi></msub><mi>/</mi><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot    \mathrm{arctan}(h_{i} / dist_{i})</annotation></semantics></math></p>
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>4</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>h</mi><mi>i</mi></msub><mi>h</mi></mfrac><mo>⋅</mo><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>h</mi><mi>i</mi></msub><mrow><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK4} = \sum_{i=1}^{n} \frac{h_{i}}{ h } \cdot    \mathrm{arctan}\left(\frac{h_{i}}{ dist_{i}}\right)</annotation></semantics></math></p>
+<p><strong>Generic size-based Hegyi-type competition index</strong></p>
+<p><strong>CI_size</strong> based on Hegyi (1974), but with a
+user-specified size-related variable
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>s</mi><mi>i</mi></msub><annotation encoding="application/x-tex">s_i</annotation></semantics></math>:
+size for neighbour tree
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi><annotation encoding="application/x-tex">s</annotation></semantics></math>:
+size of the target tree):
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>s</mi><mi>i</mi><mi>z</mi><mi>e</mi></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>s</mi><mi>i</mi></msub><mrow><mi>s</mi><mo>⋅</mo><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CI_{size} = \sum_{i=1}^{n} \frac{s_{i}}{s \cdot dist_{i}}</annotation></semantics></math></p>
 <p>An advantage of the classical distance-based indices (CI_Hegyi and
 CI_Braathe) is their clear interpretation as the sum of the relative
 sizes of the neighbour trees relative to the target tree size, weighted
@@ -631,21 +692,31 @@ by their distance to the target tree.</p>
 <p>If <code>method = "all_methods"</code> (the standard setting),
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code> computes all indices that can be computed
 with the data available in the inventory.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CI3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, </span>
+<span>                    radius <span class="op">=</span> <span class="fl">8</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span>
+<span><span class="va">CI3</span><span class="op">[</span>, <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span><span class="op">:</span><span class="fl">3</span><span class="op">)</span><span class="op">]</span> <span class="co"># remove coordinates to make room for printing</span></span>
 <span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
 <span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
-<span><span class="co">#&gt; Collection of data for 1 target and 47 edge trees. </span></span>
-<span><span class="co">#&gt; Source of target trees: buffer around edge    Search radius: 10 </span></span>
+<span><span class="co">#&gt; Results for 43 target trees based on an inventory with 131 trees. </span></span>
+<span><span class="co">#&gt; Source of target trees: buffer around edge    Search radius: 8 m </span></span>
 <span><span class="co">#&gt; ---------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt;    id     x      y  dbh CI_Hegyi CI_RK1 CI_RK2</span></span>
-<span><span class="co">#&gt; 44 48 0.102 -0.494 24.4     4.39     33   38.5</span></span></code></pre></div>
+<span><span class="co">#&gt;         id    dbh height CI_Hegyi CI_RK1 CI_RK2 CI_Braathe CI_RK3 CI_RK4</span></span>
+<span><span class="co">#&gt;     &lt;char&gt;  &lt;num&gt;  &lt;num&gt;    &lt;num&gt;  &lt;num&gt;  &lt;num&gt;      &lt;num&gt;  &lt;num&gt;  &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  21277  9.863 12.098    0.952  4.233  6.599      0.909  3.702  6.208</span></span>
+<span><span class="co">#&gt;  2:  21512 11.917 12.720    4.971 14.872 38.159      4.098 13.663 30.618</span></span>
+<span><span class="co">#&gt;  3:  21581 12.085 14.659    0.937  4.258  7.277      0.843  2.663  6.439</span></span>
+<span><span class="co">#&gt; ---                                                                     </span></span>
+<span><span class="co">#&gt; 41:  23501 26.787 27.172    2.286 15.139 17.242      1.849  8.308 13.240</span></span>
+<span><span class="co">#&gt; 42:  23582  9.186 11.461    6.138 16.847 43.552      4.679 14.254 32.146</span></span>
+<span><span class="co">#&gt; 43:  23652 11.017 13.886    5.866 17.400 42.582      4.354 12.267 30.132</span></span></code></pre></div>
+<p>In this example, the inventory contained both dbh and height, but no
+user-specified size, and accordingly all built-in indices except the
+CI_size are included in the output.</p>
 </div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="choosing-a-search-radius">Choosing a search radius<a class="anchor" aria-label="anchor" href="#choosing-a-search-radius"></a>
-</h2>
+<div class="section level4">
+<h4 id="choosing-a-search-radius">Choosing a search radius<a class="anchor" aria-label="anchor" href="#choosing-a-search-radius"></a>
+</h4>
 <p>All indices that can be calculated with <code><a href="../reference/compete_inv.html">compete_inv()</a></code>
 are based on a distance-weighted sum of the relative size of all
 neighbour trees within the search radius compared to the size of the
@@ -667,6 +738,118 @@ values like 10 m independent of whether calculating competition for
 stunted Elfin forests or gigantic Redwood trees, ultimately such a
 setting will always be arbitrary and that there are limits to the
 comparability of the indices across studies and across species.</p>
+</div>
+<div class="section level4">
+<h4 id="user-specified-competition-indices">User-specified competition indices<a class="anchor" aria-label="anchor" href="#user-specified-competition-indices"></a>
+</h4>
+<p>With <code>TreeCompR</code>, defining user-specified competition
+indices is very easy. All it takes is to write a function that takes the
+arguments <code>target</code> and <code>neigh</code> as its inputs, and
+returns a single numeric value (the value of the competition index for
+the current tree) as an output. Here <code>target</code> is a
+single-line “forest_inv”-based data.table with the data of a target
+tree, and <code>neigh</code> is a multi-line “forest_inv”-based
+data.table with the data of all neighbor trees of the target tree
+(including their distance “dist` to the target tree). This function will
+then be evaluated for all target trees to calculate their value of the
+index.</p>
+<p>For instance, a working version of the Hegyi index can be defined
+like this:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CI_Hegyi_new</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">neigh</span><span class="op">$</span><span class="va">dbh</span> <span class="op">/</span> <span class="op">(</span><span class="va">target</span><span class="op">$</span><span class="va">dbh</span> <span class="op">*</span> <span class="va">neigh</span><span class="op">$</span><span class="va">dist</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>This function can then be called with the <code>method</code>
+argument <code><a href="../reference/compete_inv.html">compete_inv()</a></code> as a competition index:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets4</span>, radius <span class="op">=</span> <span class="fl">8</span>,</span>
+<span>            method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CI_Hegyi"</span>, <span class="st">"CI_Hegyi_new"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
+<span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
+<span><span class="co">#&gt; Results for 43 target trees based on an inventory with 131 trees. </span></span>
+<span><span class="co">#&gt; Source of target trees: buffer around edge    Search radius: 8 m </span></span>
+<span><span class="co">#&gt; ---------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;         id        x       y    dbh height CI_Hegyi CI_Hegyi_new</span></span>
+<span><span class="co">#&gt;     &lt;char&gt;    &lt;num&gt;   &lt;num&gt;  &lt;num&gt;  &lt;num&gt;    &lt;num&gt;        &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:  21277 563160.3 5508586  9.863 12.098    0.952        0.952</span></span>
+<span><span class="co">#&gt;  2:  21512 563166.9 5508589 11.917 12.720    4.971        4.971</span></span>
+<span><span class="co">#&gt;  3:  21581 563158.5 5508589 12.085 14.659    0.937        0.937</span></span>
+<span><span class="co">#&gt; ---                                                            </span></span>
+<span><span class="co">#&gt; 41:  23501 563157.4 5508615 26.787 27.172    2.286        2.286</span></span>
+<span><span class="co">#&gt; 42:  23582 563139.6 5508616  9.186 11.461    6.138        6.138</span></span>
+<span><span class="co">#&gt; 43:  23652 563141.8 5508616 11.017 13.886    5.866        5.866</span></span></code></pre></div>
+<p>The output is identical to the built-in function.</p>
+<p>This feature can also be used to modify existing indices, e.g. by
+calculating the RK2 index only for trees that are taller than the target
+tree:</p>
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CI_RK1_tall</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span> </span>
+<span>  <span class="fu"><a href="../reference/competition_indices.html">CI_RK1</a></span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">[</span><span class="va">neigh</span><span class="op">$</span><span class="va">height</span> <span class="op">&gt;</span> <span class="va">target</span><span class="op">$</span><span class="va">height</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>In many cases, it can e.g. be interesting to split up the
+contribution to the total competition by different competitor species
+(see <a href="https://doi.org/10.1111/gcb.16146" class="external-link">Hajek et al., 2022</a>
+for an example). This can be done analogously, for example for a mixed
+stand of hornbeam, oak and ash:</p>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># define partial index for oak</span></span>
+<span><span class="va">CI_Hegyi_QURO</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span> </span>
+<span>  <span class="fu"><a href="../reference/competition_indices.html">CI_Hegyi</a></span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">[</span><span class="va">neigh</span><span class="op">$</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Quercus robur"</span>, <span class="op">]</span><span class="op">)</span></span>
+<span><span class="co"># define partial index for hornbeam</span></span>
+<span><span class="va">CI_Hegyi_CABE</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span> </span>
+<span>  <span class="fu"><a href="../reference/competition_indices.html">CI_Hegyi</a></span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">[</span><span class="va">neigh</span><span class="op">$</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Carpinus betulus"</span>, <span class="op">]</span><span class="op">)</span></span>
+<span><span class="co"># define partial index for ash</span></span>
+<span><span class="va">CI_Hegyi_FREC</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">)</span> </span>
+<span>  <span class="fu"><a href="../reference/competition_indices.html">CI_Hegyi</a></span><span class="op">(</span><span class="va">target</span>, <span class="va">neigh</span><span class="op">[</span><span class="va">neigh</span><span class="op">$</span><span class="va">species</span> <span class="op">==</span> <span class="st">"Fraxinus excelsior"</span>, <span class="op">]</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># load complete dataset (keep rest: information about species etc is maintained)</span></span>
+<span><span class="va">inv_species</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="st">"data/inventory6.csv"</span>, keep_rest <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu">form</span><span class="op">(</span><span class="va">inv_species</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ---------------------------------------  </span></span>
+<span><span class="co">#&gt; 'forest_inv' class inventory dataset: </span></span>
+<span><span class="co">#&gt; collection of 1091 observations </span></span>
+<span><span class="co">#&gt; ---------------------------------------</span></span>
+<span><span class="co">#&gt;           id      x       y    dbh height            species</span></span>
+<span><span class="co">#&gt;       &lt;char&gt;  &lt;num&gt;   &lt;num&gt;  &lt;num&gt;  &lt;num&gt;             &lt;char&gt;</span></span>
+<span><span class="co">#&gt;    1:  31316 26.630   0.722 10.693 15.061   Carpinus betulus</span></span>
+<span><span class="co">#&gt;    2:  31339  6.338   0.712  6.668 10.162   Carpinus betulus</span></span>
+<span><span class="co">#&gt;    3:  31374  4.718   0.792  6.603  9.240 Fraxinus excelsior</span></span>
+<span><span class="co">#&gt;   ---                                                       </span></span>
+<span><span class="co">#&gt; 1089:  38564 46.397 100.414  4.850  7.597 Fraxinus excelsior</span></span>
+<span><span class="co">#&gt; 1090:  38565 54.600  99.893  5.804  8.178   Carpinus betulus</span></span>
+<span><span class="co">#&gt; 1091:  38567 94.888 100.531  3.412  6.133   Carpinus betulus</span></span>
+<span></span>
+<span></span>
+<span><span class="co"># compute species-decomposed Hegyi</span></span>
+<span><span class="va">comp_species</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span></span>
+<span>  inv_source <span class="op">=</span> <span class="va">inv_species</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">12</span>, </span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CI_Hegyi_QURO"</span>, <span class="st">"CI_Hegyi_CABE"</span>, <span class="st">"CI_Hegyi_FREC"</span>, <span class="st">"CI_Hegyi"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">comp_species</span><span class="op">[</span>, <span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">5</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
+<span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
+<span><span class="co">#&gt; Results for 622 target trees based on an inventory with 1090 trees. </span></span>
+<span><span class="co">#&gt; Source of target trees: buffer around edge    Search radius: 12 m </span></span>
+<span><span class="co">#&gt; ---------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;                 species CI_Hegyi_QURO CI_Hegyi_CABE CI_Hegyi_FREC CI_Hegyi</span></span>
+<span><span class="co">#&gt;                  &lt;char&gt;         &lt;num&gt;         &lt;num&gt;         &lt;num&gt;    &lt;num&gt;</span></span>
+<span><span class="co">#&gt;   1:      Quercus robur        12.514         8.501         4.086   25.101</span></span>
+<span><span class="co">#&gt;   2: Fraxinus excelsior         5.045         1.529         3.396    9.971</span></span>
+<span><span class="co">#&gt;   3: Fraxinus excelsior         6.303         2.955         3.156   12.414</span></span>
+<span><span class="co">#&gt;  ---                                                                      </span></span>
+<span><span class="co">#&gt; 620:   Carpinus betulus         3.771         1.582         1.329    6.682</span></span>
+<span><span class="co">#&gt; 621:      Quercus robur         2.006         1.977         1.372    5.355</span></span>
+<span><span class="co">#&gt; 622:      Quercus robur         3.349         2.888         1.571    7.807</span></span></code></pre></div>
+<p>As in the plot the three species are the only species that occur,
+this constitutes a full decomposition of the Hegyi index into the
+contributions of different competitor species:</p>
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># test if the decomposition worked</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">comp_species</span>, </span>
+<span>     <span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">CI_Hegyi_QURO</span> <span class="op">+</span> <span class="va">CI_Hegyi_CABE</span> <span class="op">+</span> <span class="va">CI_Hegyi_FREC</span>, <span class="va">CI_Hegyi</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<p>As species-specific directed interaction are likely very common among
+competing tree species, such a decomposition may often be more
+beneficial for understanding competition between trees than looking at
+the overall effect of competition.</p>
+</div>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

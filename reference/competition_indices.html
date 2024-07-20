@@ -114,9 +114,10 @@ for all trees with \(h_{i} &gt; h\)</p></li>
 Contreras et al. (2011): <br>
 \(CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
    \mathrm{arctan}(h_{i} / dist_{i})\)</p></li>
-</ul><p><em>Generic size-based Hegyi-type competition indices</em></p><ul><li><p>CI_size based on Hegyi (1974), but with a user-specified size-related
-variable: <br>
-\(CI_{size} = \sum_{i=1}^{n} size_{i} / (size \cdot dist_{i})\)</p></li>
+</ul><p><em>Generic size-based Hegyi-type competition index</em></p><ul><li><p>CI_size based on Hegyi (1974), but with a user-specified size-related
+variable (\(s_i\): size for neighbour tree \(i\), \(s\): size of the
+target tree):
+\($CI_{size} = \sum_{i=1}^{n} s_{i} / (s \cdot dist_{i})\)</p></li>
 </ul></div>
 
 <div class="section">
@@ -124,7 +125,7 @@ variable: <br>
 
 
 <p>The creation of new user-specified competition indices is easily possible,
-the only requirement is that they take two argument, <code>target</code> (a single-row
+the only requirement is that they take two arguments, <code>target</code> (a single-row
 <code>forest_inv</code> class data.table with data for the target tree) and <code>neigh</code>
 (a multi-row <code>forest_inv</code> class data.table with data for the neighbor
 trees), and return a single numeric value. This function will then be called
