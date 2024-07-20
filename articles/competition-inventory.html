@@ -74,7 +74,7 @@
     
     
 <div class="section level2">
-<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+<h2 id="where-to-start">Where to start?<a class="anchor" aria-label="anchor" href="#where-to-start"></a>
 </h2>
 <p>With <code>TreeCompR</code>, it is possible to easily compute
 size-distance-dependent competition indices based on inventory data.
@@ -94,7 +94,7 @@ workflow</a>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="analyzing-inventory-data-with-treecompr">Analyzing inventory data with TreeCompR<a class="anchor" aria-label="anchor" href="#analyzing-inventory-data-with-treecompr"></a>
+<h2 id="preparations">Preparations<a class="anchor" aria-label="anchor" href="#preparations"></a>
 </h2>
 <p>To illustrate how <code>TreeCompR</code> can be included inside a
 tidy workflow, we will make use of <a href="https://www.tidyverse.org/" class="external-link">tidyverse</a> functions throughout the
@@ -106,10 +106,11 @@ tutorial:</p>
 corresponding package for all functions used in the tutorial in the form
 of <code><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">purrr::map()</a></code> for all functions besides the
 <code>magrittr</code> pipe operator <code>%&gt;%</code>.</p>
-<div class="section level3">
-<h3 id="reading-in-forest-inventory-data-with-with-read_inv">Reading in forest inventory data with with
+</div>
+<div class="section level2">
+<h2 id="reading-in-forest-inventory-data-with-with-read_inv">Reading in forest inventory data with with
 <code>read_inv()</code><a class="anchor" aria-label="anchor" href="#reading-in-forest-inventory-data-with-with-read_inv"></a>
-</h3>
+</h2>
 <p>To be able to be parsed as a <code>forest_inv</code> object,
 inventory data must contain x and y coordinates of the individual trees,
 and to be able to compute competition they must to contain at least one
@@ -303,9 +304,9 @@ to specify <code>keep_rest = TRUE</code>:</p>
 <span><span class="co">#&gt; 130:  24254 563172.3 5508623 46.562 32.352  Plot 1       7.765</span></span>
 <span><span class="co">#&gt; 131:  24255 563176.8 5508625 59.293 32.698  Plot 1       0.634</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="designating-target-trees-with-define_target">Designating target trees with <code>define_target()</code><a class="anchor" aria-label="anchor" href="#designating-target-trees-with-define_target"></a>
-</h3>
+<div class="section level2">
+<h2 id="designating-target-trees-with-define_target">Designating target trees with <code>define_target()</code><a class="anchor" aria-label="anchor" href="#designating-target-trees-with-define_target"></a>
+</h2>
 <p>To select target trees for computing competition indices, you can use
 the function <code><a href="../reference/define_target.html">define_target()</a></code>.</p>
 <p>There are many different ways of specifying target trees that are
@@ -316,9 +317,9 @@ them based on logical vectors, you can supply another
 that contains their coordinates, or finally with a character string
 specifying a method to define the target trees (“buff_edge”,
 “exclude_edge” and “all_trees”).</p>
-<div class="section level4">
-<h4 id="designating-targets-based-on-subsetting">Designating targets based on subsetting<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-subsetting"></a>
-</h4>
+<div class="section level3">
+<h3 id="designating-targets-based-on-subsetting">Designating targets based on subsetting<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-subsetting"></a>
+</h3>
 <p>Defining targets with a vector of tree IDs could look like this,
 assuming you want to compute competition indices for 3 adjacent
 <em>Fagus sylvatica</em> trees and this is your naming scheme:</p>
@@ -381,10 +382,10 @@ these trees (see below). To avoid calculating competition indices in
 situations where it is not appropriate, we recommend to make plotting
 with <code><a href="../reference/plot_target.html">plot_target()</a></code> a standard step of your workflow.</p>
 </div>
-<div class="section level4">
-<h4 id="designating-targets-based-on-coordinates-from-other-data-sources">Designating targets based on coordinates from other data
+<div class="section level3">
+<h3 id="designating-targets-based-on-coordinates-from-other-data-sources">Designating targets based on coordinates from other data
 sources<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-coordinates-from-other-data-sources"></a>
-</h4>
+</h3>
 <p>In many cases you will have target tree coordinates that come from a
 different data source and have a different accuracy than the inventory
 data, for instance when you perform a ground-based study focusing on
@@ -440,9 +441,9 @@ the tolerance, you will receive a warning. If there is more than one
 tree that is an equally good match for a target tree within 5 cm
 difference, the function will fail with an error.</p>
 </div>
-<div class="section level4">
-<h4 id="designating-targets-based-on-spatial-arrangement">Designating targets based on spatial arrangement<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-spatial-arrangement"></a>
-</h4>
+<div class="section level3">
+<h3 id="designating-targets-based-on-spatial-arrangement">Designating targets based on spatial arrangement<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-spatial-arrangement"></a>
+</h3>
 <p>In many cases, there will be no list of a priori specified target
 trees, and the aim will be to calculate valid competition indices for as
 many trees as possible. In these cases, we recommend to use
@@ -501,9 +502,9 @@ individual trees is permitted it is usually better to use “buff_edge”
 with a radius below the intended search radius as it maintains a
 constant distance.</p>
 </div>
-<div class="section level4">
-<h4 id="designating-all-trees-as-targets">Designating all trees as targets<a class="anchor" aria-label="anchor" href="#designating-all-trees-as-targets"></a>
-</h4>
+<div class="section level3">
+<h3 id="designating-all-trees-as-targets">Designating all trees as targets<a class="anchor" aria-label="anchor" href="#designating-all-trees-as-targets"></a>
+</h3>
 <p>While it is possible to compute competition indices for all trees
 (<code>target_source = "all_trees"</code>), this results in a warning
 and should only be done if there <strong>very good reasons</strong> to
@@ -531,12 +532,12 @@ will be missing in the data!</p>
 <p><img src="../reference/figures/targets6.png" alt="plot_trees" width="600"></p>
 </div>
 </div>
+<div class="section level2">
+<h2 id="computing-competition-indices-with-compete_inv">Computing competition indices with <code>compete_inv()</code><a class="anchor" aria-label="anchor" href="#computing-competition-indices-with-compete_inv"></a>
+</h2>
 <div class="section level3">
-<h3 id="computing-competition-indices-with-compete_inv">Computing competition indices with <code>compete_inv()</code><a class="anchor" aria-label="anchor" href="#computing-competition-indices-with-compete_inv"></a>
+<h3 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h3>
-<div class="section level4">
-<h4 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
-</h4>
 <p><code><a href="../reference/compete_inv.html">compete_inv()</a></code> is very flexible with its input, in
 essence directly accepting everything that can also be loaded with
 <code><a href="../reference/read_inv.html">read_inv()</a></code> and also passing additional settings for column
@@ -634,9 +635,9 @@ of target trees make sense:</p>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">CI2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="../reference/figures/comp1.png" alt="plot_trees" width="600"></p>
 </div>
-<div class="section level4">
-<h4 id="available-competition-indices">Available competition indices<a class="anchor" aria-label="anchor" href="#available-competition-indices"></a>
-</h4>
+<div class="section level3">
+<h3 id="available-competition-indices">Available competition indices<a class="anchor" aria-label="anchor" href="#available-competition-indices"></a>
+</h3>
 <p>The function computes a series of inventory-based competition indices
 commonly used in the literature that can be specified via the
 <code>method</code> argument (<a href="https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734" class="external-link">Hegyi
@@ -714,9 +715,9 @@ with the data available in the inventory.</p>
 user-specified size, and accordingly all built-in indices except the
 CI_size are included in the output.</p>
 </div>
-<div class="section level4">
-<h4 id="choosing-a-search-radius">Choosing a search radius<a class="anchor" aria-label="anchor" href="#choosing-a-search-radius"></a>
-</h4>
+<div class="section level3">
+<h3 id="choosing-a-search-radius">Choosing a search radius<a class="anchor" aria-label="anchor" href="#choosing-a-search-radius"></a>
+</h3>
 <p>All indices that can be calculated with <code><a href="../reference/compete_inv.html">compete_inv()</a></code>
 are based on a distance-weighted sum of the relative size of all
 neighbour trees within the search radius compared to the size of the
@@ -739,9 +740,9 @@ stunted Elfin forests or gigantic Redwood trees, ultimately such a
 setting will always be arbitrary and that there are limits to the
 comparability of the indices across studies and across species.</p>
 </div>
-<div class="section level4">
-<h4 id="user-specified-competition-indices">User-specified competition indices<a class="anchor" aria-label="anchor" href="#user-specified-competition-indices"></a>
-</h4>
+<div class="section level3">
+<h3 id="user-specified-competition-indices">User-specified competition indices<a class="anchor" aria-label="anchor" href="#user-specified-competition-indices"></a>
+</h3>
 <p>With <code>TreeCompR</code>, defining user-specified competition
 indices is very easy. All it takes is to write a function that takes the
 arguments <code>target</code> and <code>neigh</code> as its inputs, and
@@ -848,7 +849,6 @@ contributions of different competitor species:</p>
 competing tree species, such a decomposition may often be more
 beneficial for understanding competition between trees than looking at
 the overall effect of competition.</p>
-</div>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
