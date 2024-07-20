@@ -6,10 +6,10 @@
 #'   the variables needed to calculate the corresponding competition index for
 #'   the target tree (i.e. ´x´, ´y´, as well as ´dbh´, ´height´, ´size´ and/or
 #'   other size-related attributes).
-#' @param inv `forest_inv` class data.table object containing all the variables
-#'   needed to calculate the corresponding competition index for all neighbor
-#'   trees in the search radius of the target tree (i.e. ´x´, ´y´, as well as
-#'   ´dbh´, ´height´, ´size´ and/or other size-related attributes), that
+#' @param neigh `forest_inv` class data.table object containing all the
+#'   variables needed to calculate the corresponding competition index for all
+#'   neighbor trees in the search radius of the target tree (i.e. ´x´, ´y´, as
+#'   well as´dbh´, ´height´, ´size´ and/or other size-related attributes), that
 #'   moreover includes their distance to the target tree in m (`dist`).
 #'
 #' @details `TreeCompR` provides a number of distance-based competition indices
@@ -49,20 +49,20 @@
 #'
 #' ## User-specified competition indices
 #'  The creation of new user-specified competition indices is easily possible,
-#'   the only requirement is that they take two argument, `target` (a single-row
-#'   `forest_inv` class data.table with data for the target tree) and `inv` (a
-#'   multi-row `forest_inv` class data.table with data for the neighbor trees),
-#'   and return a single numeric value. This function will then be called
-#'   internally for each tree and its neighborhood inside `compete_inv()`.
-#'   For example, a working implementation of the classical Hegyi index would
-#'   look like this:
+#'  the only requirement is that they take two argument, `target` (a single-row
+#'  `forest_inv` class data.table with data for the target tree) and `neigh`
+#'  (a multi-row `forest_inv` class data.table with data for the neighbor
+#'  trees), and return a single numeric value. This function will then be called
+#'  internally for each tree and its neighborhood inside `compete_inv()`.
+#'  For example, a working implementation of the classical Hegyi index would
+#'  look like this:
 #'
-#' `CI_Hegyi <- function(target, inv) sum(inv$dbh / (target$dbh * inv$dist))`
+#' `CI_Hegyi <- function(target, neigh) sum(neigh$dbh / (target$dbh * neigh$dist))`
 #'
-#'   It is advisable to add checks to ensure the function does the right thing
-#'   when it gets passed on empty datasets (e.g. because no trees are in the
-#'   neighborhood of a tree) because `sum(NULL)` evaluates to `0` which may not
-#'   always be intended.
+#'  It is advisable to add checks to ensure the function does the right thing
+#'  when it gets passed on empty datasets (e.g. because no trees are in the
+#'  neighborhood of a tree) because `sum(NULL)` evaluates to `0` which may not
+#'  always be intended.
 #'
 #' ## Literature
 #'  * Hegyi, F., 1974. A simulation model for managing jackpine stands. In:
@@ -85,10 +85,10 @@
 #' @return A single numeric value (the competition index for the target tree).
 #'
 #' @seealso
-#'   [read_inv()] to read forest inventory data,
-#'   [define_target()] for designating target trees,
-#'   [compete_inv()] for computing tree competition from inventory data,
-#'   [plot_target()] to plot target tree positions in `target_inv` and
+#'  [read_inv()] to read forest inventory data,
+#'  [define_target()] for designating target trees,
+#'  [compete_inv()] for computing tree competition from inventory data,
+#'  [plot_target()] to plot target tree positions in `target_inv` and
 #'   `compete_inv` objects.
 #'
 #' @examples
@@ -105,67 +105,67 @@ NULL
 
 #' @rdname competition_indices
 #' @export
-CI_Hegyi <- function(target, inv){
-  if(!("dbh" %in% names(target)) | !("dbh" %in% names(inv))){
+CI_Hegyi <- function(target, neigh){
+  if(!("dbh" %in% names(target)) | !("dbh" %in% names(neigh))){
     stop("Hegyi index can only be calculated when 'dbh' is available.")
   }
-  sum(inv$dbh / (target$dbh * inv$dist))
+  sum(neigh$dbh / (target$dbh * neigh$dist))
 }
 
 #' @rdname competition_indices
 #' @export
-CI_Braathe <- function(target, inv){
-  if(!("height" %in% names(target)) | !("height" %in% names(inv))){
+CI_Braathe <- function(target, neigh){
+  if(!("height" %in% names(target)) | !("height" %in% names(neigh))){
     stop("Braathe index can only be calculated when 'height' is available.")
   }
-  sum(inv$height / (target$height * inv$dist))
+  sum(neigh$height / (target$height * neigh$dist))
 }
 
 #' @rdname competition_indices
 #' @export
-CI_size <- function(target, inv){
-  if(!("size" %in% names(target)) | !("size" %in% names(inv))){
+CI_size <- function(target, neigh){
+  if(!("size" %in% names(target)) | !("size" %in% names(neigh))){
     stop(
       .wr("Generic size-based Hegyi-type competition index can",
           "only be calculated when 'height' is available.")
     )
   }
-  sum(inv$size / (target$size * inv$dist))
+  sum(neigh$size / (target$size * neigh$dist))
 }
 
 
 #' @rdname competition_indices
 #' @export
-CI_RK1 <- function(target, inv){
-  if(!("dbh" %in% names(target)) | !("dbh" %in% names(inv))){
+CI_RK1 <- function(target, neigh){
+  if(!("dbh" %in% names(target)) | !("dbh" %in% names(neigh))){
     stop("RK1 index can only be calculated when 'dbh' is available.")
   }
-  sum(atan(inv$dbh / inv$dist))
+  sum(atan(neigh$dbh / neigh$dist))
 }
 #' @rdname competition_indices
 #' @export
-CI_RK2 <- function(target, inv){
-  if(!("dbh" %in% names(target)) | !("dbh" %in% names(inv))){
+CI_RK2 <- function(target, neigh){
+  if(!("dbh" %in% names(target)) | !("dbh" %in% names(neigh))){
    stop("RK2 index can only be calculated when 'dbh' is available.")
   }
-  sum((inv$dbh / target$dbh) * atan(inv$dbh / inv$dist))
+  sum((neigh$dbh / target$dbh) * atan(neigh$dbh / neigh$dist))
 }
 
 #' @rdname competition_indices
 #' @export
-CI_RK3 <- function(target, inv){
-  if(!("height" %in% names(target)) | !("height" %in% names(inv))){
+CI_RK3 <- function(target, neigh){
+  if(!("height" %in% names(target)) | !("height" %in% names(neigh))){
     stop("RK3 index can only be calculated when 'height' is available.")
   }
-  sum(  atan(inv$height[inv$height > target$height] /
-               inv$dist [inv$height > target$height]))
+  sum(  atan(neigh$height[neigh$height > target$height] /
+               neigh$dist [neigh$height > target$height]))
 }
 
 #' @rdname competition_indices
 #' @export
-CI_RK4 <- function(target, inv){
-  if(!("height" %in% names(target)) | !("height" %in% names(inv))){
+CI_RK4 <- function(target, neigh){
+  if(!("height" %in% names(target)) | !("height" %in% names(neigh))){
     stop("RK4 index can only be calculated when 'height' is available.")
   }
-  sum((inv$height / target$height) * atan(inv$height / inv$dist))
+  sum((neigh$height / target$height) * atan(neigh$height / neigh$dist))
 }

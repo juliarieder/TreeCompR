@@ -11,19 +11,19 @@
 \alias{CI_RK4}
 \title{List of distance-based competition indices}
 \usage{
-CI_Hegyi(target, inv)
+CI_Hegyi(target, neigh)
 
-CI_Braathe(target, inv)
+CI_Braathe(target, neigh)
 
-CI_size(target, inv)
+CI_size(target, neigh)
 
-CI_RK1(target, inv)
+CI_RK1(target, neigh)
 
-CI_RK2(target, inv)
+CI_RK2(target, neigh)
 
-CI_RK3(target, inv)
+CI_RK3(target, neigh)
 
-CI_RK4(target, inv)
+CI_RK4(target, neigh)
 }
 \arguments{
 \item{target}{single row \code{forest_inv} class data.table object containing all
@@ -31,10 +31,10 @@ the variables needed to calculate the corresponding competition index for
 the target tree (i.e. ´x´, ´y´, as well as ´dbh´, ´height´, ´size´ and/or
 other size-related attributes).}
 
-\item{inv}{\code{forest_inv} class data.table object containing all the variables
-needed to calculate the corresponding competition index for all neighbor
-trees in the search radius of the target tree (i.e. ´x´, ´y´, as well as
-´dbh´, ´height´, ´size´ and/or other size-related attributes), that
+\item{neigh}{\code{forest_inv} class data.table object containing all the
+variables needed to calculate the corresponding competition index for all
+neighbor trees in the search radius of the target tree (i.e. ´x´, ´y´, as
+well as´dbh´, ´height´, ´size´ and/or other size-related attributes), that
 moreover includes their distance to the target tree in m (\code{dist}).}
 }
 \value{
@@ -91,14 +91,14 @@ variable: \cr
 
 The creation of new user-specified competition indices is easily possible,
 the only requirement is that they take two argument, \code{target} (a single-row
-\code{forest_inv} class data.table with data for the target tree) and \code{inv} (a
-multi-row \code{forest_inv} class data.table with data for the neighbor trees),
-and return a single numeric value. This function will then be called
+\code{forest_inv} class data.table with data for the target tree) and \code{neigh}
+(a multi-row \code{forest_inv} class data.table with data for the neighbor
+trees), and return a single numeric value. This function will then be called
 internally for each tree and its neighborhood inside \code{compete_inv()}.
 For example, a working implementation of the classical Hegyi index would
 look like this:
 
-\code{CI_Hegyi <- function(target, inv) sum(inv$dbh / (target$dbh * inv$dist))}
+\code{CI_Hegyi <- function(target, neigh) sum(neigh$dbh / (target$dbh * neigh$dist))}
 
 It is advisable to add checks to ensure the function does the right thing
 when it gets passed on empty datasets (e.g. because no trees are in the

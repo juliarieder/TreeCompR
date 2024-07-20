@@ -316,7 +316,7 @@ test_that("Function works for nonstandard indices", {
   # a function can be defined
   expect_no_error({
     assign("CI_inv_Hegyi",
-           function(target, inv) sum(target$dbh * inv$dist / inv$dbh),
+           function(target, neigh) sum(target$dbh * neigh$dist / neigh$dbh),
            envir = .GlobalEnv)
     out <-  compete_inv(plot, verbose = FALSE, radius = 5,
                         method = c("CI_Hegyi", "CI_inv_Hegyi"))
@@ -345,8 +345,8 @@ test_that("Function works for nonstandard indices", {
 
     # assign function
     assign("CI_test",
-           function(target, inv) {
-             sum(target$dbh * (inv$dist / inv$dbh)[inv$extra])
+           function(target, neigh) {
+             sum(target$dbh * (neigh$dist / neigh$dbh)[neigh$extra])
              },
            envir = .GlobalEnv)
 

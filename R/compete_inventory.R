@@ -301,12 +301,12 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
     target <- targets[i, ]
     # get neighborhood
     ids <- nn$nn.idx[i,-1] # remove first tree: target tree
-    neighbors   <- inv[ids[ids>0],]
-    neighbors$dist <-  nn$nn.dists[i, 1:nrow(neighbors) + 1]
+    neigh   <- inv[ids[ids>0],]
+    neigh$dist <-  nn$nn.dists[i, 1:nrow(neigh) + 1]
 
     # loop over methods to compute indices
     for(meth in method){
-      out[[meth]][i] <- do.call(meth, args = list(target, neighbors))
+      out[[meth]][i] <- do.call(meth, args = list(target, neigh))
     }
   }
   # add radius and method as attributes
@@ -341,12 +341,12 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
             "is not a  function.")
       )
       # check if it hast the correct formal arguments
-      if (any(names(formals(meth)) != c("target", "inv"))){
+      if (any(names(formals(meth)) != c("target", "neigh"))){
         stop(
           .wr("Invalid competition index function detected:",
               paste0(meth, "()."),
-              "Competition index functions take 'target' and 'inv' as",
-              "arguments and return a single value: 'function(target, inv)'")
+              "Competition index functions take 'target' and 'neigh' as",
+              "arguments and return a single value: 'function(target, neigh)'")
         )
       }
     }
