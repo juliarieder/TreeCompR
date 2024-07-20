@@ -168,7 +168,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       which = !!enquo(id),
       names = c("id", "treeid", "tree_id", "tree.id"),
       class_out = "character",
-      alternative = 1:nrow(inv_source)
+      alternative = as.character(1:nrow(inv_source))
     )
     # test for forbidden IDs
     forbidden <- inv_out$id %in% c("buff_edge", "exclude_edge", "all_trees")
