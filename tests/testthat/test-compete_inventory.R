@@ -231,6 +231,19 @@ test_that("Function works on target_inv objects", {
 })
 
 
+test_that("Handling of kmax works", {
+  # warning a kmax that is too low
+  expect_warning({
+    plot <- read_inv(test_path("testdata", "inventory.csv"), verbose = FALSE)
+    targets <- define_target(plot,target_source = "buff_edge", radius = 5)
+    CI <- compete_inv(inv_source = targets, radius = 5, kmax = 5,
+                      method = "all_methods")
+  },
+  "Maximum number of target trees reached"
+  )
+})
+
+
 test_that("Function works with manual column specifications", {
   # specification with quoted names
   expect_no_error(

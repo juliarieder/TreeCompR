@@ -22,7 +22,7 @@ compete_inv(
   keep_rest = FALSE,
   verbose = TRUE,
   tol = 1,
-  kmax = 100,
+  kmax = 999,
   ...
 )
 }
@@ -123,8 +123,8 @@ accuracy of the GPS coordinates.}
 consider for determining the neighbor trees of each tree. Lower values
 speed up computation, which is likely not an issue unlike your inventory
 contains tens of thousands of trees, but is very relevant for big datasets.
-Defaults to 100, which should be reasonable in many forest settings, but
-should be adjusted when there are warnings (especially for large search
+Defaults to 999, which should be reasonable in almost all forest settings,
+but has to be adjusted when there are warnings (especially for large search
 radii and/or stands with small trees). If \code{kmax} is larger than the number
 of trees in the plot, the latter is passed on as \code{k} to \code{\link[nabor:knn]{nabor::knn()}}.}
 

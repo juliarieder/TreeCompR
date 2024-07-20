@@ -51,8 +51,8 @@
 #'   consider for determining the neighbor trees of each tree. Lower values
 #'   speed up computation, which is likely not an issue unlike your inventory
 #'   contains tens of thousands of trees, but is very relevant for big datasets.
-#'   Defaults to 100, which should be reasonable in many forest settings, but
-#'   should be adjusted when there are warnings (especially for large search
+#'   Defaults to 999, which should be reasonable in almost all forest settings,
+#'   but has to be adjusted when there are warnings (especially for large search
 #'   radii and/or stands with small trees). If `kmax` is larger than the number
 #'   of trees in the plot, the latter is passed on as `k` to [nabor::knn()].
 #' @param ... additional arguments passed on to [data.table::fread()].
@@ -218,7 +218,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
                         height_unit = c("m", "cm", "mm"),
                         keep_rest = FALSE,
                         verbose = TRUE,
-                        tol = 1, kmax = 100,
+                        tol = 1, kmax = 999,
                         ...) {
   # validate vector of specified CI methods
   method <- .validate_method(method)
@@ -283,7 +283,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
     if (any(nn$nn.idx[,kmax] > 0)){
       warning(
         .wr("Maximum number of target trees reached for",
-            sum(nn$nn.idx[,kmax] > 0), "out of", nrow(target),
+            sum(nn$nn.idx[,kmax] > 0), "out of", nrow(targets),
             "target trees. Computed Competition indexes are not reliable.",
             "Please increase kmax.")
       )
@@ -425,9 +425,9 @@ print.compete_inv <- function(x, digits = 3, topn = 3, ...){
   # print header
   cat("---------------------------------------------------------------------",
       "\n'compete_inv' class inventory with distance-based competition indices",
-      "\nCollection of data for", nrow(x),"target and",
-      nrow(attr(x, "edge_trees")), "edge trees.",
-      "\nSource of target trees:",target, "\t Search radius:",
+      "\nResults for", nrow(x),"target trees based on an inventory with",
+      nrow(x) + nrow(attr(x, "edge_trees")), "trees.",
+      "\nSource of target trees:", target, "\t Search radius:",
       attr(x, "radius"),
       "\n---------------------------------------------------------------------\n"
   )
