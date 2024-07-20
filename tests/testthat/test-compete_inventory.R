@@ -374,7 +374,7 @@ test_that("Function works for nonstandard indices", {
   # a function with the wrong arguments fails
   expect_error({
    compete_inv(plot, verbose = FALSE, radius = 5,
-                        method = c("CI_Hegyi", "lm"))
+                        method = c("CI_Hegyi", "plot"))
   }, "Invalid competition index function")
 
   # not a function fails
@@ -389,6 +389,5 @@ test_that("Function works for nonstandard indices", {
                 method = c("CI_Hegyi", "CI_Hegyi"))
   }, 6)
 
-  #
 })
 

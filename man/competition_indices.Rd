@@ -79,18 +79,19 @@ Contreras et al. (2011): \cr
    \mathrm{arctan}(h_{i} / dist_{i})}
 }
 
-\emph{Generic size-based Hegyi-type competition indices}
+\emph{Generic size-based Hegyi-type competition index}
 \itemize{
 \item CI_size based on Hegyi (1974), but with a user-specified size-related
-variable: \cr
-\eqn{CI_{size} = \sum_{i=1}^{n} size_{i} / (size \cdot dist_{i})}
+variable (\eqn{s_i}: size for neighbour tree \eqn{i}, \eqn{s}: size of the
+target tree):
+\eqn{$CI_{size} = \sum_{i=1}^{n} s_{i} / (s \cdot dist_{i})}
 }
 }
 
 \subsection{User-specified competition indices}{
 
 The creation of new user-specified competition indices is easily possible,
-the only requirement is that they take two argument, \code{target} (a single-row
+the only requirement is that they take two arguments, \code{target} (a single-row
 \code{forest_inv} class data.table with data for the target tree) and \code{neigh}
 (a multi-row \code{forest_inv} class data.table with data for the neighbor
 trees), and return a single numeric value. This function will then be called

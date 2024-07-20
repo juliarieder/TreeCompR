@@ -107,10 +107,11 @@
 #'    \eqn{CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
 #'    \mathrm{arctan}(h_{i} / dist_{i})}
 #'
-#'  _Generic size-based Hegyi-type competition indices_
+#'  _Generic size-based Hegyi-type competition index_
 #'  * CI_size based on Hegyi (1974), but with a user-specified size-related
-#'    variable: \cr
-#'    \eqn{CI_{size} = \sum_{i=1}^{n} size_{i} / (size \cdot dist_{i})}
+#'   variable (\eqn{s_i}: size for neighbour tree \eqn{i}, \eqn{s}: size of the
+#'   target tree):
+#'   \eqn{$CI_{size} = \sum_{i=1}^{n} s_{i} / (s \cdot dist_{i})}
 #'
 #'  Further indices can be user-specified by developing a corresponding
 #'  function (see [competition_indices] for details).
@@ -340,8 +341,8 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
         .wr("Invalid competition index function detected:", meth,
             "is not a  function.")
       )
-      # check if it hast the correct formal arguments
-      if (any(names(formals(meth)) != c("target", "neigh"))){
+      # check if it has the correct formal arguments
+      if (!identical(names(formals(meth)), c("target", "neigh"))){
         stop(
           .wr("Invalid competition index function detected:",
               paste0(meth, "()."),
@@ -428,7 +429,7 @@ print.compete_inv <- function(x, digits = 3, topn = 3, ...){
       "\nResults for", nrow(x),"target trees based on an inventory with",
       nrow(x) + nrow(attr(x, "edge_trees")), "trees.",
       "\nSource of target trees:", target, "\t Search radius:",
-      attr(x, "radius"),
+      attr(x, "radius"), "m",
       "\n---------------------------------------------------------------------\n"
   )
   # print data.table with trees
