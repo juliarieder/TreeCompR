@@ -55,22 +55,22 @@ If `verbose = TRUE` (the default), `read_inv()` prints the names of the main inv
 
 `read_inv()` does flexibly recognize a large number of different spellings for the common inventory variables. If provided with tabular data without explicitly specified variable names, the function by default takes the columns named "X" and "Y" (or "x" and "y") to be the tree coordinates, and looks for columns named "height", "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any capitalization) as size-related variables. The tree ids are taken from columns named "id", "tree_id", "treeID" or "tree.id" (in any capitalization). All special characters besides "." and "_" are stripped from the column names before matching. If `verbose = TRUE`, the function will inform you which columns were automatically identified to avoid errors.
 
-The resulting object looks like this (basically a data.table object that is printed with a header to easily identify it as a "forest_inv" object). 
+The resulting "forest_inv" object looks like this (basically a modified data.table object that is printed with a header to easily identify its class). 
 ``` {r read-inv1a, eval=FALSE, message=FALSE, warning=FALSE}
 inventory1
 #> ---------------------------------------  
 #> 'forest_inv' class inventory dataset: 
 #> collection of 63 observations 
 #> ---------------------------------------
-#>         id      x      y    dbh
-#>     <char>  <num>  <num>  <num>
-#>  1:  22461  1.009  0.908  5.047
-#>  2:  22462 11.683  1.449  6.786
-#>  3:  22541  6.770  2.155  4.675
-#> ---                            
-#> 61:  24508  9.390 28.357 40.283
-#> 62:  24545  5.350 27.977 32.405
-#> 63:  24611 16.750 28.615 43.841
+#>             id      x      y    dbh
+#>         <char>  <num>  <num>  <num>
+#>  1: FASY-43-01  1.009  0.908  5.047
+#>  2: ACPL-43-02 11.683  1.449  6.786
+#>  3: SOAU-43-03  6.770  2.155  4.675
+#> ---                                
+#> 61: FASY-43-61  9.390 28.357 40.283
+#> 62: FASY-43-62  5.350 27.977 32.405
+#> 63: FASY-43-63 16.750 28.615 43.841
 ```
 
 
@@ -201,18 +201,45 @@ inventory4a
 ### Designating target trees with `define_target()`
 To select target trees for computing competition indices, you can use the function `define_target()`. 
 
-There are many different ways of specifying target trees that are described in the documentation of `define_target()`. Briefly, you can directly supply tree IDs as a character string, you can define them based on logical vectors, you can supply another `forest_inv` object created with `read_tree()` that contains their coordinates, or finally with a character string specifying a method to define the target trees ("buff_edge", "exclude_edge" and "all_trees"). 
+There are many different ways of specifying target trees that are described in the documentation of `define_target()`. Briefly, you can directly supply tree IDs as a character string, you can define them based on logical vectors, you can supply another `forest_inv` object created with `read_tree()` that contains their coordinates, or finally with a character string specifying a method to define the target trees ("buff_edge", "exclude_edge" and "all_trees").
 
+#### Designating targets based on subsetting
 
 Defining targets with a vector of tree IDs could look like this, assuming you want to compute competition indices for 3 adjacent _Fagus sylvatica_ trees and this is your naming scheme:
 
 ```{r define-target1, message=FALSE, warning=FALSE, eval=FALSE}
-# set target trees based on vector with tree ids
+# set target trees based on character vector with tree ids
 targets1 <- define_target(
   inv = inventory1, 
-  target_source = c("FASY-43-27", "FASY-43-28", "FASY-43-29")
-  )
+  target_source = c("FASY-43-24", "FASY-43-27", "FASY-43-30")
+)
+targets1
+#> --------------------------------------------------------------- 
+#> 'target_inv' class inventory dataset with defined target trees: 
+#> collection of 63 observations containing 3 target trees. 
+#> Source of target trees: character vector 
+#> ---------------------------------------------------------------
+#>             id      x      y    dbh target
+#>         <char>  <num>  <num>  <num> <lgcl>
+#>  1: FASY-43-01  1.009  0.908  5.047  FALSE
+#>  2: ACPL-43-02 11.683  1.449  6.786  FALSE
+#>  3: SOAU-43-03  6.770  2.155  4.675  FALSE
+#> ---                                       
+#> 61: FASY-43-61  9.390 28.357 40.283  FALSE
+#> 62: FASY-43-62  5.350 27.977 32.405  FALSE
+#> 63: FASY-43-63 16.750 28.615 43.841  FALSE
 ```
+
+Objects of class "target_inv" are "forest_inv" type forest inventory datasets that have an additional target column with a logical "target" vector that identifies the target trees.
+
+To visually inspect the position of the designated target trees relative to the other trees in the neighbourhood, you can use the function `plot_target()`, which automatically displays the relevant information depending on the `target_source` setting for both `target_inv` datasets and the output of `compete_inv()` itself. Here is a plot of the target trees with a buffer of 10 m which is fully surrounded by other trees, showing that it is possible to calculate competition indices with a 10 m search radius for the three targets:
+
+```{r define-target1a, message=FALSE, warning=FALSE, eval=FALSE}
+plot_target(targets1, radius = 10)
+```
+<img src="../man/figures/targets1.png" alt="plot_trees" width="600">
+
+The purpose of this function is to provide a fast tool for visual inspection rather than to create beautiful visual output. As all the data for the plot are contained in the `target_inv` object, more appealing (e.g., [ggplot2](https://ggplot2.tidyverse.org/)-based) visualizations are left as an exercise to the user. 
 
 You might also want to define target trees based on a logical criterion, for instance for all trees whose ID contains "FASY":
 
@@ -222,63 +249,112 @@ targets2 <- define_target(
   inv = inventory1, 
   target_source = grepl("FASY", inventory1$id)
   )
+# visual inspection
+plot_target(targets1, radius = 10)
 ```
+
+<img src="../man/figures/targets2.png" alt="plot_trees" width="600">
+
+In this case, the plot of the target trees shows that many of the target trees are situated on the plot border, which would result in edge effects. In such cases, we strongly advice against computing indices for these trees (see below). To avoid calculating competition indices in situations where it is not appropriate, we recommend to make plotting with `plot_target()` a standard step of your workflow.
+
+#### Designating targets based on coordinates from other data sources
 
 In many cases you will have target tree coordinates that come from a different data source and have a different accuracy than the inventory data, for instance when you perform a ground-based study focusing on single trees and wish to derive tree competition from ALS sources based on the GPS coordinates from your trees. In these cases, you will have to match the GPS coordinates against the tree coordinates derived from the ALS source (see [ALS workflow](https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html) for details on how to derive inventory data from ALS sources).
 
-In these cases, it is possible to supply an inventory based on a second set of coordinates as a `target_source` which is then matched against the inventory data. IDs are then ignored (as they are likely automatically generated anyway) and matching is based only on the closest trees with in a buffer of `tol` m (the default is `tol = 1`: matching within 1 m). All further size-related variables in the second set of coordinates are ignored as well to ensure the competition indices are based on the same data source:
+In these cases, it is possible to supply an inventory based on a second set of coordinates as a `target_source` which is then matched against the inventory data. IDs are then ignored (as they are likely automatically generated anyway) and matching is based only on the closest trees with in a buffer of `tol` m (the default is `tol = 1`: matching within 1 m). All further size-related variables in the second set of coordinates are ignored as well to ensure the competition indices are based on the same data source. Here, GPS coordinates for 15 trees are read in and matched against the data in the inventory.
 
 ```{r define-target3, message=FALSE, warning=FALSE, eval=FALSE}
+# designate target trees based on GPS coordinates
 # read target tree positions
-target_pos <- read_inv("data/target_tree_gps.csv", x = gps_x, y = gps_y)
+(target_pos <- read_inv(
+  "data/target_tree_gps.csv", x = gps_x, y = gps_y))
+#> ---------------------------------------  
+#> 'forest_inv' class inventory dataset: 
+#> collection of 15 observations 
+#> ---------------------------------------
+#>          id        x       y
+#>      <char>    <num>   <num>
+#>  1: FASY-01 563157.6 5508615
+#>  2: FASY-02 563141.8 5508602
+#>  3: FASY-03 563147.0 5508610
+#> ---                         
+#> 13: FASY-13 563161.4 5508611
+#> 14: FASY-14 563154.7 5508609
+#> 15: FASY-15 563140.0 5508607
+
 # define target trees
 targets3 <- define_target(
   inv = inventory1, 
   target_source = target_pos,
   tol = 1 # match within 1 m accuracy
   )
+# visual inspection
+plot_target(targets3, radius = 8)
 ```
+<img src="../man/figures/targets3.png" alt="plot_trees" width="600">
 
-If no trees in the inventory are in the desired distance of one or more of your target trees, you will receive a warning, while if there is more than one equally good match for a target tree, the function will fail with an error.
+For the intended 8 m search radius, these coordinates are appropriate.
+
+If no trees in the inventory are within the desired tolerance of one or more of your target trees, or if several target trees are in within the tolerance, you will receive a warning. If there is more than one tree that is an equally good match for a target tree within 5 cm difference, the function will fail with an error.
+
+#### Designating targets based on spatial arrangement
 
 In many cases, there will be no list of a priori specified target trees, and the aim will be to calculate valid competition indices for as many trees as possible. In these cases, we recommend to use `target_source = "buff_edge"`. This automatically designates all trees in the plot that are at least one search radius away from the plot edge (roughly approximated by a concave hull) to avoid edge effects. This is specifically important for TLS/MLS data and classical forest inventories, since in contrast to ALS-derived datasets these data usually cover relatively small forest plot rather than entire forests. Setting `target_source = "exclude_edge"` only removes the trees on the edge of the plot without checking how close the rest of the trees is from the edge and is hence less restrictive but more prone to edge effects than the previous option. If you use these spatially explicit methods of defining target trees, make sure that your inventory only contains data from one plot as currently grouping is not possible in `define_target()`. If you want to consider doing this for a larger number of plots, consider e.g. mapping over the plots with [purrr::map()] to compute the output step by step. 
 
-Here is an example of how to identify all potential target trees that run in no risk of excluding potential edge trees when computing competition indices with a search radius of 10 m:
+Here is an example of how to identify all potential target trees that run in no risk of excluding potential edge trees when computing competition indices for the same tree as in the previous example, again with a search radius of 8 m:
 
 ```{r define-target4, message=FALSE, warning=FALSE, eval=FALSE}
+# designate target trees with a 10 m buffer to the plot border
 targets4 <- define_target(
-  inv = inventory1, 
+  inv = inventory4, 
   target_source = "buff_edge", 
-  radius = 10)
-targets4
-#> --------------------------------------------------------------- 
-#> 'target_inv' class inventory dataset with defined target trees: 
-#> collection of 48 observations 
-#> Source of target trees: buffer around edge 
-#> ---------------------------------------------------------------
-#>     id      x      y    dbh target
-#> 1    1 15.181 -2.979 35.275  FALSE
-#> 2    2 13.097  0.193 20.068  FALSE
-#> 3    3 12.633 -9.445 35.333  FALSE
-#>    ...    ...    ...    ...    ...
-#> 46  51 -1.639 -4.842 12.605  FALSE
-#> 47  52 -6.409 -4.722  6.035  FALSE
-#> 48  53 -7.485 -7.619 20.065  FALSE
+  radius = 8)
+# visual inspection
+plot_target(targets4)
 ```
+<img src="../man/figures/targets4.png" alt="plot_trees" width="600">
+
+In this case, the radius does not have to specified in `plot_target()` as the radius used for the buffer is stored in the attributes of the "target_inv" object. 
+
+
+Doing the same with `target_source = "exclude_edge"` results in the following:
+```{r define-target5, eval=FALSE, message=FALSE, warning=FALSE}
+# designate target trees by only excluding the plot border
+targets5 <- define_target(
+  inv = inventory4, 
+  target_source = "exclude_edge",
+  radius = 8)
+# visual inspection
+plot_target(targets5)
+```
+<img src="../man/figures/targets5.png" alt="plot_trees" width="600">
+
+It can be seen that only the trees that are directly on the plot border were removed. The radius in this case is again passed on to `plot_target()`, but in this case only used to determine the minimum possible distance between two edge trees for the concave hull algorithm. This method of determining edge trees is considerably less restrictive than "buff_edge", and in this case resulted in a large number of trees with buffers extending further than the plot. We therefore recommend to be careful with this setting. 
+
+If a certain amount of overlap between the plot border and buffers of individual trees is permitted it is usually better to use "buff_edge" with a radius below the intended search radius as it maintains a constant distance.
+
+#### Designating all trees as targets
 
 While it is possible to compute competition indices for all trees (`target_source = "all_trees"`), this results in a warning and should only be done if there __very good reasons__ to assume that the edge trees in the data are actually situated at the forest edge, as otherwise there will be _intense_ edge effects: for a tree on a straight plot edge, on average nearly half and for a tree in an edge position in a rectangular plot  3/4 of the competitors will be missing in the data!
 
+```{r define-target6, eval=FALSE, message=FALSE, warning=FALSE}
+# designate all trees as target trees
+targets6 <- define_target(
+  inv = inventory4, 
+  target_source = "all_trees")
+#> Warning message:
+#> In define_target(inv = inventory4, target_source = "all_trees") :
+#>   Defining all trees as target trees is rarely a good idea. Unless your
+#> forest inventory contains all trees in the forest, this will lead to strong
+#> edge effects. Please make sure that this is really what you want to do.
 
-### Inspecting the target selection with `plot_target()`
-
-To visually inspect the position of the designated target trees relative to the other trees in the neighbourhood, you can use the function `plot_target()`, which automatically displays the relevant information depending on the `target_source` setting for both `target_inv` datasets and the output of `compete_inv()` itself:
-
-```{r plot-target, message=FALSE, warning=FALSE, eval=FALSE}
-plot_target(targets4)
+# visual inspection
+plot_target(targets6, radius = 8)
+#> Warning message:
+#> In plot_target(targets6, radius = 8) :
+#>   All trees in the dataset are defined as as target trees.
 ```
-<img src="../man/figures/README-example3-1.png" alt="plot_trees" width="500">
-
-The purpose of this function is to provide a fast tool for visual inspection rather than to create beautiful visual output. As all the data for the plot are contained in the `target_inv` object, more appealing (e.g., [ggplot2](https://ggplot2.tidyverse.org/)-based) visualizations are left as an exercise to the user. 
+<img src="../man/figures/targets6.png" alt="plot_trees" width="600">
 
 ### Computing competition indices with `compete_inv()`
 `compete_inv()` is very flexible with its input, in essence directly accepting everything that can also be loaded with `read_inv()` and also passing additional settings for column specifications etc. on to this function, which is used to load the data internally. Also all options for `target_source` that can be set in `define_target()` can be directly specified in `compete_inv()`, and in most cases this function will likely be called directly unless there are reasons to perform the other steps explicitly, for instance, because the data structure and formatting differ between the inventory and target files or because an inspection of the target settings is desired _before_ computing the results.
@@ -318,7 +394,7 @@ The output of this function can then again be inspected in the same way as above
 #### Available competition indices
 The function computes a series of inventory-based competition indices commonly used in the literature that can be specified via the `method` argument ([Hegyi 1974](https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734); Braathe, 1980; [Rouvinen & Kuuluvainen, 1997](https://doi.org/10.1139/x97-012); see also [Contreras et al., 2011](https://doi.org/10.1016/j.foreco.2011.08.031)). These are either based on tree diameter at breast height ("CI_Hegyi", "CI_RK1", "CI_RK2") or on tree height ("CI_Braathe", "CI_RK3", "CI_RK4"). 
 
-The competition indices are computed according to the following equations, where $d_i$ and $h_i$ are the dbh and height of neighbor tree $i$, $d$ and $h$ are dbh and height of the target tree, and $dist_i$ is the distance from neighbor tree $i$ to the target tree.
+The competition indices are computed according to the following equations, where $d_i$ and $h_i$ are the dbh and height of neighbour tree $i$, $d$ and $h$ are dbh and height of the target tree, and $dist_i$ is the distance from neighbour tree $i$ to the target tree.
 
 **Diameter-based competition indices**
 
@@ -358,7 +434,7 @@ compete_inv(inv_source = targets4, radius = 10, method = "all_methods")
 
 
 ## Choosing a search radius
-All indices that can be calculated with `compete_inv()` are based on a distance-weighted sum of the relative size of all neighbor trees within the search radius compared to the size of the central tree, or a sum of a transformation thereof. As the search radius determines how many trees are included for calculating these metric for each tree, all these distance-based competition indices are extremely sensitive to the choice of the search radius. An obvious consequence of this is that it is not meaningfully possible to compare distance based competition indices calculated with different search radii. Perhaps less obvious is that as different tree species differ in their average size and rooting patterns, the optimal search radius may differ between species, and that comparisons between species using competition indices computed with the same settings may not always result in meaningful results. 
+All indices that can be calculated with `compete_inv()` are based on a distance-weighted sum of the relative size of all neighbour trees within the search radius compared to the size of the central tree, or a sum of a transformation thereof. As the search radius determines how many trees are included for calculating these metric for each tree, all these distance-based competition indices are extremely sensitive to the choice of the search radius. An obvious consequence of this is that it is not meaningfully possible to compare distance based competition indices calculated with different search radii. Perhaps less obvious is that as different tree species differ in their average size and rooting patterns, the optimal search radius may differ between species, and that comparisons between species using competition indices computed with the same settings may not always result in meaningful results. 
 Some authors recommend to use a search radius based on the average crown size of the trees in the plot, such as [Lorimer (1983)](https://doi.org/10.1016/0378-1127(83)90042-7), who propose a search radius of 3.5 average crown radii. While such a recommendation certainly makes more sense than sticking to standard values like 10 m independent of whether calculating competition for stunted Elfin forests or gigantic Redwood trees, ultimately such a setting will always be arbitrary and that there are limits to the comparability of the indices across studies and across species. 
 
 

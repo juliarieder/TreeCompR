@@ -40,16 +40,17 @@ all trees in the entire forest are in the dataset). The standard is
 
 \item{radius}{numeric of length 1, Search radius (in m) around target tree
 wherein all neighboring trees are classified as competitors. Only used if
-\code{target_source} is \code{"buff_edge"}, \code{"exclude_edge"} or of type \code{forest_inv}.
-Defaults to 10.}
+\code{target_source} is \code{"buff_edge"}, \code{"exclude_edge"} or if
+\code{crop_to_target = TRUE}. Defaults to 10.}
 
-\item{tol}{numeric. Only used when \code{target_source} is an inventory with a
-second set of coordinates. Tolerance for the match between tree coordinates
-in the forest inventory and target datasets if specified as a second set of
-coordinates. If a field measurements (e.g. based on GPS) are used to
+\item{tol}{numeric of length 1. Only used when \code{target_source} is an
+inventory with a second set of coordinates. Tolerance for the match between
+tree coordinates in the forest inventory and target datasets if specified
+as a second set of coordinates.
+If (GPS-based) field measurements of coordinate are used to
 identify target trees and the full inventory is from a different data
-source (e.g. ALS data), a higher tolerance value may be required to
-identify the trees depending on the measurement accuracy. Values of 0 mean
+source (e.g. ALS data), a the tolerance value may have to be adjusted to
+identify the trees depending on the GPS accuracy. Values of 0 mean
 exact matching. Defaults to 1 (match within a 1 m buffer).}
 
 \item{crop_to_target}{logical of length 1. Should the inventory be limited
@@ -113,7 +114,8 @@ extreme edge effects at the outer edge of the extent of the covered trees
 resulting in strongly underestimated competition for edge trees.
 \code{target_source = "buff_edge"} excludes all trees who are less than one
 search radius (\code{radius}) away from the plot border (approximated by a
-concave hull based on \code{\link[concaveman:concaveman]{concaveman::concaveman()}}) and hence guarantees to
+concave hull based on \code{\link[concaveman:concaveman]{concaveman::concaveman()}} using a length threshold
+of 2 times the desired search radius) and hence guarantees to
 only include trees that can obtain valid competition index values for that
 search radius. \code{target_source = "exclude_edge"} only removes the edge trees
 and hence is less restrictive, but more prone to edge effects.
@@ -123,18 +125,47 @@ are doing!
 }
 \examples{
 \dontrun{
-# read inventory
-inv <- read_inv("path/to/invtable.csv")
-#or just validate your already loaded inventory data
-#e.g.extracted from lidR package
-inv <- read_inv(inventory, height = Z, height_unit = "m")
-# or from itcSegment (itcLiDARallo)
-inv <- read_inv(inventory, height = Height_m, height_unit = "m")
-# target trees defined by a buffer around the plot edges
-target <- define_target(inv, target_source = "buff_edge", radius = 10)
-#or if your trees are definitely at a forest edge
-#(and not just at the edge of your dataset) you can include all trees
-target <- define_target(inv, target_source = "all_trees", radius = 10)
+# designate target trees based on character vector with tree ids
+targets1 <- define_target(
+  inv = inventory1,
+  target_source = c("FASY-43-24", "FASY-43-27", "FASY-43-30")
+)
+
+# designate target trees based on logical vector
+targets2 <- define_target(
+  inv = inventory1,
+  target_source = grepl("FASY", inventory1$id)
+)
+
+# designate target trees based on GPS coordinates
+# read target tree positions
+target_pos <- read_inv("data/target_tree_gps.csv",
+                       x = gps_x, y = gps_y, verbose = FALSE)
+
+# define target trees
+targets3 <- define_target(
+  inv = inventory4,
+  target_source = target_pos,
+  tol = 1 # match within 1 m accuracy
+)
+
+# designate target trees with a 10 m buffer to the plot border
+targets4 <- define_target(
+  inv = inventory4,
+  target_source = "buff_edge",
+  radius = 8)
+
+# designate target trees by only excluding the plot border
+targets5 <- define_target(
+  inv = inventory4,
+  target_source = "exclude_edge",
+  radius = 8
+)
+
+# designate all trees as target trees
+targets6 <- define_target(
+  inv = inventory4,
+  target_source = "all_trees")
 }
 
 }
