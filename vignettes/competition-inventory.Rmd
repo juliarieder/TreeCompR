@@ -357,25 +357,42 @@ plot_target(targets6, radius = 8)
 <img src="../man/figures/targets6.png" alt="plot_trees" width="600">
 
 ### Computing competition indices with `compete_inv()`
-`compete_inv()` is very flexible with its input, in essence directly accepting everything that can also be loaded with `read_inv()` and also passing additional settings for column specifications etc. on to this function, which is used to load the data internally. Also all options for `target_source` that can be set in `define_target()` can be directly specified in `compete_inv()`, and in most cases this function will likely be called directly unless there are reasons to perform the other steps explicitly, for instance, because the data structure and formatting differ between the inventory and target files or because an inspection of the target settings is desired _before_ computing the results.
+#### Basic usage
+`compete_inv()` is very flexible with its input, in essence directly accepting everything that can also be loaded with `read_inv()` and also passing additional settings for column specifications etc. on to this function, which is then used to load the data internally. In addition, all options for `target_source` that can be set in `define_target()` can be directly specified in `compete_inv()`. 
+In consequence, in most use cases this function will likely be called directly unless there are reasons to perform the other steps explicitly, for instance, because the data structure and formatting differ between the inventory and target files and require different sets of custom column name settings, or because an inspection of the target settings and spatial configuration is desired _before_ computing the results (which is certainly a good idea for large datasets).
+
+To identify the neighbor trees within the search radius of each target true, `compete_inv()`uses the function `knn()` from package [nabor]https://github.com/jefferis/nabor) that is based on a very efficient C++ implementation  of the k-nearest neighbor algorithm from [libnabo](https://github.com/norlab-ulaval/libnabo). This makes it possible to deal with very large inventory datasets in a relatively fast way as the pairwise distances of far-away trees are never actually evaluated. In order to do this, it is necessary to specify a maximum number of nearest neighbors to consider for each tree, which has to be sufficiently larger than the maximum number of trees expected in a search radius (`kmax`, by default 999). The function then identifies which among the nearest neighbors are within the search radius. 
+
+For most datasets, the choice of `kmax` will not play a role as search radii large enough to contain that many trees rarely make sense from a biological perspective, and because in many cases performance differences between different values of `kmax` will hardly be notable. However, for very large inventory datasets, as can be expected when working with ALS data sources, The performance difference compared to the regular pairwise-distance-based implementations as e.g. `sf::st_is_within_distance()` can be several orders of magnitude. As a practical example, evaluating `sf::st_is_within_distance()` with a search radius of 10 m for 38,522 trees from an ALS inventory on a modern laptop took 750.73 sec (around 12 min 31 sec), while computing the Braathe index with the same settings for all these trees with` compete_inv()` took 16.38 seconds. 
 
 If target trees have already been specified with `target_inv()`, the outcome can directly be passed to `compete_inv()`, which then ignores the target_source argument and all further arguments that are passed on to `read_inv()` and `define_target()`.
 
 ```{r comp1, message=FALSE, warning=FALSE, eval=FALSE}
-compete_inv(inv_source = targets4, radius = 10, method = "CI_Hegyi")
+# compute Hegyi index based on existing 'target_inv' object
+ (CI1 <- compete_inv(inv_source = targets4, radius = 8, 
+                    method = "CI_Hegyi"))
 #> --------------------------------------------------------------------- 
 #> 'compete_inv' class inventory with distance-based competition indices 
-#> Collection of data for 1 target and 47 edge trees. 
-#> Source of target trees: buffer around edge    Search radius: 10 
+#> Results for 43 target trees based on an inventory with 131 trees. 
+#> Source of target trees: buffer around edge 	 Search radius: 8 m
 #> ---------------------------------------------------------------------
-#>    id     x      y  dbh CI_Hegyi
-#> 44 48 0.102 -0.494 24.4     4.39
+#>         id        x       y    dbh height CI_Hegyi
+#>     <char>    <num>   <num>  <num>  <num>    <num>
+#>  1:  21277 563160.3 5508586  9.863 12.098    0.952
+#>  2:  21512 563166.9 5508589 11.917 12.720    4.971
+#>  3:  21581 563158.5 5508589 12.085 14.659    0.937
+#> ---                                               
+#> 41:  23501 563157.4 5508615 26.787 27.172    2.286
+#> 42:  23582 563139.6 5508616  9.186 11.461    6.138
+#> 43:  23652 563141.8 5508616 11.017 13.886    5.866
 ```
 
-Otherwise, it is for example possible to calculate the Hegyi competition index from a data from a .csv source with non-standard column names and decimal and field separators (in this example, from a German file source) and then get reasonable target trees via `target_source = "buff_edge"`:
+The resulting "compete_inv" object contains only the target trees, and has one additional column for each computed competition index. Information about the neighbor trees as well as  information about the methods are stored as attributes.
+
+In addition to analyses based on existing "target_inv" objects, it is possible to read data from file, for example from a ".csv" source with non-standard column names and decimal and field separators (in this example, from a German file source):
 
 ```{r comp2, message=FALSE, warning=FALSE, eval=FALSE}
-CI1 <- compete_inv(
+CI2 <- compete_inv(
   inv_source = "data/inventory5.csv",
   target_source = "buff_edge",
   radius = 10, 
@@ -387,9 +404,18 @@ CI1 <- compete_inv(
   sep = ";",
   dec = ","
   )
+#> The following columns were used to create the inventory dataset:
+#> id	  ---	Baumname
+#> x	  ---	Koord_x
+#> y	  ---	Koord_y
+#> dbh	---	Durchmesser
 ```
 
-The output of this function can then again be inspected in the same way as above using `plot_target(CI1)` to make sure the selection of target trees make sense.
+The output of this function can then again be inspected in the same way as above using `plot_target()` to make sure the selection of target trees make sense:
+```{r comp2a, message=FALSE, warning=FALSE, eval=FALSE}
+plot_target(CI2)
+```
+<img src="../man/figures/comp1.png" alt="plot_trees" width="600">
 
 #### Available competition indices
 The function computes a series of inventory-based competition indices commonly used in the literature that can be specified via the `method` argument ([Hegyi 1974](https://search.worldcat.org/title/growth-models-for-tree-and-stand-simulation-proceedings-of-meetings-in-1973/oclc/1273734); Braathe, 1980; [Rouvinen & Kuuluvainen, 1997](https://doi.org/10.1139/x97-012); see also [Contreras et al., 2011](https://doi.org/10.1016/j.foreco.2011.08.031)). These are either based on tree diameter at breast height ("CI_Hegyi", "CI_RK1", "CI_RK2") or on tree height ("CI_Braathe", "CI_RK3", "CI_RK4"). 
@@ -399,44 +425,158 @@ The competition indices are computed according to the following equations, where
 **Diameter-based competition indices**
 
 **CI_Hegyi** introduced by Hegyi (1974): 
-$$CI_{Hegyi} = \sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})$$
+$$CI_{Hegyi} = \sum_{i=1}^{n} \frac{d_{i}} {d \cdot dist_{i}}$$
 **CI_RK1** according to CI1 Rouvinen & Kuuluvainen (1997): 
-$$CI_{RK1} = \sum_{i=1}^{n} \mathrm{arctan}(d_{i} / dist_{i})$$
+$$CI_{RK1} = \sum_{i=1}^{n} \mathrm{arctan}\left(\frac{d_{i} } {dist_{i}}\right)$$
 **CI_RK2** according to CI3 in Rouvinen & Kuuluvainen (1997): 
-$$CI_{RK2} =\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i} / dist_{i})$$
+$$CI_{RK2} =\sum_{i=1}^{n} \frac{d_{i}}{d} \cdot \mathrm{arctan}\left(\frac{d_{i} } {dist_{i}}\right)$$
 
 **Height-based competition indices**
 
 **CI_Braathe** according to Braathe (1980): 
-$$CI_{Braathe} = \sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})$$
+$$CI_{Braathe} = \sum_{i=1}^{n} \frac{h_{i}}{h \cdot dist_{i}}$$
 **CI_RK3** according to CI5 in Rouvinen & Kuuluvainen (1997): 
-$$CI_{RK3} = \sum_{i=1}^{n} \mathrm{arctan}(h_{i} / dist_{i})$$ 
+$$CI_{RK3} = \sum_{i=1}^{n}  \mathrm{arctan}\left(\frac{h_{i}}{ dist_{i}}\right)$$ 
 for all trees with $h_{i} > h$
-
 **CI_RK4** based on CI3 in Rouvinen & Kuuluvainen (1997) and Contreras et al. (2011):
-$$CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot    \mathrm{arctan}(h_{i} / dist_{i})$$
+$$CI_{RK4} = \sum_{i=1}^{n} \frac{h_{i}}{ h } \cdot    \mathrm{arctan}\left(\frac{h_{i}}{ dist_{i}}\right)$$
+
+
+**Generic size-based Hegyi-type competition index**
+
+**CI_size** based on Hegyi (1974), but with a user-specified size-related variable ($s_i$: size for neighbour tree $i$, $s$: size of the target tree):
+$$CI_{size} = \sum_{i=1}^{n} \frac{s_{i}}{s \cdot dist_{i}}$$
 
 An advantage of the classical distance-based indices (CI_Hegyi and CI_Braathe) is their clear interpretation as the sum of the relative sizes of the neighbour trees relative to the target tree size, weighted by their distance to the target tree. 
-
 
 If `method = "all_methods"` (the standard setting), `compete_inv()` computes all indices that can be computed with the data available in the inventory. 
 
 ```{r comp3, message=FALSE, warning=FALSE, eval=FALSE}
-compete_inv(inv_source = targets4, radius = 10, method = "all_methods")
+CI3 <- compete_inv(inv_source = targets4, 
+                    radius = 8, method = "all_methods")
+CI3[, -c(2:3)] # remove coordinates to make room for printing
 #> --------------------------------------------------------------------- 
 #> 'compete_inv' class inventory with distance-based competition indices 
-#> Collection of data for 1 target and 47 edge trees. 
-#> Source of target trees: buffer around edge    Search radius: 10 
+#> Results for 43 target trees based on an inventory with 131 trees. 
+#> Source of target trees: buffer around edge 	 Search radius: 8 m 
 #> ---------------------------------------------------------------------
-#>    id     x      y  dbh CI_Hegyi CI_RK1 CI_RK2
-#> 44 48 0.102 -0.494 24.4     4.39     33   38.5
+#>         id    dbh height CI_Hegyi CI_RK1 CI_RK2 CI_Braathe CI_RK3 CI_RK4
+#>     <char>  <num>  <num>    <num>  <num>  <num>      <num>  <num>  <num>
+#>  1:  21277  9.863 12.098    0.952  4.233  6.599      0.909  3.702  6.208
+#>  2:  21512 11.917 12.720    4.971 14.872 38.159      4.098 13.663 30.618
+#>  3:  21581 12.085 14.659    0.937  4.258  7.277      0.843  2.663  6.439
+#> ---                                                                     
+#> 41:  23501 26.787 27.172    2.286 15.139 17.242      1.849  8.308 13.240
+#> 42:  23582  9.186 11.461    6.138 16.847 43.552      4.679 14.254 32.146
+#> 43:  23652 11.017 13.886    5.866 17.400 42.582      4.354 12.267 30.132
 ```
 
+In this example, the inventory contained both dbh and height, but no user-specified size, and accordingly all built-in indices except the CI_size are included in the output.
 
-## Choosing a search radius
+
+#### Choosing a search radius
 All indices that can be calculated with `compete_inv()` are based on a distance-weighted sum of the relative size of all neighbour trees within the search radius compared to the size of the central tree, or a sum of a transformation thereof. As the search radius determines how many trees are included for calculating these metric for each tree, all these distance-based competition indices are extremely sensitive to the choice of the search radius. An obvious consequence of this is that it is not meaningfully possible to compare distance based competition indices calculated with different search radii. Perhaps less obvious is that as different tree species differ in their average size and rooting patterns, the optimal search radius may differ between species, and that comparisons between species using competition indices computed with the same settings may not always result in meaningful results. 
 Some authors recommend to use a search radius based on the average crown size of the trees in the plot, such as [Lorimer (1983)](https://doi.org/10.1016/0378-1127(83)90042-7), who propose a search radius of 3.5 average crown radii. While such a recommendation certainly makes more sense than sticking to standard values like 10 m independent of whether calculating competition for stunted Elfin forests or gigantic Redwood trees, ultimately such a setting will always be arbitrary and that there are limits to the comparability of the indices across studies and across species. 
 
+#### User-specified competition indices 
+With `TreeCompR`, defining user-specified competition indices is very easy. All it takes is to write a function that takes the arguments `target`  and `neigh` as its inputs, and returns a single numeric value (the value of the competition index for the current tree) as an output. Here `target` is a single-line "forest_inv"-based data.table with the data of a target tree, and `neigh` is a multi-line  "forest_inv"-based data.table with the data of all neighbor trees of the target tree (including their distance "dist` to the target tree). This function will then be evaluated for all target trees to calculate their value of the index.
 
+For instance, a working version of the Hegyi index can be defined like this:
+```{r index1, message=FALSE, warning=FALSE, eval=FALSE}
+CI_Hegyi_new <- function(target, neigh)  sum(neigh$dbh / (target$dbh * neigh$dist))
+```
+
+This function can then be called with the `method` argument `compete_inv()` as a competition index:
+
+```{r index1a, message=FALSE, warning=FALSE, eval=FALSE}
+compete_inv(inv_source = targets4, radius = 8,
+            method = c("CI_Hegyi", "CI_Hegyi_new"))
+#> --------------------------------------------------------------------- 
+#> 'compete_inv' class inventory with distance-based competition indices 
+#> Results for 43 target trees based on an inventory with 131 trees. 
+#> Source of target trees: buffer around edge 	 Search radius: 8 m 
+#> ---------------------------------------------------------------------
+#>         id        x       y    dbh height CI_Hegyi CI_Hegyi_new
+#>     <char>    <num>   <num>  <num>  <num>    <num>        <num>
+#>  1:  21277 563160.3 5508586  9.863 12.098    0.952        0.952
+#>  2:  21512 563166.9 5508589 11.917 12.720    4.971        4.971
+#>  3:  21581 563158.5 5508589 12.085 14.659    0.937        0.937
+#> ---                                                            
+#> 41:  23501 563157.4 5508615 26.787 27.172    2.286        2.286
+#> 42:  23582 563139.6 5508616  9.186 11.461    6.138        6.138
+#> 43:  23652 563141.8 5508616 11.017 13.886    5.866        5.866
+```
+
+The output is identical to the built-in function.
+
+This feature can also be used to modify existing indices, e.g. by calculating the RK2 index only for trees that are taller than the target tree:
+
+```{r index2, message=FALSE, warning=FALSE, eval=FALSE}
+CI_RK1_tall <- function(target, neigh) 
+  CI_RK1(target, neigh[neigh$height > target$height, ])
+```
+
+In many cases, it can e.g. be interesting to split up the contribution to the total competition by different competitor species (see [Hajek et al., 2022](https://doi.org/10.1111/gcb.16146) for an example). This can be done analogously, for example for a mixed stand of hornbeam, oak and ash:
+
+```{r index3, message=FALSE, warning=FALSE, eval=FALSE}
+# define partial index for oak
+CI_Hegyi_QURO <- function(target, neigh) 
+  CI_Hegyi(target, neigh[neigh$species == "Quercus robur", ])
+# define partial index for hornbeam
+CI_Hegyi_CABE <- function(target, neigh) 
+  CI_Hegyi(target, neigh[neigh$species == "Carpinus betulus", ])
+# define partial index for ash
+CI_Hegyi_FREC <- function(target, neigh) 
+  CI_Hegyi(target, neigh[neigh$species == "Fraxinus excelsior", ])
+
+# load complete dataset (keep rest: information about species etc is maintained)
+inv_species <- read_inv("data/inventory6.csv", keep_rest = TRUE)
+form(inv_species)
+#> ---------------------------------------  
+#> 'forest_inv' class inventory dataset: 
+#> collection of 1091 observations 
+#> ---------------------------------------
+#>           id      x       y    dbh height            species
+#>       <char>  <num>   <num>  <num>  <num>             <char>
+#>    1:  31316 26.630   0.722 10.693 15.061   Carpinus betulus
+#>    2:  31339  6.338   0.712  6.668 10.162   Carpinus betulus
+#>    3:  31374  4.718   0.792  6.603  9.240 Fraxinus excelsior
+#>   ---                                                       
+#> 1089:  38564 46.397 100.414  4.850  7.597 Fraxinus excelsior
+#> 1090:  38565 54.600  99.893  5.804  8.178   Carpinus betulus
+#> 1091:  38567 94.888 100.531  3.412  6.133   Carpinus betulus
+
+
+# compute species-decomposed Hegyi
+comp_species <- compete_inv(
+  inv_source = inv_species, target_source = "buff_edge", radius = 12, 
+  method = c("CI_Hegyi_QURO", "CI_Hegyi_CABE", "CI_Hegyi_FREC", "CI_Hegyi"))
+comp_species[, -c(1:5)]
+#> --------------------------------------------------------------------- 
+#> 'compete_inv' class inventory with distance-based competition indices 
+#> Results for 622 target trees based on an inventory with 1090 trees. 
+#> Source of target trees: buffer around edge 	 Search radius: 12 m 
+#> ---------------------------------------------------------------------
+#>                 species CI_Hegyi_QURO CI_Hegyi_CABE CI_Hegyi_FREC CI_Hegyi
+#>                  <char>         <num>         <num>         <num>    <num>
+#>   1:      Quercus robur        12.514         8.501         4.086   25.101
+#>   2: Fraxinus excelsior         5.045         1.529         3.396    9.971
+#>   3: Fraxinus excelsior         6.303         2.955         3.156   12.414
+#>  ---                                                                      
+#> 620:   Carpinus betulus         3.771         1.582         1.329    6.682
+#> 621:      Quercus robur         2.006         1.977         1.372    5.355
+#> 622:      Quercus robur         3.349         2.888         1.571    7.807
+```
+
+As in the plot the three species are the only species that occur, this constitutes a full decomposition of the Hegyi index into the contributions of different competitor species:
+
+```{r index3a, message=FALSE, warning=FALSE, eval=FALSE}
+# test if the decomposition worked
+with(comp_species, 
+     all.equal(CI_Hegyi_QURO + CI_Hegyi_CABE + CI_Hegyi_FREC, CI_Hegyi))
+#> [1] TRUE
+```
+
+As species-specific directed interaction are likely very common among competing tree species, such a decomposition may often be more beneficial for understanding competition between trees than looking at the overall effect of competition. 
 
 
