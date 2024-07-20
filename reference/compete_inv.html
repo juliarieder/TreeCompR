@@ -64,7 +64,7 @@ distance-dbh-dependent competition indices based on forest inventory data.</p>
 <span>  keep_rest <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  tol <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  kmax <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  kmax <span class="op">=</span> <span class="fl">999</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -198,8 +198,8 @@ accuracy of the GPS coordinates.</p></dd>
 consider for determining the neighbor trees of each tree. Lower values
 speed up computation, which is likely not an issue unlike your inventory
 contains tens of thousands of trees, but is very relevant for big datasets.
-Defaults to 100, which should be reasonable in many forest settings, but
-should be adjusted when there are warnings (especially for large search
+Defaults to 999, which should be reasonable in almost all forest settings,
+but has to be adjusted when there are warnings (especially for large search
 radii and/or stands with small trees). If <code>kmax</code> is larger than the number
 of trees in the plot, the latter is passed on as <code>k</code> to <code><a href="https://rdrr.io/pkg/nabor/man/knn.html" class="external-link">nabor::knn()</a></code>.</p></dd>
 
