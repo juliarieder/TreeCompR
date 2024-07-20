@@ -183,13 +183,49 @@ taking their GPS coordinates manually in the field).</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># prepare inventory table for compete_inv()</span></span></span>
-<span class="r-in"><span><span class="va">inv</span> <span class="op">&lt;-</span> <span class="fu">data.table</span><span class="fu">::</span><span class="fu"><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">fread</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"path/to/table.csv"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co">#specify the units of parameters within your input</span></span></span>
-<span class="r-in"><span><span class="va">inv_table</span> <span class="op">&lt;-</span> <span class="fu">read_inv</span><span class="op">(</span><span class="va">inv</span>, dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># Read inventory table directly from directory</span></span></span>
-<span class="r-in"><span><span class="va">inv_table</span> <span class="op">&lt;-</span> <span class="fu">read_inv</span><span class="op">(</span>inv_source <span class="op">=</span> <span class="st">"path/to/table.csv"</span>, dbh_unit <span class="op">=</span> <span class="st">"cm"</span>,</span></span>
-<span class="r-in"><span>height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># read inventory with diameter and height units set to m</span></span></span>
+<span class="r-in"><span><span class="va">inventory1</span> <span class="op">&lt;-</span> <span class="fu">read_inv</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  inv_source <span class="op">=</span> <span class="st">"data/inventory1.csv"</span>,</span></span>
+<span class="r-in"><span>  dbh_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># read inventory with custom (Spanish) column titles</span></span></span>
+<span class="r-in"><span><span class="va">inventory2</span> <span class="op">&lt;-</span> <span class="fu">read_inv</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  inv_source <span class="op">=</span> <span class="st">"data/inventory2.csv"</span>,</span></span>
+<span class="r-in"><span>  x <span class="op">=</span> <span class="va">utmx</span>,</span></span>
+<span class="r-in"><span>  y <span class="op">=</span> <span class="va">utmy</span>,</span></span>
+<span class="r-in"><span>  dbh <span class="op">=</span> <span class="va">dap_cm</span>,</span></span>
+<span class="r-in"><span>  height <span class="op">=</span> <span class="va">altura</span>,</span></span>
+<span class="r-in"><span>  dbh_unit <span class="op">=</span> <span class="st">"cm"</span>,</span></span>
+<span class="r-in"><span>  height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># read inventory with custom decimal and column separators</span></span></span>
+<span class="r-in"><span><span class="va">inventory3</span> <span class="op">&lt;-</span> <span class="fu">read_inv</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  inv_source <span class="op">=</span> <span class="st">"data/inventory3.csv"</span>,</span></span>
+<span class="r-in"><span>  dec <span class="op">=</span> <span class="st">","</span>,</span></span>
+<span class="r-in"><span>  sep <span class="op">=</span> <span class="st">";"</span>,</span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># read dataset outside read_inv and filter to a single plot</span></span></span>
+<span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">readr</span><span class="fu">::</span><span class="fu">read_csv</span><span class="op">(</span><span class="st">"data/inventory4.csv"</span><span class="op">)</span> <span class="op">%&gt;%</span></span></span>
+<span class="r-in"><span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">plot_id</span> <span class="op">==</span> <span class="st">"Plot 1"</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># use read_inv to convert to a forest_inv object that works with TreeCompR functions</span></span></span>
+<span class="r-in"><span><span class="va">inventory4</span> <span class="op">&lt;-</span> <span class="fu">read_inv</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  inv_source <span class="op">=</span> <span class="va">dat</span>,</span></span>
+<span class="r-in"><span>  dbh <span class="op">=</span> <span class="va">diam</span>,</span></span>
+<span class="r-in"><span>  dbh_unit <span class="op">=</span> <span class="st">"cm"</span>,</span></span>
+<span class="r-in"><span>  height_unit <span class="op">=</span> <span class="st">"m"</span>,</span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># read same inventory without dropping columns</span></span></span>
+<span class="r-in"><span><span class="va">inventory4a</span> <span class="op">&lt;-</span> <span class="fu">read_inv</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  inv_source <span class="op">=</span> <span class="va">dat</span>,</span></span>
+<span class="r-in"><span>  dbh <span class="op">=</span> <span class="va">diam</span>,</span></span>
+<span class="r-in"><span>  dbh_unit <span class="op">=</span> <span class="st">"cm"</span>,</span></span>
+<span class="r-in"><span>  height_unit <span class="op">=</span> <span class="st">"m"</span>,</span></span>
+<span class="r-in"><span>  keep_rest <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>  verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
