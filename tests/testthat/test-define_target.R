@@ -1,6 +1,6 @@
 # testthat-based unit tests for the functionality of the read_inv function
 test_that(
-  "define_target works for character vectors", {
+  "character vectors are handled correctly", {
     # reading in data
     expect_no_error({
       test_inv <- read_inv(test_path("testdata", "inventory.csv"),
@@ -60,7 +60,7 @@ test_that(
 
 
 test_that(
-  "define_target works for logical vectors", {
+  "logical vectors are handled correctly", {
     # target can be defined with logical vector
     expect_no_error({
       test_inv <- read_inv(test_path("testdata", "inventory.csv"),
@@ -86,18 +86,22 @@ test_that(
   })
 
 test_that(
-  "define_target works for other inventories", {
+  "other inventories are handled correctly", {
     # target can be defined with subset
     expect_no_error({
       test_inv <- read_inv(test_path("testdata", "inventory.csv"),
                            sep = ";", dec = ".", verbose = FALSE)
       target <- test_inv[c(17, 20, 22:26), ]
       test4 <- define_target(inv = test_inv, target_source = target,
-
                              verbose = FALSE)
     })
+
     # correct rows are returned
     expect_equal(test_inv$id[c(17, 20, 22:26)], test4$id[test4$target])
+
+    # columns are returned in the correct order (target after coordinates)
+    expect_equal(names(test4), c("id", "x", "y",
+                                 "target", "target_id", "dbh"))
 
     # type is passed on
     expect_equal(attr(test4, "target_type"), "inventory")
@@ -162,10 +166,9 @@ test_that(
   })
 
 
-
 test_that(
-  "define_target works for methods specified as character strings", {
-    # target can be defined with subset
+  "methods specified as character strings  are handled correctly", {
+    # target can be definedfor all trees, but results in warning
     expect_warning({
       test_inv <- read_inv(test_path("testdata", "inventory.csv"),
                            sep = ";", dec = ".", verbose = FALSE)
@@ -201,6 +204,23 @@ test_that(
     expect_no_error(plot_target(test8))
 
     # print methods works
-    expect_output(print(test8), "'target_inv' class inventory dataset")
+    expect_output(print(test8), "'target_inv' class inventory with target")
 
   })
+
+
+test_that(
+  "extra columns are handled correctly", {
+    # target can be created with dataset with extra column
+    expect_no_error({
+      test_inv <- read_inv(test_path("testdata", "inventory.csv"),
+                           sep = ";", dec = ".", verbose = FALSE)
+      test_inv$extra <- 1
+      test <- define_target(inv = test_inv)
+    })
+
+    # columns are ordered correctly (target after coord, extra at the end)
+    expect_equal(names(test), c("id", "x", "y",
+                                "target", "dbh", "extra"))
+
+   })

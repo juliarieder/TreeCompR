@@ -238,7 +238,7 @@ test_that("Printing works", {
         inv_source = test_path("testdata", "inventory.csv"), radius = 10,
         method = "CI_Hegyi", verbose = FALSE)
     ),
-    "'compete_inv' class inventory with distance-based competition indices"
+    "'compete_inv' class distance-based competition index dataset"
   )
 })
 
@@ -381,6 +381,9 @@ test_that("Function works for nonstandard indices", {
 
   # output makes sense
   expect_gt(sum(out1$CI_test), 0)
+
+  # columns are returned in the correct order (extra columns at the end)
+  expect_equal(names(out1), c("id", "x", "y", "dbh", "CI_test", "extra"))
 
   # a function with the wrong arguments fails
   expect_error({

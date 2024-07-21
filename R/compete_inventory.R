@@ -363,6 +363,18 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
   attr(out, "edge_trees") <- as.matrix(inv[!inv$target, c("x", "y")])
   # define class
   class(out) <- c("compete_inv", "forest_inv", "data.table", "data.frame")
+
+  # update column order
+  # standard columns
+  first <- base::intersect(
+    c("id", "x", "y", "target_id", "dbh", "height", "size"), names(out))
+  # competition index columns
+  CIs <- grep("CI_", names(out), value = TRUE)
+  # all other columns
+  rest <- base::setdiff(names(out), c(first, CIs))
+  # reorder output
+  out <- subset(out, select = c(first, CIs, rest))
+
   # return output
   return(out)
 }
@@ -459,20 +471,23 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
 print.compete_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
   # get description of target source from lookup table
   target <- as.character(
-    c(inventory = "second inventory",
-      character = "character vector",
-      logical   = "logical vector",
-      exclude_edge = "excluding edge",
-      buff_edge = "buffer around edge",
-      all_trees = "all trees"
+    c(inventory = "tree coordinates",
+      character = "tree IDs",
+      logical   = "logical selection",
+      exclude_edge = "'exclude_edge'",
+      buff_edge = "'buff_edge'",
+      all_trees = "'all_trees'"
     )[ attr(x, "target_type")]
   )
+  if (target == "'buff_edge'")
+    target <- paste0(target, " (", attr(x, "spatial_radius"), " m)")
+
   # prepare header
   header <- paste0(
-      "'compete_inv' class inventory with distance-based competition indices\n",
-      "  No. of target trees: ", nrow(x),"\t Size of original inventory: ",
+      "'compete_inv' class distance-based competition index dataset\n",
+      "No. of target trees: ", nrow(x),"\t Source inventory size: ",
       nrow(x) + nrow(attr(x, "edge_trees")),
-      " trees  \nTarget source: ", target,
+      " trees\nTarget source: ", target,
       "\t Search radius: ", attr(x, "radius"), " m")
 
   # print data.table with trees

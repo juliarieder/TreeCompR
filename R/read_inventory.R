@@ -370,14 +370,13 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 #' @export
 print.forest_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
   # get number of data columns
-  if (ncol(x) > 3){
-    if (ncol(x) > 4) cols <- paste0(" with ", ncol(x) - 3, " data columns")
-    else cols <- " with one data column"
+  if (ncol(x) > 4){
+    cols <- paste0("No. of data cols.: ", ncol(x) - 3)
   } else cols <- ""
   # prepare header
   header <- paste0(
-      "'forest_inv' class inventory dataset \nCollection of ",
-      nrow(x)," observation", ifelse(nrow(x) > 1, "s", ""), cols
+      "'forest_inv' class inventory dataset\n",
+      "No. of obs.: ", nrow(x), "\t ", cols
   )
   # print data.table with trees
   .print_as_dt(x, digits = digits, topn = topn,

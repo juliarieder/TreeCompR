@@ -313,6 +313,13 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
   if (spatial) {
     attr(inv, "spatial_radius") <- radius
   }
+  # update column order
+  # identify standard columns
+  first <- base::intersect(
+    c("id", "x", "y", "target", "target_id", "dbh", "height", "size"),
+    names(inv))
+  # reorder output
+  inv <- subset(inv, select = c(first, base::setdiff(names(inv), first)))
   # return inventory
   return(inv)
 }
@@ -568,24 +575,25 @@ plot_target <- function(inv, radius = NULL) {
 print.target_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
   # get description of target source from lookup table
   target <- as.character(
-    c(inventory = "second inventory",
-      character = "character vector",
-      logical   = "logical vector",
-      exclude_edge = "excluding edge",
-      buff_edge = "buffer around edge",
-      all_trees = "all trees"
+    c(inventory = "tree coordinates",
+      character = "tree IDs",
+      logical   = "logical selection",
+      exclude_edge = "'exclude_edge'",
+      buff_edge = "'buff_edge'",
+      all_trees = "'all_trees'"
     )[ attr(x, "target_type")]
   )
+  if (target == "'buff_edge'")
+    target <- paste0(target, " (", attr(x, "spatial_radius"), " m)")
+
   # get number of data columns
   if (ncol(x) > 4){
-    if (ncol(x) > 5) cols <- paste0(" with ", ncol(x) - 4, " data columns")
-    else cols <- " with one data column"
+    cols <- paste0("No. of data cols.: ", ncol(x) - 4)
   } else cols <- ""
   # prepare header
   header <- paste0(
-    "'target_inv' class inventory dataset with target tree definitions",
-    "\nCollection of ", nrow(x)," observation",
-    ifelse(nrow(x) > 1, "s", ""), cols,
+    "'target_inv' class inventory with target definitions",
+    "\nNo. of obs.: ", nrow(x), "\t ", cols,
     "\nNo. of target trees: ", sum(x$target),"   \t Target source: ", target)
 
   # print data.table with trees
