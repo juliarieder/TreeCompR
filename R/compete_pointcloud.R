@@ -346,7 +346,7 @@ print.compete_pc <- function(x, digits = 3, topn = 3, nrows = 8, ...){
                    paste(nrow(x), " target trees"))
   # prepare header
   header <- paste0(
-    "Point cloud based competition indices for ", target)
+    "'compete_pc' class point-cloud based competition indices for ", target)
   # print data.table with points
   .print_as_dt(x, digits = digits, topn = topn,
                header = header, nrows = nrows, ...)
