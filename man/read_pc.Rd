@@ -107,5 +107,7 @@ tree <- read_pc(tree_df)
 }
 \seealso{
 \code{\link[=compete_pc]{compete_pc()}} for computing tree competition and \code{\link[=tree_pos]{tree_pos()}} for
-computing tree position from point cloud objects.
+computing tree position from point cloud objects. For more details on the
+pre-processing of the point clouds before using this function, have a look
+at our \href{https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html}{tutorial}
 }

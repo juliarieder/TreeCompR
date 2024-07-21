@@ -53,5 +53,6 @@ plot_target(comp)
 \code{\link[=read_inv]{read_inv()}} to read forest inventory data,
 \code{\link[=define_target]{define_target()}} for designating target trees,
 \code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
-\link{competition_indices} for a list of available indices.
+\link{competition_indices} for a list of available indices. For visualized examples,
+see \href{https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#designating-target-trees-with-define_target}{competition inventory}
 }

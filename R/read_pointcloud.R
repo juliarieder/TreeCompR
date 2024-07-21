@@ -62,7 +62,9 @@
 #' and z coordinates of the tree or forest point cloud.
 #'
 #' @seealso [compete_pc()] for computing tree competition and [tree_pos()] for
-#'   computing tree position from point cloud objects.
+#'   computing tree position from point cloud objects. For more details on the
+#'   pre-processing of the point clouds before using this function, have a look
+#'   at our [tutorial](https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html)
 #'
 #' @export
 #'

@@ -134,7 +134,8 @@ inventory3 <- read_inv(
 dat <- readr::read_csv("data/inventory4.csv") \%>\%
   dplyr::filter(plot_id == "Plot 1")
 
-# use read_inv to convert to a forest_inv object that works with TreeCompR functions
+# use read_inv to convert to a forest_inv object that works with
+TreeCompR functions
 inventory4 <- read_inv(
   inv_source = dat,
   dbh = diam,
@@ -157,5 +158,5 @@ inventory4a <- read_inv(
 \code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
 \link{competition_indices} for a list of available indices,
 \code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
-\code{compete_inv} objects.
+\code{compete_inv} objects. Find more examples in our \href{https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#reading-in-forest-inventory-data-with-read_inv}{tutorial}.
 }
