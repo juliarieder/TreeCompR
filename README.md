@@ -15,13 +15,13 @@ This R package is designed for the quantitative analysis of individual
 tree competition within forest ecosystems. It accepts inputs such as
 LiDAR point clouds (as dataframe with xyz columns or las/laz files) of
 forest plots and individual target trees, or inventory tables (including
-tree ID, x, y, dbh and/or h). Through the use of various competition
-indices, it enables the assessment and measurement of competition
-between trees, providing valuable insights for forest ecology,
-inventories, and forest management strategies. This package facilitates
-a systematic approach to understanding interactions and resource
-competition among trees and enables informed decision making in forest
-management.
+tree ID, x, y, dbh and/or h or other size parameters). Through the use
+of various competition indices, it enables the assessment and
+measurement of competition between trees, providing valuable insights
+for forest ecology, inventories, and forest management strategies. This
+package facilitates a systematic approach to understanding interactions
+and resource competition among trees and enables informed decision
+making in forest management.
 
 ## Installation
 
@@ -45,7 +45,7 @@ competition in different ways:
 - Functions for **point-cloud based methods**
   - `compete_pc()` quantifies tree competition from point clouds using
     the cone or cylinder method (see [Metz et
-    al. 2013](https://doi.org/10.1016/j.foreco.2013.08.014);[Seidel et
+    al. 2013](https://doi.org/10.1016/j.foreco.2013.08.014); [Seidel et
     al. 2015](http://dx.doi.org/10.1016/j.foreco.2014.10.020))
   - `read_pc()` reads 3D point clouds from .las/.laz files, .ply files
     and text-only file formats such as .txt or .csv, and converts LAS

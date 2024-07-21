@@ -111,14 +111,14 @@
 #'  * CI_size based on Hegyi (1974), but with a user-specified size-related
 #'   variable (\eqn{s_i}: size for neighbour tree \eqn{i}, \eqn{s}: size of the
 #'   target tree):
-#'   \eqn{$CI_{size} = \sum_{i=1}^{n} s_{i} / (s \cdot dist_{i})}
+#'   \eqn{CI_{size} = \sum_{i=1}^{n} s_{i} / (s \cdot dist_{i})}
 #'
 #'  Further indices can be user-specified by developing a corresponding
 #'  function (see [competition_indices] for details).
 #'
 #'  To efficiently deal with large inventory datasets (as can be expected from
 #'  ALS sources), the neighbors within the search radius are computed with
-#'  [nabor::knn()], which is based on based on an efficient C++ implementation
+#'  [nabor::knn()], which is based on an efficient C++ implementation
 #'  of the k-nearest neighbor algorithm from
 #'  [libnabo](https://github.com/norlab-ulaval/libnabo). For this, it is
 #'  required to specify a maximum number of neighbors to take into account

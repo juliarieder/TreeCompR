@@ -182,5 +182,5 @@ targets6 <- define_target(
 \code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
 \link{competition_indices} for a list of available indices,
 \code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
-\code{compete_inv} objects.
+\code{compete_inv} objects. For visualized examples, see \href{https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#designating-target-trees-with-define_target}{competition inventory}
 }

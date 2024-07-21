@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-Airborne Laser Scanning is a powerful tool for forest management and research, offering accurate large-scale data. To quantify competition on the individual tree level, first the ALS point cloud needs to be pre-processed. For using the data in TreeCompR, we need to segment the trees and derive an inventory table. The package [`lidR`](https://CRAN.R-project.org/package=lidR) is a great option to load,inspect and process your ALS data and to segment individual trees. Check out the [lidRbook](https://r-lidar.github.io/lidRbook/) for their very nice detailed workflows and examples. 
+Airborne Laser Scanning is a powerful tool for forest management and research, offering accurate large-scale data. To quantify competition on the individual tree level, first the ALS point cloud needs to be pre-processed. For using the data in TreeCompR, we need to segment the trees and derive an inventory table. The package [`lidR`](https://CRAN.R-project.org/package=lidR) is a great option to load, inspect and process your ALS data and to segment individual trees. Check out the [lidRbook](https://r-lidar.github.io/lidRbook/) for their very nice detailed workflows and examples. 
 ```{r setup, message=FALSE, warning=FALSE, eval=FALSE}
 library(lidR)
 library(TreeCompR)
@@ -64,6 +64,7 @@ chm_p2r_05_smoothed <- terra::focal(chm_p2r_05, w = kernel, fun = median, na.rm 
 ttops_chm_p2r_05_smoothed <- locate_trees(chm_p2r_05_smoothed, lmf(5))
 ```
 ```{r CHM1, message=FALSE, warning=FALSE, eval=FALSE}
+# plot the CHM with the tree tops
 col <- height.colors(50)
 plot(chm_p2r_05_smoothed, main = "CHM P2R 0.5 smoothed", col = col); 
 plot(sf::st_geometry(ttops_chm_p2r_05_smoothed), add = T, pch =3)
@@ -128,7 +129,7 @@ plot_target(targets_buff)
 Now you can calculate the tree competition (size-distance-dependent) for your trees. Afterwards you can print your results, save the dataframe or plot the results according to your needs.
 ```{r integrate3, message=FALSE, warning=FALSE, eval=FALSE}
 CI <- compete_inv(inv_source = inv_trees, target_source = "buff_edge", 
-                  radius = 10, method = "all")
+                  radius = 10, method = "all_methods")
 CI
 #> --------------------------------------------------------------------- 
 #> 'compete_inv' class inventory with distance-based competition indices 
@@ -163,6 +164,18 @@ ggplot(CI, aes(x = x, y = y, color = CI_Braathe)) +
 ```
 <img src="../man/figures/CI_Braathe_ALS.jpeg" alt="CIB" width="500">
 
+## Use other size parameters to compute competition
+
+Besides the tree height there was also the crown projection area ("convhull_area") of each tree as output from the ALS workflow. This size can also be used to quantify competition, e.g. with **CI_size**, a generic size-based Hegyi-type competition index with a user-specified size-related variable ($s_i$: size for neighbour tree $i$, $s$: size of the target tree):
+$$CI_{size} = \sum_{i=1}^{n} \frac{s_{i}}{s \cdot dist_{i}}$$
+To use the crown projection area, just specify the parameter `size` and the `method` "CI_size":
+
+```{r integrate4, message=FALSE, warning=FALSE, eval=FALSE}
+CI_size <- compete_inv(inv_source = inv_trees, target_source = "buff_edge", 
+                  radius = 10, method = "CI_size", size = convhull_area)
+CI_size
+```
+
 ## Other options to pre-process the ALS point clouds
 There are other packages available, e.g. the [`itcSegment`](https://rdrr.io/cran/itcSegment/) package. Within their function `itcLiDARallo()`, 
 trees are being segmented based on typical allometric relations that can be defined beforehand. We also used this approach with the settings below to pre-process the MLS data in our manuscript "TreeCompR: Tree competition indices for inventory data and 3D point clouds". We used publicly available laser scanning datasets from the [Bavarian Agency for Digitisation, High-Speed Internet and Surveying](https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=laserdaten).
@@ -192,5 +205,5 @@ plot(se,axes=T)
 inv_trees <- read_inv(se, height = Height_m, height_unit = "m")
 #quantify tree competition (adjust radius)
 compete_inv(inv_source = inv_trees, target_source = "buff_edge", 
-            radius = 13.5, method = "all")
+            radius = 13.5, method = "all_methods")
 ```

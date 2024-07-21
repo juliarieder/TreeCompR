@@ -13,7 +13,7 @@ R Package for calculating distance-dependent or point cloud-based individual tre
 
 <!-- badges: end -->
 
-This R package is designed for the quantitative analysis of individual tree competition within forest ecosystems. It accepts inputs such as LiDAR point clouds (as tabular data with x, y and z coordinates, .las/.laz files or .ply files) of forest plots and individual target trees, or inventory tables (including tree ID, x and y coordinates, diameter and/or tree height). Through the use of various competition indices, it enables the assessment and measurement of competition between trees, providing valuable insights for forest ecology, inventories, and forest management strategies. This package facilitates a systematic approach to understanding interactions and resource competition among trees and enables informed decision making in forest management.
+This R package is designed for the quantitative analysis of individual tree competition within forest ecosystems. It accepts inputs such as LiDAR point clouds (as tabular data with x, y and z coordinates, .las/.laz files or .ply files) of forest plots and individual target trees, or inventory tables (including tree ID, x and y coordinates, diameter and/or tree height or other size parameters as crown projected area). Through the use of various competition indices, it enables the assessment and measurement of competition between trees, providing valuable insights for forest ecology, inventories, and forest management strategies. This package facilitates a systematic approach to understanding interactions and resource competition among trees and enables informed decision making in forest management.
 
 ## Installation
 
@@ -34,7 +34,7 @@ devtools::install_github("juliarieder/TreeCompR", ref = "development")
 TreeCompR can read point clouds or inventory tables and quantify tree competition in different ways:
 
 * Functions for __point-cloud based methods__
-    * `compete_pc()` quantifies tree competition from point clouds using the cone or cylinder method (see [Metz et al. 2013](https://doi.org/10.1016/j.foreco.2013.08.014);[Seidel et al. 2015](http://dx.doi.org/10.1016/j.foreco.2014.10.020))
+    * `compete_pc()` quantifies tree competition from point clouds using the cone or cylinder method (see [Metz et al. 2013](https://doi.org/10.1016/j.foreco.2013.08.014); [Seidel et al. 2015](http://dx.doi.org/10.1016/j.foreco.2014.10.020))
     * `read_pc()` reads 3D point clouds from .las/.laz files, .ply files and text-only file formats such as .txt or .csv, and converts LAS objects and data.frames to a TreeCompR compatible format
     * `tree_pos()` computes the base position and height of target tree point clouds
 * Functions for __inventory-based methods__
@@ -46,7 +46,7 @@ TreeCompR can read point clouds or inventory tables and quantify tree competitio
 
 ## Methodology of the point cloud-based approach
 
-LiDAR point clouds can be used directly to quantify the competition exerted by neighboring trees on the target tree. For this purpose, the target tree for which the competition is to be determined should be segmented beforehand. Since it is crucial whether a part of the point cloud is classified as "competing" or as part of the target tree itself, a manual segmentation (e.g. in CloudCompare) is recommended as it tends to be much more accurate.
+LiDAR point clouds can be used directly to quantify the competition exerted by neighboring trees on the target tree. For this purpose, the target tree for which the competition is to be determined should be segmented beforehand. Since it is crucial whether a part of the point cloud is classified as "competing" or as part of the target tree itself, a manual segmentation (e.g. in CloudCompare) is recommended as it tends to be much more accurate. Read more about the pre-processing in our [Point-cloud-based approach](https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html)
 
 <img src="../man/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700">
 
@@ -107,7 +107,7 @@ plot <- read_inv("../tests/testthat/testdata/inventory.csv", verbose = FALSE)
 targets <- define_target(plot, target_source = "buff_edge", radius = 10)
 ```
 
-With `target_source = "buff_edge`, target trees are defined as the trees who are in a distance of more than one search radius (in this case, 10 m) from the border of the forest stand (which is approximated by a concave hull). There are many other possible settings for `target_source`, such as specifying target trees by their IDs, by logical subsetting, or as a separate set of coordinates. It is also possible to define all trees as target trees, but unless your dataset contains all trees in the forest this is almost never a good idea due to the obvious edge effects. 
+With `target_source = "buff_edge"`, target trees are defined as the trees who are in a distance of more than one search radius (in this case, 10 m) from the border of the forest stand (which is approximated by a concave hull). There are many other possible settings for `target_source`, such as specifying target trees by their IDs, by logical subsetting, or as a separate set of coordinates. It is also possible to define all trees as target trees, but unless your dataset contains all trees in the forest this is almost never a good idea due to the obvious edge effects. 
 
 It is possible to plot the selection of target trees and the surrounding neighborhood for visual inspection using `plot_target()`:
 
@@ -125,7 +125,7 @@ As the `target_inv` object that results from a call to `define_target()` contain
 ## get competition indices for the selected target trees
 compete_inv(inv_source = targets,
             radius = 10, 
-            method = "all")
+            method = "all_methods")
 
 #> --------------------------------------------------------------------- 
 #> 'compete_inv' class inventory with distance-based competition indices 
@@ -137,4 +137,4 @@ compete_inv(inv_source = targets,
 ```
 
 
-Choosing `method = "all"` computes all available metrics for the chosen data source. As the dataset only contains diameters, but no tree heights, in this case it is the Hegyi index as well as the RK1 and RK2 indices (see documentation of `compete_inv()` and our paper for details).
+Choosing `method = "all_methods"` computes all available metrics for the chosen data source. As the dataset only contains diameters, but no tree heights, in this case it is the Hegyi index as well as the RK1 and RK2 indices (see documentation of `compete_inv()` and our paper for details). For more examples on how to customize `compete_inv()`, have a look at the [Inventory-based approach](https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html).
