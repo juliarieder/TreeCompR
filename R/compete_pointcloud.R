@@ -142,7 +142,9 @@
 #'   counts of the number of voxels of the neighborhood point cloud that reach
 #'   into the cone/cylinder spanned over/around the target tree.
 #' @seealso [read_pc()] for details on reading point clouds, [tree_pos()] for
-#'   computing tree position from point cloud objects.
+#'   computing tree position from point cloud objects. See [pc
+#'   approach](https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html)
+#'   for  details on how to pre-process the point clouds for this function.
 #' @export
 #'
 #' @examples

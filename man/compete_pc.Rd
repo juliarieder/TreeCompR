@@ -234,5 +234,6 @@ CI_data <- map(
 }
 \seealso{
 \code{\link[=read_pc]{read_pc()}} for details on reading point clouds, \code{\link[=tree_pos]{tree_pos()}} for
-computing tree position from point cloud objects.
+computing tree position from point cloud objects. See \href{https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html}{pc approach}
+for  details on how to pre-process the point clouds for this function.
 }
