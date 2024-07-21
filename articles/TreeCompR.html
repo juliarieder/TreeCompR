@@ -83,13 +83,13 @@ individual tree competition within forest ecosystems. It accepts inputs
 such as LiDAR point clouds (as tabular data with x, y and z coordinates,
 .las/.laz files or .ply files) of forest plots and individual target
 trees, or inventory tables (including tree ID, x and y coordinates,
-diameter and/or tree height). Through the use of various competition
-indices, it enables the assessment and measurement of competition
-between trees, providing valuable insights for forest ecology,
-inventories, and forest management strategies. This package facilitates
-a systematic approach to understanding interactions and resource
-competition among trees and enables informed decision making in forest
-management.</p>
+diameter and/or tree height or other size parameters as crown projected
+area). Through the use of various competition indices, it enables the
+assessment and measurement of competition between trees, providing
+valuable insights for forest ecology, inventories, and forest management
+strategies. This package facilitates a systematic approach to
+understanding interactions and resource competition among trees and
+enables informed decision making in forest management.</p>
 <div class="section level3">
 <h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h3>
@@ -116,7 +116,7 @@ competition in different ways:</p>
 <li>
 <code><a href="../reference/compete_pc.html">compete_pc()</a></code> quantifies tree competition from point
 clouds using the cone or cylinder method (see <a href="https://doi.org/10.1016/j.foreco.2013.08.014" class="external-link">Metz et
-al. 2013</a>;<a href="http://dx.doi.org/10.1016/j.foreco.2014.10.020" class="external-link">Seidel et
+al. 2013</a>; <a href="http://dx.doi.org/10.1016/j.foreco.2014.10.020" class="external-link">Seidel et
 al. 2015</a>)</li>
 <li>
 <code><a href="../reference/read_pc.html">read_pc()</a></code> reads 3D point clouds from .las/.laz files,
@@ -160,7 +160,8 @@ target tree for which the competition is to be determined should be
 segmented beforehand. Since it is crucial whether a part of the point
 cloud is classified as “competing” or as part of the target tree itself,
 a manual segmentation (e.g. in CloudCompare) is recommended as it tends
-to be much more accurate.</p>
+to be much more accurate. Read more about the pre-processing in our <a href="https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html">Point-cloud-based
+approach</a></p>
 <p><img src="../reference/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700"></p>
 </div>
 <div class="section level2">
@@ -239,7 +240,7 @@ and y coordinates and tree size).</p>
 <span><span class="va">plot</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="st">"../tests/testthat/testdata/inventory.csv"</span>, verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">## define target trees</span></span>
 <span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span><span class="va">plot</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<p>With <code>target_source = "buff_edge</code>, target trees are
+<p>With <code>target_source = "buff_edge"</code>, target trees are
 defined as the trees who are in a distance of more than one search
 radius (in this case, 10 m) from the border of the forest stand (which
 is approximated by a concave hull). There are many other possible
@@ -268,7 +269,7 @@ target trees explicitly:</p>
 <code class="sourceCode R"><span><span class="co">## get competition indices for the selected target trees</span></span>
 <span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">targets</span>,</span>
 <span>            radius <span class="op">=</span> <span class="fl">10</span>, </span>
-<span>            method <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span>
+<span>            method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
 <span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
@@ -277,11 +278,13 @@ target trees explicitly:</p>
 <span><span class="co">#&gt; ---------------------------------------------------------------------</span></span>
 <span><span class="co">#&gt;    id     x      y   dbh CI_Hegyi CI_RK1 CI_RK2</span></span>
 <span><span class="co">#&gt; 44 48 0.102 -0.494 0.244     4.39   1.07   1.58</span></span></code></pre></div>
-<p>Choosing <code>method = "all"</code> computes all available metrics
-for the chosen data source. As the dataset only contains diameters, but
-no tree heights, in this case it is the Hegyi index as well as the RK1
-and RK2 indices (see documentation of <code><a href="../reference/compete_inv.html">compete_inv()</a></code> and our
-paper for details).</p>
+<p>Choosing <code>method = "all_methods"</code> computes all available
+metrics for the chosen data source. As the dataset only contains
+diameters, but no tree heights, in this case it is the Hegyi index as
+well as the RK1 and RK2 indices (see documentation of
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code> and our paper for details). For more examples
+on how to customize <code><a href="../reference/compete_inv.html">compete_inv()</a></code>, have a look at the <a href="https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html">Inventory-based
+approach</a>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

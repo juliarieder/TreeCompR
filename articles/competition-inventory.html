@@ -88,7 +88,7 @@ vignette(“ALS_inventory”): <a href="https://juliarieder.github.io/TreeCompR/
 workflow</a>
 </li>
 <li>From ground-based laser scanning data (from MLS/TLS) to competition
-indices: <a href="https://juliarieder.github.io/TreeCompR/articles/TLS_inventory.html">TLS
+indices: vignette(“TLS_inventory”): <a href="https://juliarieder.github.io/TreeCompR/articles/TLS_inventory.html">TLS
 workflow</a>
 </li>
 </ul>
@@ -112,9 +112,9 @@ of <code><a href="https://purrr.tidyverse.org/reference/map.html" class="externa
 <code>read_inv()</code><a class="anchor" aria-label="anchor" href="#reading-in-forest-inventory-data-with-with-read_inv"></a>
 </h2>
 <p>To be able to be parsed as a <code>forest_inv</code> object,
-inventory data must contain x and y coordinates of the individual trees,
-and to be able to compute competition they must to contain at least one
-size-related variable (e.g. height or diameter at breast height, or
+inventory data must contain x and y coordinates of the individual trees
+(in m), and to be able to compute competition they must contain at least
+one size-related variable (e.g. height or diameter at breast height, or
 others when working with custom indices).</p>
 <p>To ensure that the inventory data is assigned correctly, inspect the
 data thoroughly. Make sure to specify the units for dbh and height if
@@ -318,7 +318,7 @@ that contains their coordinates, or finally with a character string
 specifying a method to define the target trees (“buff_edge”,
 “exclude_edge” and “all_trees”).</p>
 <div class="section level3">
-<h3 id="designating-targets-based-on-subsetting">Designating targets based on subsetting<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-subsetting"></a>
+<h3 id="designating-target-trees-based-on-subsetting">Designating target trees based on subsetting<a class="anchor" aria-label="anchor" href="#designating-target-trees-based-on-subsetting"></a>
 </h3>
 <p>Defining targets with a vector of tree IDs could look like this,
 assuming you want to compute competition indices for 3 adjacent
@@ -383,8 +383,8 @@ situations where it is not appropriate, we recommend to make plotting
 with <code><a href="../reference/plot_target.html">plot_target()</a></code> a standard step of your workflow.</p>
 </div>
 <div class="section level3">
-<h3 id="designating-targets-based-on-coordinates-from-other-data-sources">Designating targets based on coordinates from other data
-sources<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-coordinates-from-other-data-sources"></a>
+<h3 id="designating-target-trees-based-on-coordinates-from-other-data-sources">Designating target trees based on coordinates from other data
+sources<a class="anchor" aria-label="anchor" href="#designating-target-trees-based-on-coordinates-from-other-data-sources"></a>
 </h3>
 <p>In many cases you will have target tree coordinates that come from a
 different data source and have a different accuracy than the inventory
@@ -399,7 +399,7 @@ sources).</p>
 second set of coordinates as a <code>target_source</code> which is then
 matched against the inventory data. IDs are then ignored (as they are
 likely automatically generated anyway) and matching is based only on the
-closest trees with in a buffer of <code>tol</code> m (the default is
+closest trees within a buffer of <code>tol</code> m (the default is
 <code>tol = 1</code>: matching within 1 m). All further size-related
 variables in the second set of coordinates are ignored as well to ensure
 the competition indices are based on the same data source. Here, GPS
@@ -442,7 +442,7 @@ tree that is an equally good match for a target tree within 5 cm
 difference, the function will fail with an error.</p>
 </div>
 <div class="section level3">
-<h3 id="designating-targets-based-on-spatial-arrangement">Designating targets based on spatial arrangement<a class="anchor" aria-label="anchor" href="#designating-targets-based-on-spatial-arrangement"></a>
+<h3 id="designating-target-trees-based-on-spatial-arrangement">Designating target trees based on spatial arrangement<a class="anchor" aria-label="anchor" href="#designating-target-trees-based-on-spatial-arrangement"></a>
 </h3>
 <p>In many cases, there will be no list of a priori specified target
 trees, and the aim will be to calculate valid competition indices for as
@@ -450,17 +450,17 @@ many trees as possible. In these cases, we recommend to use
 <code>target_source = "buff_edge"</code>. This automatically designates
 all trees in the plot that are at least one search radius away from the
 plot edge (roughly approximated by a concave hull) to avoid edge
-effects. This is specifically important for TLS/MLS data and classical
-forest inventories, since in contrast to ALS-derived datasets these data
-usually cover relatively small forest plot rather than entire forests.
-Setting <code>target_source = "exclude_edge"</code> only removes the
-trees on the edge of the plot without checking how close the rest of the
-trees is from the edge and is hence less restrictive but more prone to
-edge effects than the previous option. If you use these spatially
-explicit methods of defining target trees, make sure that your inventory
-only contains data from one plot as currently grouping is not possible
-in <code><a href="../reference/define_target.html">define_target()</a></code>. If you want to consider doing this for
-a larger number of plots, consider e.g. mapping over the plots with
+effects. This is particularly important for TLS/MLS data and traditional
+forest inventories, which, unlike ALS-derived datasets, tend to cover
+relatively small forest plots rather than entire forests. Setting
+<code>target_source = "exclude_edge"</code> only removes the trees on
+the edge of the plot without checking how close the rest of the trees is
+from the edge and is hence less restrictive but more prone to edge
+effects than the previous option. If you use these spatially explicit
+methods of defining target trees, make sure that your inventory only
+contains data from one plot as currently grouping is not possible in
+<code><a href="../reference/define_target.html">define_target()</a></code>. If you want to consider doing this for a
+larger number of plots, consider e.g. mapping over the plots with
 [purrr::map()] to compute the output step by step.</p>
 <p>Here is an example of how to identify all potential target trees that
 run in no risk of excluding potential edge trees when computing
@@ -475,7 +475,7 @@ with a search radius of 8 m:</p>
 <span><span class="co"># visual inspection</span></span>
 <span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets4</span><span class="op">)</span></span></code></pre></div>
 <p><img src="../reference/figures/targets4.png" alt="plot_trees" width="600"></p>
-<p>In this case, the radius does not have to specified in
+<p>In this case, the radius does not have to be specified in
 <code><a href="../reference/plot_target.html">plot_target()</a></code> as the radius used for the buffer is stored
 in the attributes of the “target_inv” object.</p>
 <p>Doing the same with <code>target_source = "exclude_edge"</code>
@@ -503,16 +503,18 @@ with a radius below the intended search radius as it maintains a
 constant distance.</p>
 </div>
 <div class="section level3">
-<h3 id="designating-all-trees-as-targets">Designating all trees as targets<a class="anchor" aria-label="anchor" href="#designating-all-trees-as-targets"></a>
+<h3 id="designating-all-trees-as-target-trees">Designating all trees as target trees<a class="anchor" aria-label="anchor" href="#designating-all-trees-as-target-trees"></a>
 </h3>
 <p>While it is possible to compute competition indices for all trees
 (<code>target_source = "all_trees"</code>), this results in a warning
-and should only be done if there <strong>very good reasons</strong> to
-assume that the edge trees in the data are actually situated at the
+and should only be done if there are <strong>very good reasons</strong>
+to assume that the edge trees in the data are actually situated at the
 forest edge, as otherwise there will be <em>intense</em> edge effects:
 for a tree on a straight plot edge, on average nearly half and for a
 tree in an edge position in a rectangular plot 3/4 of the competitors
-will be missing in the data!</p>
+will be missing in the data! Therefore, this setting should only be used
+for ALS derived data where it is clear that a whole forest is being used
+as input.</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># designate all trees as target trees</span></span>
 <span><span class="va">targets6</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span></span>
@@ -552,9 +554,9 @@ files and require different sets of custom column name settings, or
 because an inspection of the target settings and spatial configuration
 is desired <em>before</em> computing the results (which is certainly a
 good idea for large datasets).</p>
-<p>To identify the neighbor trees within the search radius of each
-target true, <code><a href="../reference/compete_inv.html">compete_inv()</a></code>uses the function
-<code>knn()</code> from package [nabor]<a href="https://github.com/jefferis/nabor" class="external-link uri">https://github.com/jefferis/nabor</a>) that is based on a
+<p>To identify the neighbour trees within the search radius of each
+target tree, <code><a href="../reference/compete_inv.html">compete_inv()</a></code>uses the function
+<code>knn()</code> from package <a href="https://github.com/jefferis/nabor" class="external-link">nabor</a> that is based on a
 very efficient C++ implementation of the k-nearest neighbor algorithm
 from <a href="https://github.com/norlab-ulaval/libnabo" class="external-link">libnabo</a>.
 This makes it possible to deal with very large inventory datasets in a
@@ -604,7 +606,7 @@ argument and all further arguments that are passed on to
 <span><span class="co">#&gt; 43:  23652 563141.8 5508616 11.017 13.886    5.866</span></span></code></pre></div>
 <p>The resulting “compete_inv” object contains only the target trees,
 and has one additional column for each computed competition index.
-Information about the neighbor trees as well as information about the
+Information about the neighbour trees as well as information about the
 methods are stored as attributes.</p>
 <p>In addition to analyses based on existing “target_inv” objects, it is
 possible to read data from file, for example from a “.csv” source with
@@ -674,7 +676,7 @@ to the target tree.</p>
 (1997):
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>3</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>h</mi><mi>i</mi></msub><mrow><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK3} = \sum_{i=1}^{n}  \mathrm{arctan}\left(\frac{h_{i}}{ dist_{i}}\right)</annotation></semantics></math>
 for all trees with
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>i</mi></msub><mo>&gt;</mo><mi>h</mi></mrow><annotation encoding="application/x-tex">h_{i} &gt; h</annotation></semantics></math><strong>CI_RK4</strong> based on CI3 in Rouvinen &amp; Kuuluvainen
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>i</mi></msub><mo>&gt;</mo><mi>h</mi></mrow><annotation encoding="application/x-tex">h_{i} &gt; h</annotation></semantics></math><strong>CI_RK4</strong> based on CI3 in Rouvinen &amp; Kuuluvainen
 (1997) and Contreras et al. (2011):
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>R</mi><mi>K</mi><mn>4</mn></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>h</mi><mi>i</mi></msub><mi>h</mi></mfrac><mo>⋅</mo><mrow><mi mathvariant="normal">a</mi><mi mathvariant="normal">r</mi><mi mathvariant="normal">c</mi><mi mathvariant="normal">t</mi><mi mathvariant="normal">a</mi><mi mathvariant="normal">n</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>h</mi><mi>i</mi></msub><mrow><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">CI_{RK4} = \sum_{i=1}^{n} \frac{h_{i}}{ h } \cdot    \mathrm{arctan}\left(\frac{h_{i}}{ dist_{i}}\right)</annotation></semantics></math></p>
 <p><strong>Generic size-based Hegyi-type competition index</strong></p>
@@ -725,20 +727,20 @@ central tree, or a sum of a transformation thereof. As the search radius
 determines how many trees are included for calculating these metric for
 each tree, all these distance-based competition indices are extremely
 sensitive to the choice of the search radius. An obvious consequence of
-this is that it is not meaningfully possible to compare distance based
+this is that it is not possible to meaningfully compare distance-based
 competition indices calculated with different search radii. Perhaps less
-obvious is that as different tree species differ in their average size
-and rooting patterns, the optimal search radius may differ between
-species, and that comparisons between species using competition indices
-computed with the same settings may not always result in meaningful
-results. Some authors recommend to use a search radius based on the
+obvious is that the optimal search radius may differ between species, as
+different tree species have different average sizes and rooting
+patterns, and that comparisons between species using competition indices
+calculated with the same settings may not always yield meaningful
+results. Some authors recommend using a search radius based on the
 average crown size of the trees in the plot, such as <a href="https://doi.org/10.1016/0378-1127(83)90042-7" class="external-link">Lorimer (1983)</a>,
-who propose a search radius of 3.5 average crown radii. While such a
+who suggests a search radius of 3.5 average crown radii. While such a
 recommendation certainly makes more sense than sticking to standard
-values like 10 m independent of whether calculating competition for
-stunted Elfin forests or gigantic Redwood trees, ultimately such a
-setting will always be arbitrary and that there are limits to the
-comparability of the indices across studies and across species.</p>
+values such as 10 m, regardless of whether you are calculating
+competition for stunted Elfin forests or gigantic Redwood trees,
+ultimately such a setting will always be arbitrary and there are limits
+to the comparability of indices between studies and between species.</p>
 </div>
 <div class="section level3">
 <h3 id="user-specified-competition-indices">User-specified competition indices<a class="anchor" aria-label="anchor" href="#user-specified-competition-indices"></a>
