@@ -199,7 +199,7 @@ for your trees. Afterwards you can print your results, save the
 dataframe or plot the results according to your needs.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">CI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv_trees</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
-<span>                  radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span>
+<span>                  radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span>
 <span><span class="va">CI</span></span>
 <span><span class="co">#&gt; --------------------------------------------------------------------- </span></span>
 <span><span class="co">#&gt; 'compete_inv' class inventory with distance-based competition indices </span></span>
@@ -234,6 +234,27 @@ dataframe or plot the results according to your needs.</p>
 <p><img src="../reference/figures/CI_Braathe_ALS.jpeg" alt="CIB" width="500"></p>
 </div>
 <div class="section level2">
+<h2 id="use-other-size-parameters-to-compute-competition">Use other size parameters to compute competition<a class="anchor" aria-label="anchor" href="#use-other-size-parameters-to-compute-competition"></a>
+</h2>
+<p>Besides the tree height there was also the crown projection area
+(“convhull_area”) of each tree as output from the ALS workflow. This
+size can also be used to quantify competition, e.g. with
+<strong>CI_size</strong>, a generic size-based Hegyi-type competition
+index with a user-specified size-related variable
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>s</mi><mi>i</mi></msub><annotation encoding="application/x-tex">s_i</annotation></semantics></math>:
+size for neighbour tree
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi><annotation encoding="application/x-tex">s</annotation></semantics></math>:
+size of the target tree):
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>s</mi><mi>i</mi><mi>z</mi><mi>e</mi></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>s</mi><mi>i</mi></msub><mrow><mi>s</mi><mo>⋅</mo><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CI_{size} = \sum_{i=1}^{n} \frac{s_{i}}{s \cdot dist_{i}}</annotation></semantics></math>
+To use the crown projection area, just specify the parameter
+<code>size</code> and the <code>method</code> “CI_size”:</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CI_size</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv_trees</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
+<span>                  radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"CI_size"</span>, size <span class="op">=</span> <span class="va">convhull_area</span><span class="op">)</span></span>
+<span><span class="va">CI_size</span></span></code></pre></div>
+</div>
+<div class="section level2">
 <h2 id="other-options-to-pre-process-the-als-point-clouds">Other options to pre-process the ALS point clouds<a class="anchor" aria-label="anchor" href="#other-options-to-pre-process-the-als-point-clouds"></a>
 </h2>
 <p>There are other packages available, e.g. the <a href="https://rdrr.io/cran/itcSegment/" class="external-link"><code>itcSegment</code></a>
@@ -244,7 +265,7 @@ to pre-process the MLS data in our manuscript “TreeCompR: Tree
 competition indices for inventory data and 3D point clouds”. We used
 publicly available laser scanning datasets from the <a href="https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=laserdaten" class="external-link">Bavarian
 Agency for Digitisation, High-Speed Internet and Surveying</a>.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">itcSegment</span><span class="op">)</span></span>
 <span></span>
 <span></span>
@@ -269,7 +290,7 @@ Agency for Digitisation, High-Speed Internet and Surveying</a>.</p>
 <span><span class="va">inv_trees</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="va">se</span>, height <span class="op">=</span> <span class="va">Height_m</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
 <span><span class="co">#quantify tree competition (adjust radius)</span></span>
 <span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv_trees</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
-<span>            radius <span class="op">=</span> <span class="fl">13.5</span>, method <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span></code></pre></div>
+<span>            radius <span class="op">=</span> <span class="fl">13.5</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
