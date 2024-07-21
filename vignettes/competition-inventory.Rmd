@@ -300,7 +300,10 @@ plot_target(targets3, radius = 8)
 
 For the intended 8 m search radius, these coordinates are appropriate.
 
-If no trees in the inventory are within the desired tolerance of one or more of your target trees, or if several target trees are in within the tolerance, you will receive a warning. If there is more than one tree that is an equally good match for a target tree within 5 cm difference, the function will fail with an error.
+If no trees in the inventory are within the desired tolerance of one or more of your target trees, or if several target trees are in within the tolerance, you will receive a warning. If there is more than one tree that is an equally good match for a target tree within 5 cm difference, the function will fail with an error. 
+
+In cases where you have additional data sources that can be used for matching (e.g. if you know the height of the trees from the field and can use this as an additional information source) or when high tree densities and low GPS accuracy make automated matching difficult, it may be advisable to do the matching outside `TreeCompR` and define the target trees by ID or logical subsetting instead.
+
 
 ### Designating target trees based on spatial arrangement
 
