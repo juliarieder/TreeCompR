@@ -32,7 +32,7 @@ library(tidyverse)
 
 To highlight where they are coming from, we will explicitly quote the corresponding package for all functions used in the tutorial in the form of `purrr::map()` for all functions besides the `magrittr` pipe operator `%>%`.
 
-## Reading in forest inventory data with with `read_inv()`
+## Reading in forest inventory data with `read_inv()`
 To be able to be parsed as a `forest_inv` object, inventory data must contain x and y coordinates of the individual trees (in m), and to be able to compute competition they must contain at least one size-related variable (e.g. height or diameter at breast height, or others when working with custom indices). 
 
 To ensure that the inventory data is assigned correctly, inspect the data thoroughly. Make sure to specify the units for dbh and height if they differ from the default, which is cm for dbh and m for height. Tree coordinates should __always__ be specified in m. You can either use `read_inv()` to validate data.frames or paths to files with inventory data and convert them to an object type used by the `TreeCompR` functions, or directly pass them to `compete_inv()`. The former is especially useful if you have data with non-standard column names or data structures and want to have full control over how they are parsed.
