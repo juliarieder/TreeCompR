@@ -110,7 +110,7 @@ test_that("read_inv works for data.frame objects", {
   }, 9)
 
   # printing the inventory with different column types is possible
-  expect_output(print(test_inv7))
+  expect_output(print(test_inv7), "'forest_inv' class inventory dataset")
 
   # reading in works if there are no ids - but standard is assigned
   expect_message(read_inv(test[, -1]), "automatically generated")
@@ -179,7 +179,7 @@ test_that("print method for forest_pc objects works", {
   expect_output(
     print(read_inv(test_path("testdata", "smallinv1.csv"),
                    verbose = FALSE)),
-    "'forest_inv' class inventory dataset:"
+    "'forest_inv' class inventory dataset"
   )
 })
 

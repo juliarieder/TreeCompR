@@ -367,17 +367,24 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 #' @format NULL
 #' @usage NULL
 #' @export
-print.forest_inv <- function(x, digits = 3, topn = 3, ...){
-  cat("---------------------------------------",
-      " \n'forest_inv' class inventory dataset: \ncollection of",
-      nrow(x),"observations",
-      "\n---------------------------------------\n"
+print.forest_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
+  # get number of data columns
+  if (ncol(x) > 3){
+    if (ncol(x) > 4) cols <- paste0(" with ", ncol(x) - 3, " data columns")
+    else cols <- " with one data column"
+  } else cols <- ""
+  # prepare header
+  header <- paste0(
+      "'forest_inv' class inventory dataset \nCollection of ",
+      nrow(x)," observation", ifelse(nrow(x) > 1, "s", ""), cols
   )
   # print data.table with trees
-  .print_as_dt(x, digits = digits, topn = topn, ...)
+  .print_as_dt(x, digits = digits, topn = topn,
+               nrows = nrows, header = header, ...)
   # return object invisibly
   invisible(x)
 }
+
 
 # Define rbind method for forest_inv objects:
 #' @rdname read_inv

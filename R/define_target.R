@@ -275,8 +275,6 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
   # check if the selection has resulted in any target trees
   if (!any(inv$target)){
     warning("No target trees have been found with the provided specifications.")
-    inv[1,] <- NA
-    inv$id  <- "No target trees found"
   }
   # check if the selection has resulted in any edge trees
   if (!any(!inv$target)){
@@ -560,37 +558,42 @@ plot_target <- function(inv, radius = NULL) {
 }
 
 
-
 # Define printing method for target_pc objects:
 #' @rdname define_target
 #' @format NULL
 #' @usage NULL
 #' @export
-print.target_inv <- function(x, digits = 3, topn = 3, ...){
+print.target_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
   # get description of target source from lookup table
   target <- as.character(
     c(inventory = "second inventory",
       character = "character vector",
       logical   = "logical vector",
       exclude_edge = "excluding edge",
-      buff_edge = "buffer around edge"
+      buff_edge = "buffer around edge",
+      all_trees = "all trees"
     )[ attr(x, "target_type")]
   )
-  # print header
-  cat(
-    "---------------------------------------------------------------",
-    "\n'target_inv' class inventory dataset with defined target trees:",
-    "\ncollection of", nrow(x),"observations containing",sum(x$target),
-    "target trees.",
-    "\nSource of target trees:",target,
-    "\n---------------------------------------------------------------\n"
-  )
+  # get number of data columns
+  if (ncol(x) > 4){
+    if (ncol(x) > 5) cols <- paste0(" with ", ncol(x) - 4, " data columns")
+    else cols <- " with one data column"
+  } else cols <- ""
+  # prepare header
+  header <- paste0(
+    "'target_inv' class inventory dataset with target tree definitions",
+    "\nCollection of ", nrow(x)," observation",
+    ifelse(nrow(x) > 1, "s", ""), cols,
+    "\nNo. of target trees: ", sum(x$target),"   \t Target source: ", target)
+
   # print data.table with trees
-  .print_as_dt(x, digits = digits, topn = topn, ...)
+  .print_as_dt(x, digits = digits, topn = topn,
+               nrows = nrows, header = header, ...)
 
   # return object invisibly
   invisible(x)
 }
+
 
 # Define rbind method for forest_inv objects:
 #' @rdname define_target
@@ -601,5 +604,4 @@ rbind.target_inv <- function(
     ..., use.names = TRUE, fill = FALSE, idcol = NULL){
   .rbind_with_class(..., use.names = use.names, fill = fill, idcol = idcol)
 }
-
 

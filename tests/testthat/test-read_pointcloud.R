@@ -259,7 +259,7 @@ test_that("print method for forest_pc objects works", {
   # simple csv with named xyz columns is read without message
   expect_output(
     print(read_pc(test_path("testdata", "tinytree1.csv"))),
-    "'forest_pc' class point cloud:"
+    "'forest_pc' class point cloud"
   )
 })
 

@@ -32,14 +32,39 @@ NULL
 }
 
 #' @keywords internal
-#' internal function for rapidly output as rounded data tables
-.print_as_dt <- function(x, digits, topn, ...){
+#' internal function for rapid output as rounded data tables with header
+.print_as_dt <- function(
+    x, digits = 3, topn = 3, nrows = 8, header = NULL, ...){
   # identify and round numeric variables to 'digits'
   numerics <- which(sapply(x, is.double))
   for (i in numerics) x[[i]] <- Rfast::Round(x[[i]], digits)
-  # print as data.table with specified settings
-  print(data.table::as.data.table(x), topn = topn, trunc.cols = TRUE, ...)
+  # capture data.table print for width
+  print_out <- utils::capture.output(
+    print(data.table::as.data.table(x),
+          topn = topn, nrows = nrows, trunc.cols = TRUE, ...)
+  )
+  # process header
+  if (!is.null(header)){
+    # split into lines
+    header <- unlist(strsplit(header, "\n")[[1]])
+    # get width of print output
+    lwidth <- max(c(sapply(header, nchar), nchar(print_out)))
+    # replace \t by filling up with whitespace
+    for (i in grep("\t", header)) header[i] <- gsub(
+      pattern = "\t",
+      replacement = strrep(" ", lwidth - nchar(header[i]) + 1),
+      x = header[i])
+    # print header
+    cat(strrep("-", lwidth),
+        header,
+        strrep("-", lwidth),
+        sep = "\n"
+    )
+  }
+  # print table
+  cat(print_out, sep = "\n")
 }
+
 
 #' @keywords internal
 #' internal function for data.table rbinds that maintain the class of the input

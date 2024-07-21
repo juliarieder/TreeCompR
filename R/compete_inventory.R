@@ -362,7 +362,7 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
   attr(out, "target_trees") <- as.matrix(inv[inv$target, c("x", "y")])
   attr(out, "edge_trees") <- as.matrix(inv[!inv$target, c("x", "y")])
   # define class
-  class(out) <- c("compete_inv", class(inv))
+  class(out) <- c("compete_inv", "forest_inv", "data.table", "data.frame")
   # return output
   return(out)
 }
@@ -456,30 +456,32 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
 #' @format NULL
 #' @usage NULL
 #' @export
-print.compete_inv <- function(x, digits = 3, topn = 3, ...){
+print.compete_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
   # get description of target source from lookup table
   target <- as.character(
     c(inventory = "second inventory",
       character = "character vector",
       logical   = "logical vector",
       exclude_edge = "excluding edge",
-      buff_edge = "buffer around edge"
+      buff_edge = "buffer around edge",
+      all_trees = "all trees"
     )[ attr(x, "target_type")]
   )
-  # print header
-  cat("---------------------------------------------------------------------",
-      "\n'compete_inv' class inventory with distance-based competition indices",
-      "\nResults for", nrow(x),"target trees based on an inventory with",
-      nrow(x) + nrow(attr(x, "edge_trees")), "trees.",
-      "\nSource of target trees:", target, "\t Search radius:",
-      attr(x, "radius"), "m",
-      "\n---------------------------------------------------------------------\n"
-  )
+  # prepare header
+  header <- paste0(
+      "'compete_inv' class inventory with distance-based competition indices\n",
+      "  No. of target trees: ", nrow(x),"\t Size of original inventory: ",
+      nrow(x) + nrow(attr(x, "edge_trees")),
+      " trees  \nTarget source: ", target,
+      "\t Search radius: ", attr(x, "radius"), " m")
+
   # print data.table with trees
-  .print_as_dt(x, digits = digits, topn = topn, ...)
+  .print_as_dt(x, digits = digits, topn = topn,
+               nrows = nrows, header = header, ...)
   # return object invisibly
   invisible(x)
 }
+
 
 # Define rbind method for forest_inv objects:
 #' @rdname compete_inv

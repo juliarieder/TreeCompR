@@ -23,6 +23,7 @@ Imports:
     rlang,
     Rfast,
     sf,
+    utils,
     concaveman,
     nabor
 Suggests: 

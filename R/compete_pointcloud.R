@@ -337,21 +337,21 @@ compete_pc <- function(forest_source, tree_source,
 #' @format NULL
 #' @usage NULL
 #' @export
-print.compete_pc <- function(x, digits = 3, topn = 3, ...){
+print.compete_pc <- function(x, digits = 3, topn = 3, nrows = 8, ...){
   # get tree name or number of observations
   target <- ifelse(nrow(x) == 1,
                    paste0("'", x$target, "'"),
-                   paste(nrow(x), "trees"))
-  # print header
-  cat(
-    "------------------------------------------------------------------\n",
-    "Point cloud based competition indices for", target,
-    "\n------------------------------------------------------------------\n")
+                   paste(nrow(x), " target trees"))
+  # prepare header
+  header <- paste0(
+    "Point cloud based competition indices for ", target)
   # print data.table with points
-  .print_as_dt(x, digits = digits, topn = topn, ...)
+  .print_as_dt(x, digits = digits, topn = topn,
+               header = header, nrows = nrows, ...)
   # return object invisibly
   invisible(x)
 }
+
 
 # Define rbind method for forest_pc objects:
 #' @rdname compete_pc

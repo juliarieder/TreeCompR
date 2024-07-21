@@ -255,16 +255,17 @@ read_pc <- function(pc_source, verbose = TRUE,
 #' @format NULL
 #' @usage NULL
 #' @export
-print.forest_pc <- function(x, topn = 3, digits = 2, ...){
-  cat("---------------------------------------",
-      " \n'forest_pc' class point cloud: \ncollection of", nrow(x),"observations",
-      "\n---------------------------------------\n"
-  )
+print.forest_pc <- function(x, topn = 3, digits = 2, nrows = 8, ...){
+  # prepare header
+  header <- paste0(
+      "'forest_pc' class point cloud\ncollection of ", nrow(x)," observations")
   # print data.table with points
-  .print_as_dt(x, digits = digits, topn = topn, ...)
+  .print_as_dt(x, digits = digits, topn = topn,
+               nrows = nrows, header = header, ...)
   # return object invisibly
   invisible(x)
 }
+
 
 # Define rbind method for forest_pc objects:
 #' @rdname read_pc

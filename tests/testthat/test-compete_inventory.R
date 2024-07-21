@@ -202,7 +202,7 @@ test_that("Indices work for other types of target determination", {
     method = "all_methods",
     dbh_unit = "m",
     verbose = FALSE)
-    )
+  )
   expect_no_error(compete_inv(
     inv_source = plot,
     target_source = "buff_edge",
@@ -230,6 +230,17 @@ test_that("Function works on target_inv objects", {
   })
 })
 
+
+test_that("Printing works", {
+  expect_output(
+    print(
+      compete_inv(
+        inv_source = test_path("testdata", "inventory.csv"), radius = 10,
+        method = "CI_Hegyi", verbose = FALSE)
+    ),
+    "'compete_inv' class inventory with distance-based competition indices"
+  )
+})
 
 test_that("Handling of kmax works", {
   # warning a kmax that is too low
@@ -310,10 +321,10 @@ test_that("Function works for nonstandard indices", {
 
   # dataset with size can be loaded
   expect_contains({
-  # read plot dataset
-  plot <- read_inv(plot, size = test, verbose = FALSE)
-  names(plot)},
-  "size"
+    # read plot dataset
+    plot <- read_inv(plot, size = test, verbose = FALSE)
+    names(plot)},
+    "size"
   )
 
   # "all_methods" contains "size"
@@ -350,22 +361,22 @@ test_that("Function works for nonstandard indices", {
 
   # custom functions can be used for extra columns
   expect_no_error({
-      test <- read.csv(
-        test_path("testdata", "inventory.csv"),
-        sep = ";", dec = "."
-      )
+    test <- read.csv(
+      test_path("testdata", "inventory.csv"),
+      sep = ";", dec = "."
+    )
     test$extra <- grepl("1", test$TreeID)
 
     # assign function
     assign("CI_test",
            function(target, neigh) {
              sum(target$dbh * (neigh$dist / neigh$dbh)[neigh$extra])
-             },
+           },
            envir = .GlobalEnv)
 
     # create output
     out1 <-  compete_inv(test, keep_rest = TRUE, verbose = FALSE,
-                        radius = 5, method = c("CI_test"))
+                         radius = 5, method = c("CI_test"))
   })
 
   # output makes sense
@@ -373,8 +384,8 @@ test_that("Function works for nonstandard indices", {
 
   # a function with the wrong arguments fails
   expect_error({
-   compete_inv(plot, verbose = FALSE, radius = 5,
-                        method = c("CI_Hegyi", "plot"))
+    compete_inv(plot, verbose = FALSE, radius = 5,
+                method = c("CI_Hegyi", "plot"))
   }, "Invalid competition index function")
 
   # not a function fails
