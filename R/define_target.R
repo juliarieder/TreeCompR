@@ -101,7 +101,8 @@
 #'   [compete_inv()] for computing tree competition from inventory data,
 #'   [competition_indices] for a list of available indices,
 #'   [plot_target()] to plot target tree positions in `target_inv` and
-#'   `compete_inv` objects.
+#'   `compete_inv` objects. For visualized examples, see [competition
+#'   inventory](https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#designating-target-trees-with-define_target)
 #' @export
 #'
 #' @examples
