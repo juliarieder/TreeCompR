@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 For extracting information on tree level from close-range laser scanning 
 (TLS or MLS), you can use e.g. the [TreeLS](https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2) package. 
-We will show a workflow on how to implement the output of TreeLS within TreeCompR.
+We will show a workflow on how to implement the output of TreeLS to derive inventory based competition indices within TreeCompR.
 
 ```{r setup, message=FALSE, warning=FALSE, eval=FALSE}
 library(TreeCompR)
@@ -52,19 +52,13 @@ First, load the .las data, normalize the height, sample the point cloud, estimat
 
 ## Use extracted tree information within TreeCompR
 
-To ensure that the inventory data is assigned correctly, check the data and make sure that you specify the units dbh and height if they differ from the default, which is cm for dbh and m for height. Use `read_inv()` to validate your inventory data within `TreeCompR`. To visually check for which trees the CIs will be quantified depending on the chosen search radius, you can use `define_target()` and `plot_target()`. We recommend to use `target_source = "buff_edge"` to automatically calculate the CI for all trees in the plot except for those that are less than one search radius away from the forest edge. This is specifically important for TLS/MLS data, since these data types usually only cover small forest plots rather than whole forests. 
+To ensure that the inventory data is assigned correctly, check the data and make sure that you specify the units dbh and height if they differ from the default, which is cm for dbh and m for height. Use `read_inv()` to validate your inventory data within `TreeCompR`. To visually check for which trees the CIs will be quantified depending on the chosen search radius, you can use `define_target()` and `plot_target()`. We recommend to use `target_source = "buff_edge"` to automatically calculate the CI for all trees in the plot except for those that are less than one search radius away from the forest edge. This is specifically important for TLS/MLS data, since these data types usually only cover small forest plots rather than whole forests. In our example, with a search radius of 10 m, only one tree is assigned as a target tree.
 
 ```{r calculate-CI1, message=FALSE, warning=FALSE, eval=FALSE}
+#validate the inventory dataset "inv"
 inventory <- read_inv(inv_source = inv, dbh_unit = "m", height_unit = "m")
+#define the target tree(s) depending on the search radius
 targets <- define_target(inv = inventory, target_source = "buff_edge", radius = 10)
-plot_target(targets)
-```
-
-<img src="../man/figures/README-example3-1.png" alt="plot_trees" width="500">
-
-```{r calculate-CI2, message=FALSE, warning=FALSE, eval=FALSE}
-compete_inv(inventory, target_source = "buff_edge", radius = 7, 
-              method = "all_methods")
 #>--------------------------------------------------------------- 
 #> 'target_inv' class inventory dataset with defined target trees: 
 #> collection of 31 observations 
@@ -78,15 +72,18 @@ compete_inv(inventory, target_source = "buff_edge", radius = 7,
 #> 29  35 -6.407 -4.719  0.06 19.791  FALSE
 #> 30  36 -7.484 -7.635 0.216 22.478  FALSE
 #> 31  38 -5.287  1.051  0.06 22.923  FALSE
+#> 
+# plot the target tree(s)
+plot_target(targets)
 ```
 
-## Use cases
+<img src="../man/figures/README-example3-1.png" alt="plot_trees" width="500">
 
-```{r use-cases, message=FALSE, warning=FALSE, eval=FALSE}
-## If you focus on a specific CI, e.g. the widely used Hegyi-Index, 
-## you can choose it within methods = "CI_Hegyi".
-#> compete_inv(inventory, target_source = "buff_edge", radius = 7, 
-#>              method = "CI_Hegyi")
+```{r calculate-CI2, message=FALSE, warning=FALSE, eval=FALSE}
+#example for calculating all possible CIs based on the parameters height and dbh
+#with a search radius of 7m
+compete_inv(inventory, target_source = "buff_edge", radius = 7, 
+              method = "all_methods")
 #> The following columns were used to create the inventory dataset:
 #> id	---	TreeID
 #> x	---	X
@@ -101,6 +98,17 @@ compete_inv(inventory, target_source = "buff_edge", radius = 7,
 #> ---------------------------------------------------------------------
 #>    id ...  dbh height CI_Hegyi CI_Braathe CI_RK1 CI_RK2 CI_RK3 CI_RK4
 #> 18 20 ... 0.25   23.9     1.96       2.07   0.49  0.499    4.1   13.2
+
+```
+
+## Use cases
+
+```{r use-cases, message=FALSE, warning=FALSE, eval=FALSE}
+## If you focus on a specific CI, e.g. the widely used Hegyi-Index, 
+## you can choose it within methods = "CI_Hegyi".
+compete_inv(inventory, target_source = "buff_edge", radius = 7, 
+             method = "CI_Hegyi")
+
 
 ## If you have a tree height column that is not automatically recognized within 
 ## our validation of input data, you can set it manually:
@@ -119,3 +127,5 @@ compete_inv(inventory, target_source = "buff_edge", radius = 10,
 ## and it is not recognized, specify it with id = "name_column"
 inventory <- read_inv(inv_source = inventory, id = "ID_user")
 ```
+
+If you use other options to derive the tree parameters from TLS or MLS data, you can customize `read_inv()` and `compete_inv()` accordingly. For more examples, have a look at some more [examples](https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#reading-in-forest-inventory-data-with-with-read_inv).
