@@ -233,11 +233,11 @@ test_that(
 
     # trees can be loaded and validated if provided as data.frames
     expect_equal(
-      tinytree1,
-      read.table(
-        test_path("testdata", "tinytree4.txt"),
-        header = TRUE) %>%
-        read_pc(verbose = FALSE)
+      tinytree1,{
+        tb <- read.table(
+          test_path("testdata", "tinytree4.txt"),
+          header = TRUE)
+        read_pc(tb, verbose = FALSE)}
     )
 
     # an error is thrown if columns are missing

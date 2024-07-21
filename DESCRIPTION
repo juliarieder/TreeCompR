@@ -16,10 +16,8 @@ Depends:
     R (>= 3.5.0)
 Imports: 
     data.table,
-    dplyr,
     stats,
     VoxR,
-    magrittr,
     rlang,
     Rfast,
     sf,
@@ -28,6 +26,8 @@ Imports:
     nabor
 Suggests: 
     lidR,
+    dplyr,
+    magrittr,
     ggplot2,
     Rvcg,
     knitr (>= 1.43),

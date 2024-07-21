@@ -129,9 +129,8 @@ read_pc <- function(pc_source, verbose = TRUE,
         # If installed, proceed with the code for *.las files
         las <- lidR::readTLSLAS(path)
         # extract coordinates and validate
-        pc <- las@data[,1:3] %>%
-          .validate_pc(verbose = verbose,
-                       xlim = xlim, ylim = ylim, zlim = zlim)
+        pc <- .validate_pc(las@data[,1:3], verbose = verbose,
+                           xlim = xlim, ylim = ylim, zlim = zlim)
       } else {
         # If not, return an error message about the missing package
         stop(
@@ -147,9 +146,9 @@ read_pc <- function(pc_source, verbose = TRUE,
         ply <- Rvcg::vcgPlyRead(path, updateNormals = TRUE, clean = TRUE)
         # extract coordinates and validate
         pc  <- data.table::data.table(
-          x = ply$vb[1,], y = ply$vb[2,], z = ply$vb[3,]) %>%
-          .validate_pc(verbose = verbose,
-                       xlim = xlim, ylim = ylim, zlim = zlim)
+          x = ply$vb[1,], y = ply$vb[2,], z = ply$vb[3,])
+        pc <- .validate_pc(pc, verbose = verbose,
+                           xlim = xlim, ylim = ylim, zlim = zlim)
       } else {
         # If not, return an error message about the missing package
         stop(
@@ -260,7 +259,7 @@ read_pc <- function(pc_source, verbose = TRUE,
 print.forest_pc <- function(x, topn = 3, digits = 2, nrows = 8, ...){
   # prepare header
   header <- paste0(
-      "'forest_pc' class point cloud\ncollection of ", nrow(x)," observations")
+    "'forest_pc' class point cloud\ncollection of ", nrow(x)," observations")
   # print data.table with points
   .print_as_dt(x, digits = digits, topn = topn,
                nrows = nrows, header = header, ...)
