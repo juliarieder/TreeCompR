@@ -82,7 +82,7 @@ research, offering accurate large-scale data. To quantify competition on
 the individual tree level, first the ALS point cloud needs to be
 pre-processed. For using the data in TreeCompR, we need to segment the
 trees and derive an inventory table. The package <a href="https://CRAN.R-project.org/package=lidR" class="external-link"><code>lidR</code></a> is
-a great option to load,inspect and process your ALS data and to segment
+a great option to load, inspect and process your ALS data and to segment
 individual trees. Check out the <a href="https://r-lidar.github.io/lidRbook/" class="external-link">lidRbook</a> for their very
 nice detailed workflows and examples.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -135,7 +135,8 @@ generated:</p>
 <span><span class="co">#locate tree tops</span></span>
 <span><span class="va">ttops_chm_p2r_05_smoothed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lidR/man/locate_trees.html" class="external-link">locate_trees</a></span><span class="op">(</span><span class="va">chm_p2r_05_smoothed</span>, <span class="fu"><a href="https://rdrr.io/pkg/lidR/man/itd_lmf.html" class="external-link">lmf</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lidR/man/plot.html" class="external-link">height.colors</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># plot the CHM with the tree tops</span></span>
+<span><span class="va">col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lidR/man/plot.html" class="external-link">height.colors</a></span><span class="op">(</span><span class="fl">50</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/lidR/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">chm_p2r_05_smoothed</span>, main <span class="op">=</span> <span class="st">"CHM P2R 0.5 smoothed"</span>, col <span class="op">=</span> <span class="va">col</span><span class="op">)</span>; </span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/lidR/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">sf</span><span class="fu">::</span><span class="fu"><a href="https://r-spatial.github.io/sf/reference/st_geometry.html" class="external-link">st_geometry</a></span><span class="op">(</span><span class="va">ttops_chm_p2r_05_smoothed</span><span class="op">)</span>, add <span class="op">=</span> <span class="cn">T</span>, pch <span class="op">=</span><span class="fl">3</span><span class="op">)</span></span></code></pre></div>
 <p><img src="../reference/figures/chm_ttops.jpeg" alt="chm" width="500"></p>

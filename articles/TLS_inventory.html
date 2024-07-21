@@ -74,12 +74,14 @@
     
     
 <div class="section level2">
-<h2 id="pre-processing-of-tls-or-mls-point-clouds">Pre-processing of TLS or MLS point clouds<a class="anchor" aria-label="anchor" href="#pre-processing-of-tls-or-mls-point-clouds"></a>
+<h2 id="pre-processing-of-tls-or-mls-point-clouds-for-deriving-size-distance-dependent-competition-indizes">Pre-processing of TLS or MLS point clouds for deriving
+size-distance-dependent competition indizes<a class="anchor" aria-label="anchor" href="#pre-processing-of-tls-or-mls-point-clouds-for-deriving-size-distance-dependent-competition-indizes"></a>
 </h2>
 <p>For extracting information on tree level from close-range laser
 scanning (TLS or MLS), you can use e.g. the <a href="https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2" class="external-link">TreeLS</a>
 package. We will show a workflow on how to implement the output of
-TreeLS within TreeCompR.</p>
+TreeLS to derive inventory based competition indices within
+TreeCompR.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">TreeLS</span><span class="op">)</span></span></code></pre></div>
@@ -121,15 +123,14 @@ recommend to use <code>target_source = "buff_edge"</code> to
 automatically calculate the CI for all trees in the plot except for
 those that are less than one search radius away from the forest edge.
 This is specifically important for TLS/MLS data, since these data types
-usually only cover small forest plots rather than whole forests.</p>
+usually only cover small forest plots rather than whole forests. In our
+example, with a search radius of 10 m, only one tree is assigned as a
+target tree.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv</span>, dbh_unit <span class="op">=</span> <span class="st">"m"</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co">#validate the inventory dataset "inv"</span></span>
+<span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv</span>, dbh_unit <span class="op">=</span> <span class="st">"m"</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
+<span><span class="co">#define the target tree(s) depending on the search radius</span></span>
 <span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span>inv <span class="op">=</span> <span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span></span></code></pre></div>
-<p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="500"></p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">7</span>, </span>
-<span>              method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;--------------------------------------------------------------- </span></span>
 <span><span class="co">#&gt; 'target_inv' class inventory dataset with defined target trees: </span></span>
 <span><span class="co">#&gt; collection of 31 observations </span></span>
@@ -142,16 +143,16 @@ usually only cover small forest plots rather than whole forests.</p>
 <span><span class="co">#&gt;    ...    ...    ...   ...    ...    ...</span></span>
 <span><span class="co">#&gt; 29  35 -6.407 -4.719  0.06 19.791  FALSE</span></span>
 <span><span class="co">#&gt; 30  36 -7.484 -7.635 0.216 22.478  FALSE</span></span>
-<span><span class="co">#&gt; 31  38 -5.287  1.051  0.06 22.923  FALSE</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="use-cases">Use cases<a class="anchor" aria-label="anchor" href="#use-cases"></a>
-</h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## If you focus on a specific CI, e.g. the widely used Hegyi-Index, </span></span>
-<span><span class="co">## you can choose it within methods = "CI_Hegyi".</span></span>
-<span><span class="co">#&gt; compete_inv(inventory, target_source = "buff_edge", radius = 7, </span></span>
-<span><span class="co">#&gt;              method = "CI_Hegyi")</span></span>
+<span><span class="co">#&gt; 31  38 -5.287  1.051  0.06 22.923  FALSE</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co"># plot the target tree(s)</span></span>
+<span><span class="fu"><a href="../reference/plot_target.html">plot_target</a></span><span class="op">(</span><span class="va">targets</span><span class="op">)</span></span></code></pre></div>
+<p><img src="../reference/figures/README-example3-1.png" alt="plot_trees" width="500"></p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#example for calculating all possible CIs based on the parameters height and dbh</span></span>
+<span><span class="co">#with a search radius of 7m</span></span>
+<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">7</span>, </span>
+<span>              method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; The following columns were used to create the inventory dataset:</span></span>
 <span><span class="co">#&gt; id   --- TreeID</span></span>
 <span><span class="co">#&gt; x    --- X</span></span>
@@ -165,7 +166,17 @@ usually only cover small forest plots rather than whole forests.</p>
 <span><span class="co">#&gt; Source of target trees: buffer around edge    Search radius: 7 </span></span>
 <span><span class="co">#&gt; ---------------------------------------------------------------------</span></span>
 <span><span class="co">#&gt;    id ...  dbh height CI_Hegyi CI_Braathe CI_RK1 CI_RK2 CI_RK3 CI_RK4</span></span>
-<span><span class="co">#&gt; 18 20 ... 0.25   23.9     1.96       2.07   0.49  0.499    4.1   13.2</span></span>
+<span><span class="co">#&gt; 18 20 ... 0.25   23.9     1.96       2.07   0.49  0.499    4.1   13.2</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="use-cases">Use cases<a class="anchor" aria-label="anchor" href="#use-cases"></a>
+</h2>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## If you focus on a specific CI, e.g. the widely used Hegyi-Index, </span></span>
+<span><span class="co">## you can choose it within methods = "CI_Hegyi".</span></span>
+<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">7</span>, </span>
+<span>             method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<span></span>
 <span></span>
 <span><span class="co">## If you have a tree height column that is not automatically recognized within </span></span>
 <span><span class="co">## our validation of input data, you can set it manually:</span></span>
@@ -183,6 +194,10 @@ usually only cover small forest plots rather than whole forests.</p>
 <span><span class="co">## If you want to keep a column with certain user defined IDs for the trees, </span></span>
 <span><span class="co">## and it is not recognized, specify it with id = "name_column"</span></span>
 <span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inventory</span>, id <span class="op">=</span> <span class="st">"ID_user"</span><span class="op">)</span></span></code></pre></div>
+<p>If you use other options to derive the tree parameters from TLS or
+MLS data, you can customize <code><a href="../reference/read_inv.html">read_inv()</a></code> and
+<code><a href="../reference/compete_inv.html">compete_inv()</a></code> accordingly. For more examples, have a look
+at some more <a href="https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#reading-in-forest-inventory-data-with-with-read_inv">examples</a>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
