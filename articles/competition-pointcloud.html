@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Quantifying competition from point cloud data • TreeCompR</title>
+<title> • TreeCompR</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Quantifying competition from point cloud data">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -42,7 +42,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/ALS_inventory.html">ALS competition workflow</a></li>
     <li><a class="dropdown-item" href="../articles/competition-inventory.html">Quantifying competition from inventory data</a></li>
-    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">Quantifying competition from point cloud data</a></li>
+    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">UNKNOWN TITLE</a></li>
     <li><a class="dropdown-item" href="../articles/TLS_inventory.html">TLS competition workflow</a></li>
   </ul>
 </li>
@@ -64,7 +64,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Quantifying competition from point cloud data</h1>
+      <img src="../logo.png" class="logo" alt=""><h1></h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/juliarieder/TreeCompR/blob/development/vignettes/competition-pointcloud.Rmd" class="external-link"><code>vignettes/competition-pointcloud.Rmd</code></a></small>
@@ -73,20 +73,55 @@
 
     
     
-<div class="section level2">
-<h2 id="pre-process-the-point-clouds">Pre-process the point clouds<a class="anchor" aria-label="anchor" href="#pre-process-the-point-clouds"></a>
-</h2>
-<p>Before using the cone and cylinder point cloud approaches, the trees
-for which competition is to be quantified must be extracted from the
-plot. The most accurate (if time consuming) way to do this is by manual
-segmentation, for instance with <a href="https://www.danielgm.net/cc/" class="external-link">CloudCompare</a>.</p>
-<p>In CoudCompare, load your point cloud of the whole plot and use the
+<table class="table"><tbody>
+<tr class="odd">
+<td>title: “Quantifying competition from point cloud data”</td>
+</tr>
+<tr class="even">
+<td>output: rmarkdown::html_vignette</td>
+</tr>
+<tr class="odd">
+<td>vignette: &gt;</td>
+</tr>
+<tr class="even">
+<td>%</td>
+</tr>
+<tr class="odd">
+<td>%</td>
+</tr>
+<tr class="even">
+<td>%</td>
+</tr>
+</tbody></table>
+<p>## Getting started Before you can start computing competition indices
+based on point cloud data from terrestrial or mobile laserscanning with
+<code>TreeCompR</code>, these data have to be thoroughly vetted and
+pre-processed. In this tutorial, we will first summarize our main
+recommendations for the handling and preprocessing point-cloud data, and
+then explain how to use <code><a href="../reference/compete_pc.html">compete_pc()</a></code> and the associated
+<code>TreeCompR</code> functions to compute competition indices.</p>
+<p>To illustrate how <code>TreeCompR</code> can be included inside a
+tidy workflow, we will make use of <a href="https://www.tidyverse.org/" class="external-link">tidyverse</a> functions throughout the
+tutorial:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span></code></pre></div>
+<p>To highlight where they are coming from, we will explicitly quote the
+corresponding package for all functions used in the tutorial in the form
+of <code><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">purrr::map()</a></code> for all functions besides the
+<code>magrittr</code> pipe operator <code>%&gt;%</code>.</p>
+<p>## Pre-processing the point clouds Before using the cone and cylinder
+point cloud approaches, the trees for which competition is to be
+quantified must be extracted from the plot. The most accurate (if time
+consuming) way to do this is by manual segmentation, for instance with
+<a href="https://www.danielgm.net/cc/" class="external-link">CloudCompare</a>.</p>
+<p>In CloudCompare, load your point cloud of the whole plot and use the
 <a href="https://www.cloudcompare.org/doc/wiki/index.php/Interactive_Segmentation_Tool" class="external-link">Segment</a>
 function to extract the target tree. Make sure you do not miss any part
 or include neighbouring trees or their branches, as it is crucial to
 determine which parts of the point cloud belong to neighbours and which
 points belong to the target tree. Pay particular attention to the ground
-and don’t include any ground points in your target tree’s point cloud,
+and do not include any ground points in your target tree’s point cloud,
 otherwise the tree’s base position may be determined imprecisely in
 later steps as the <code><a href="../reference/tree_pos.html">tree_pos()</a></code> function is based on the
 lowest points in the point cloud of the target tree.</p>
@@ -99,8 +134,8 @@ Section</a> function to clip your point cloud. Make sure that your
 target tree is not at the edge of the plot. For the example dataset in
 our paper, we used 30 x 30 m plots.</p>
 <p>When exporting/saving the point clouds, you can select .las/.laz,
-.txt, .csv, … TreeCompR is flexible with file formats, but if possible
-use the same format for target trees and their neighbourhoods as there
+.txt, .csv, … TreeCompR is flexible with file formats, but if possible,
+use the same format for target trees and their neighbourhoods, as there
 may be slight numeric differences between formats that complicate
 coordinate matching.</p>
 <p>After clicking save, you will be asked to select the output
@@ -110,16 +145,14 @@ cloud! In our examples, we rounded our coordinates to 2 decimal places
 (i.e. to 1 cm accuracy), which also is what the
 <code><a href="../reference/compete_pc.html">compete_pc()</a></code> uses by default for coordinate matching, but
 other values are possible.</p>
-</div>
-<div class="section level2">
-<h2 id="quantify-competition-with-treecompr">Quantify Competition with TreeCompR<a class="anchor" aria-label="anchor" href="#quantify-competition-with-treecompr"></a>
-</h2>
-<p>Once you have the two point clouds for target tree and neighbourhood,
-you can use the <code><a href="../reference/read_pc.html">read_pc()</a></code> function of TreeCompR to read and
-validate them, or directly pass the paths to the point clouds to
+<p>## Quantifying competition with TreeCompR Once you have the two point
+clouds for target tree and neighbourhood, you can use the
+<code><a href="../reference/read_pc.html">read_pc()</a></code> function of TreeCompR to read and validate them,
+or directly pass the paths to the point clouds to
 <code><a href="../reference/compete_pc.html">compete_pc()</a></code>.
 <img src="../reference/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700"></p>
-<p>In <code><a href="../reference/compete_pc.html">compete_pc()</a></code>, you can select the method for computing
+<p>### Basic use of <code><a href="../reference/compete_pc.html">compete_pc()</a></code> In
+<code><a href="../reference/compete_pc.html">compete_pc()</a></code>, you can select the method for computing
 competition indices by setting <code>comp_method</code> to
 <code>"cylinder"</code>, <code>"cone"</code> or <code>"both"</code>. To
 compute the competition indices for either of these methods, the
@@ -150,147 +183,243 @@ et al. (2002)</a>.</p>
 cone and cylinder-based competition indices centered around the crown
 center, with a cone opening in a height of 0.6 times the total target
 tree height and a cylinder radius of 4 m:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://juliarieder.github.io/TreeCompR/">TreeCompR</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/neighborhood.txt"</span>, </span>
-<span>                tree_source <span class="op">=</span> <span class="st">"../tests/testthat/testdata/tree.txt"</span>, </span>
-<span>                comp_method <span class="op">=</span> <span class="st">"both"</span>, <span class="co"># calculate CI in cylinder and cone</span></span>
-<span>                center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, <span class="co"># center for cone and cylinder</span></span>
-<span>                cyl_r <span class="op">=</span> <span class="fl">4</span>, <span class="co"># radius in m</span></span>
-<span>                h_cone <span class="op">=</span> <span class="fl">0.6</span>, <span class="co"># position where the cone starts to open relative</span></span>
-<span>                <span class="co"># to the height of the target tree (0.6 = 60 % of tree height)</span></span>
-<span>                print_progress <span class="op">=</span> <span class="st">"some"</span> <span class="co"># controls how much of the progress is</span></span>
-<span>                <span class="op">)</span>                       <span class="co"># printed</span></span>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># compute competition indices</span></span>
+<span><span class="va">CI1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span></span>
+<span>forest_source <span class="op">=</span> <span class="st">"data/neighborhood.txt"</span>, </span>
+<span>tree_source   <span class="op">=</span> <span class="st">"data/tree.txt"</span>, </span>
+<span>comp_method   <span class="op">=</span> <span class="st">"both"</span>,        <span class="co"># calculate CI in cylinder and cone</span></span>
+<span>center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, <span class="co"># center for cone and cylinder</span></span>
+<span>cyl_r <span class="op">=</span> <span class="fl">4</span>,                     <span class="co"># radius in m</span></span>
+<span>h_cone <span class="op">=</span> <span class="fl">0.6</span>,     <span class="co"># position where the cone starts to open relative to the</span></span>
+<span><span class="co"># height of the target tree (0.6 = 60 % of tree height)</span></span>
+<span>print_progress <span class="op">=</span> <span class="st">"some"</span>        <span class="co"># controls how much of the progress is</span></span>
+<span><span class="op">)</span>                                <span class="co"># printed</span></span>
 <span><span class="co">#&gt; ----- Processing competition indices for: tree -----</span></span>
-<span><span class="co">#&gt; Cone-based CI = 16046      Cylinder-based CI = 56820</span></span>
-<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt;  Point cloud based competition indices for 'tree' </span></span>
-<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt;   target height_target center_position CI_cone h_cone CI_cyl cyl_r</span></span>
-<span><span class="co">#&gt; 1   tree          22.8    crown center   16046    0.6  56820     4</span></span></code></pre></div>
+<span><span class="co">#&gt; Cone-based CI = 16046      Cylinder-based CI = 56820</span></span></code></pre></div>
+<p>With the standard settings (<code>print_progress = "some"</code>),
+the function only prints the computed competition indices. When no
+output is desired, the argument can be set to “none”, when even more
+detail are required it can be put to “full”. Having some idea whether
+the computed values are reasonable is rather useful when looping over a
+large number of trees as the computations can become rather
+time-consuming for large datasets.</p>
+<p>The resulting <code>compete_pc</code> object</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">CI1</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; 'compete_pc' class point-cloud based competition indices for 'tree'</span></span>
+<span><span class="co">#&gt; -------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;    target height_target center_position CI_cone h_cone CI_cyl cyl_r</span></span>
+<span><span class="co">#&gt;    &lt;char&gt;         &lt;num&gt;          &lt;char&gt;   &lt;int&gt;  &lt;num&gt;  &lt;int&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt; 1:   tree          22.8    crown center   16046    0.6  56820     4</span></span></code></pre></div>
 <p>The result is an object of type <code>compete_pc</code>, i.e. a
 modified data.frame that you can save or use for further statistical
 analysis. It contains the name or ID (filename) of the tree, its height,
 the type center_position used, the computed competition index value(s)
 (voxel counts) and the settings of the parameters controlling cylinder
 and cone size.</p>
+<div class="section level3">
+<h3 id="reading-different-formats-with-read_pc">Reading different formats with <code>read_pc()</code><a class="anchor" aria-label="anchor" href="#reading-different-formats-with-read_pc"></a>
+</h3>
 <p>If you want to use the same neighbourhood again because you have more
 than one target tree within that plot, you do not need to read the point
 cloud from the file each time. Instead, simply read it once with
 <code><a href="../reference/read_pc.html">read_pc()</a></code> and use it again. You can also load the target
 tree outside the <code><a href="../reference/compete_pc.html">compete_pc()</a></code> function.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">neighbours</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span><span class="st">"../tests/testthat/testdata/neighborhood.txt"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; No named coordinates. Columns V1, V2, V3 (no.  1, 2, 3 in raw data)</span></span>
-<span><span class="co">#&gt; used as x, y, z coordinates, respectively.</span></span>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">neighbours</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span><span class="st">"data/neighborhood.txt"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; No named coordinates. Columns no. 1, 2, 3 in raw data used as x, y, z</span></span>
+<span><span class="co">#&gt;  coordinates, respectively.</span></span>
 <span></span>
-<span><span class="va">tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span><span class="st">"../tests/testthat/testdata/tree.txt"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; No named coordinates. Columns V1, V2, V3 (no.  1, 2, 3 in raw data)</span></span>
-<span><span class="co">#&gt; used as x, y, z coordinates, respectively.</span></span>
+<span><span class="va">tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span><span class="st">"data/tree.txt"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; No named coordinates. Columns no. 1, 2, 3 in raw data used as x, y, z</span></span>
+<span><span class="co">#&gt;  coordinates, respectively.</span></span></code></pre></div>
+<p>If reading plain-text formats like .txt or .csv in that form, you
+will be notified about the columns identified as coordinates (any
+capitalization of x, y and z, or the first 3 numeric columns if that is
+not possible).</p>
+<p>These objects can then be passed to <code><a href="../reference/compete_pc.html">compete_pc()</a></code> to
+calculate competition indices:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># compute indices</span></span>
+<span><span class="va">CI2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span></span>
+<span>  forest_source <span class="op">=</span> <span class="va">neighbours</span>, tree_source <span class="op">=</span> <span class="va">tree</span>, </span>
+<span>  comp_method <span class="op">=</span> <span class="st">"both"</span>, center_position <span class="op">=</span> <span class="st">"crown_pos"</span>,</span>
+<span>  cyl_r <span class="op">=</span> <span class="fl">4</span>, h_cone <span class="op">=</span> <span class="fl">0.6</span>,  print_progress <span class="op">=</span> <span class="st">"none"</span> </span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>If required, non-standard decimal and field separators (as well as
+other inputs) can be passed to <code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread()</a></code> to be
+able to read more exotic formats:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tree0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span><span class="st">"data/tree0.csv"</span>, sep <span class="op">=</span> <span class="st">";"</span>, dec <span class="op">=</span> <span class="st">","</span><span class="op">)</span></span></code></pre></div>
+<p>In most cases, the data will be available in a data format dedicated
+specifically for the storage of laser scanning data. In addition to all
+plain-text formats readable to <code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread()</a></code>,
+<code><a href="../reference/read_pc.html">read_pc()</a></code> and <code><a href="../reference/compete_pc.html">compete_pc()</a></code> can both read .las,
+.laz and .ply formats:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Read a tree point cloud in .las format</span></span>
+<span><span class="va">tree1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span>pc_source <span class="op">=</span> <span class="st">"data/tree_point_cloud.las"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span>forest_source <span class="op">=</span> <span class="va">neighbours</span>, </span>
-<span>                tree_source <span class="op">=</span> <span class="va">tree</span>, </span>
-<span>                comp_method <span class="op">=</span> <span class="st">"both"</span>, <span class="co"># calculate CI in cylinder and cone</span></span>
-<span>                center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, <span class="co">#center for cone and cylinder</span></span>
-<span>                cyl_r <span class="op">=</span> <span class="fl">4</span>, <span class="co">#radius in m</span></span>
-<span>                h_cone <span class="op">=</span> <span class="fl">0.6</span>, <span class="co">#set height where the cone starts </span></span>
-<span>                <span class="co">#to open in relation to tree height (0.6 = 60 % of tree height)</span></span>
-<span>                print_progress <span class="op">=</span> <span class="st">"full"</span> <span class="co">#get full information during processing</span></span>
-<span>                <span class="op">)</span></span>
-<span><span class="co">#&gt; ----- Processing competition indices for: tree -----</span></span>
-<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt;  Point cloud based competition indices for 'tree' </span></span>
-<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt;   target height_target center_position CI_cone h_cone CI_cyl cyl_r</span></span>
-<span><span class="co">#&gt; 1   tree          22.8    crown center   16046    0.6  56820     4</span></span>
-<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt;  Point cloud based competition indices for 'tree' </span></span>
-<span><span class="co">#&gt;  ------------------------------------------------------------------</span></span>
-<span><span class="co">#&gt;   target height_target center_position CI_cone h_cone CI_cyl cyl_r</span></span>
-<span><span class="co">#&gt; 1   tree          22.8    crown center   16046    0.6  56820     4</span></span></code></pre></div>
+<span><span class="co"># Read a tree point cloud in .ply format</span></span>
+<span><span class="va">tree2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span>pc_source <span class="op">=</span> <span class="st">"data/tree_point_cloud.ply"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># compute competition with source files in .laz format</span></span>
+<span><span class="va">CI3</span> <span class="op">&lt;-</span>  <span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span></span>
+<span>  forest_source <span class="op">=</span> <span class="st">"data/neighbors1.laz"</span>, tree_source <span class="op">=</span> <span class="st">"tree1.laz"</span>, </span>
+<span>  comp_method <span class="op">=</span> <span class="st">"cone"</span>, </span>
+<span>  print_progress <span class="op">=</span> <span class="st">"none"</span> </span>
+<span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="data-handling-incompete_pc">Data handling in<code>compete_pc()</code><a class="anchor" aria-label="anchor" href="#data-handling-incompete_pc"></a>
+</h3>
 <p>Internally, <code><a href="../reference/compete_pc.html">compete_pc()</a></code> crops the neighbourhood to the
 immediate surroundings of the cone or cylinder before matching the
-neighbour and tree point clouds as for large neighbourhoods this is the
-by far computationally most expensive step, while once a neighbourhood
-is loaded filtering (which is done efficiently using functions from the
-<code>data.table</code> package) is comparably fast. To speed up the
-coordinate matching, it is done on integer coordinates rounded to the
-digit accuracy specified by <code>acc_digits</code>, which defaults to 2
-(round to cm). Should you have more accurate data, you can consider
+neighbour and tree point clouds, as for large neighbourhoods this is the
+by far computationally most expensive step. Once a neighbourhood is
+loaded, filtering (which is done efficiently using
+<code>data.table</code> functions package) is comparably fast. To speed
+up the coordinate matching, it is done on integer coordinates rounded to
+the digit accuracy specified by <code>acc_digits</code>, which defaults
+to 2 (round to cm). Should you have more accurate data, you can consider
 increasing that value, though it will slow down computations and likely
 will not have a large impact on the outcome as the competition indices
 are computed on a coarser spatial scale (by default 0.1 m).</p>
-<p>Since loading a large point cloud into memory has a considerable
-computational overhead and can take a lot of time (especially with older
-hard drives), loading a neighbourhood just once can speed up the
-analysis considerably when batch processing a large number of trees even
-if the neighbourhood is large. Should the objects become too large to
-handle within memory, we recommend to split them up outside R during the
-data preparation step.</p>
+<p>Since loading a large point cloud into memory has a non-negligible
+computational overhead and can take a lot of time (especially on systems
+with older hard drives), loading a neighbourhood just once can speed up
+the analysis considerably when batch processing a large number of trees
+from the same data source even if the neighbourhood is large. Should the
+objects become too large to handle within memory, we recommend to split
+them up outside R during the data preparation step.</p>
 </div>
 <div class="section level2">
-<h2 id="example-for-batch-processing">Example for batch-processing<a class="anchor" aria-label="anchor" href="#example-for-batch-processing"></a>
+<h2 id="example-for-batch-processing-workflows">Example for batch-processing workflows<a class="anchor" aria-label="anchor" href="#example-for-batch-processing-workflows"></a>
 </h2>
-<p>If your study consists of many target trees and surrounding plots, it
-may be useful to create a lookup table to more efficiently run the
-function for all your trees. Here is an example of what such a lookup
-table might look like:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="co"># Define the base paths</span></span>
-<span><span class="va">neighborhood_path</span> <span class="op">&lt;-</span> <span class="st">"/path/to/neighborhood/"</span></span>
-<span><span class="va">trees_path</span> <span class="op">&lt;-</span> <span class="st">"/path/to/trees/"</span></span>
+<div class="section level3">
+<h3 id="working-with-a-lookup-table">Working with a lookup table<a class="anchor" aria-label="anchor" href="#working-with-a-lookup-table"></a>
+</h3>
+<p>If your study consists of many target trees that each are surrounded
+by their own neighbourhood plot, it may be useful to create a lookup
+table to more efficiently run the function for all your trees. Here is
+an example of what such a lookup table might look like:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Define the base paths</span></span>
+<span><span class="va">neighborhood_path</span> <span class="op">&lt;-</span> <span class="st">"data/neighborhood/"</span></span>
+<span><span class="va">trees_path</span> <span class="op">&lt;-</span> <span class="st">"data/trees/"</span></span>
 <span></span>
-<span><span class="co"># List files in the neighborhood and tree folders</span></span>
+<span><span class="co"># List .las files in the neighborhood and tree folders</span></span>
 <span><span class="va">neighborhood_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">neighborhood_path</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span>, </span>
 <span>                                 pattern <span class="op">=</span> <span class="st">"\\.las$"</span><span class="op">)</span></span>
 <span><span class="va">tree_files</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">trees_path</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span>, pattern <span class="op">=</span> <span class="st">"\\.las$"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Create TreeIDs if needed</span></span>
-<span><span class="co"># Assuming the same number of neighborhood and tree files, </span></span>
-<span><span class="co">#and each tree has a corresponding neighborhood file</span></span>
-<span><span class="va">TreeIDs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Tree_"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">neighborhood_files</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># Create TreeIDs by stripping the file extension from the tree files</span></span>
+<span><span class="va">TreeIDs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"\\.las"</span>, <span class="st">""</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">trees_path</span>, full.names <span class="op">=</span> <span class="cn">FALSE</span>, </span>
+<span>                                         pattern <span class="op">=</span> <span class="st">"\\.las$"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Create the lookup table as a data frame</span></span>
-<span><span class="va">lookup_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  TreeID <span class="op">=</span> <span class="va">TreeIDs</span>,</span>
+<span><span class="co"># Create the lookup table </span></span>
+<span><span class="va">lookup_table</span> <span class="op">&lt;-</span> <span class="fu">tibble</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>  tree_name <span class="op">=</span> <span class="va">TreeIDs</span>,</span>
 <span>  forest_source <span class="op">=</span> <span class="va">neighborhood_files</span>,</span>
 <span>  tree_source <span class="op">=</span> <span class="va">tree_files</span>,</span>
 <span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Print the lookup table</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">lookup_table</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   TreeID                            forest_source               tree_source</span></span>
-<span><span class="co">#&gt; 1 Tree_1 /path/to/neighborhood/neighborhood_1.las /path/to/trees/tree_1.las</span></span>
-<span><span class="co">#&gt; 2 Tree_2 /path/to/neighborhood/neighborhood_2.las /path/to/trees/tree_2.las</span></span>
-<span><span class="co">#&gt; 3 Tree_3 /path/to/neighborhood/neighborhood_3.las /path/to/trees/tree_3.las</span></span>
-<span><span class="co">#&gt; 4 Tree_4 /path/to/neighborhood/neighborhood_4.las /path/to/trees/tree_4.las</span></span>
-<span><span class="co">#&gt; 5 Tree_5 /path/to/neighborhood/neighborhood_5.las /path/to/trees/tree_5.las</span></span></code></pre></div>
+<p>The table should now look like this:</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lookup_table</span></span>
+<span><span class="co">#&gt;    tree_name forest_source                    tree_source        </span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;     &lt;chr&gt;                            &lt;chr&gt;              </span></span>
+<span><span class="co">#&gt;  1 YW01      data/neighborhood/YW01_neigh.las data/trees/YW01.las</span></span>
+<span><span class="co">#&gt;  2 DK01      data/neighborhood/DK01_neigh.las data/trees/DK01.las</span></span>
+<span><span class="co">#&gt;  3 GN01      data/neighborhood/GN01_neigh.las data/trees/GN01.las</span></span>
+<span><span class="co">#&gt;  4 AR01      data/neighborhood/AR01_neigh.las data/trees/AR01.las</span></span>
+<span><span class="co">#&gt;  5 BS01      data/neighborhood/BS01_neigh.las data/trees/BS01.las</span></span>
+<span><span class="co">#&gt;  6 YW02      data/neighborhood/YW02_neigh.las data/trees/YW02.las</span></span>
+<span><span class="co">#&gt;  7 DK02      data/neighborhood/DK02_neigh.las data/trees/DK02.las</span></span>
+<span><span class="co">#&gt;  8 GN02      data/neighborhood/GN02_neigh.las data/trees/GN02.las</span></span>
+<span><span class="co">#&gt;  9 AR02      data/neighborhood/AR02_neigh.las data/trees/AR02.las</span></span>
+<span><span class="co">#&gt; 10 BS02      data/neighborhood/BS02_neigh.las data/trees/BS02.las</span></span>
+<span><span class="co">#&gt; # ℹ 15 more rows</span></span></code></pre></div>
 <p>In this case, the lookup table contains one path for each segmented
 target tree point cloud, and another path for the corresponding 30 x 30
 m² neighbourhood.</p>
-<p>We can use <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">dplyr::mutate()</a></code> to append the function
-arguments for <code><a href="../reference/compete_pc.html">compete_pc()</a></code>, and <code>purr::pmap()</code>
-to map over the paths and settings line by line and use
-<code><a href="../reference/compete_pc.html">compete_pc()</a></code> with the settings specified in each of them.
-As this can take a considerable amount of time if processing hundreds of
-trees, the different options for <code>print_progress</code> can be
-useful to be able to keep track of the analysis and interrupt it in time
-if something goes wrong.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#calculate both methods at the same time</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="va">lookup</span> <span class="op">&lt;-</span> <span class="va">lookup_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">forest_source</span>, <span class="va">tree_source</span><span class="op">)</span></span>
-<span><span class="co">#define parameter settings within the lookup table</span></span>
-<span><span class="va">lookup_cone50_cyl5</span> <span class="op">&lt;-</span> <span class="va">lookup</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>comp_method <span class="op">=</span> <span class="st">"both"</span>, </span>
-<span>                                               center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, </span>
-<span>                                               cyl_r <span class="op">=</span> <span class="fl">5</span>, h_cone <span class="op">=</span> <span class="fl">0.5</span>, </span>
-<span>                                               z_min <span class="op">=</span> <span class="fl">100</span>, h_xy <span class="op">=</span> <span class="fl">0.3</span>, </span>
-<span>                                               print_progress <span class="op">=</span> <span class="st">"some"</span><span class="op">)</span></span>
-<span><span class="co">#use pmap (alternative to lapply) to loop over your table</span></span>
-<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="va">lookup_cone50_cyl5</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pmap.html" class="external-link">pmap</a></span><span class="op">(</span><span class="va">compete_pc</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>We can now use <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">dplyr::mutate()</a></code> to append the other
+function arguments for <code><a href="../reference/compete_pc.html">compete_pc()</a></code>, and
+<code>purr::pmap()</code> to map over the paths and settings line by
+line and use <code><a href="../reference/compete_pc.html">compete_pc()</a></code> with the settings specified in
+each of them. As this can take a considerable amount of time if
+processing hundreds of trees, the different options for
+<code>print_progress</code> can be useful to be able to keep track of
+the analysis and interrupt it in time if something goes wrong.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">#define additional parameter settings for compete_pc within the lookup table</span></span>
+<span><span class="va">lookup_cone50_cyl5</span> <span class="op">&lt;-</span> <span class="va">lookup_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>comp_method <span class="op">=</span> <span class="st">"both"</span>, </span>
+<span>                center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, </span>
+<span>                cyl_r <span class="op">=</span> <span class="fl">5</span>, h_cone <span class="op">=</span> <span class="fl">0.5</span>, </span>
+<span>                z_min <span class="op">=</span> <span class="fl">100</span>, h_xy <span class="op">=</span> <span class="fl">0.3</span>, </span>
+<span>                print_progress <span class="op">=</span> <span class="st">"some"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># use pmap to loop over the table</span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="va">lookup_cone50_cyl5</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/pmap.html" class="external-link">pmap</a></span><span class="op">(</span><span class="va">compete_pc</span><span class="op">)</span></span>
+<span><span class="co">#&gt; ----- Processing competition indices for: YW01 -----</span></span>
+<span><span class="co">#&gt; Cone-based CI = 15046      Cylinder-based CI = 101332</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; ----- Processing competition indices for: DK01 -----</span></span>
+<span><span class="co">#&gt; ... &lt;full console print not shown&gt; ...</span></span></code></pre></div>
+<p>By printing the process tree by tree, it is possible to estimate the
+total time it takes to compute the indices for large datasets and
+identify in time when the function gets stuck.</p>
+<p>It is possible to bind the results for several trees into a single
+dataset using bind_rows:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">results_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span>
+<span><span class="va">results</span></span>
+<span><span class="co">#&gt; -----------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; 'compete_pc' class point-cloud based competition indices for 25  target trees</span></span>
+<span><span class="co">#&gt; -----------------------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;     target height_target center_position CI_cone h_cone CI_cyl cyl_r</span></span>
+<span><span class="co">#&gt;     &lt;char&gt;         &lt;num&gt;          &lt;char&gt;   &lt;int&gt;  &lt;num&gt;  &lt;int&gt; &lt;num&gt;</span></span>
+<span><span class="co">#&gt;  1:   YW01          21.8    crown center   15046    0.5 101332     5</span></span>
+<span><span class="co">#&gt;  2:   DK01          18.5    crown center   16654    0.5 130674     5</span></span>
+<span><span class="co">#&gt;  3:   GN05          24.2    crown center   13142    0.5 125293     5</span></span>
+<span><span class="co">#&gt; ---                                                    </span></span>
+<span><span class="co">#&gt; 23:   GN05          23.9    crown center   13252    0.5 139834     5</span></span>
+<span><span class="co">#&gt; 24:   AR05          20.8    crown center   17651    0.5 150293     5</span></span>
+<span><span class="co">#&gt; 25:   BS05          22.1    crown center   11306    0.5 114520     5</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="multiple-trees-in-one-plot">Multiple trees in one plot<a class="anchor" aria-label="anchor" href="#multiple-trees-in-one-plot"></a>
+</h3>
+<p>If you have more than one tree in the same neighbourhood, it makes
+sense to load the neighbourhood first and then loop over the trees to
+avoid loading the neighbourhood several time:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Read neighborhood</span></span>
+<span><span class="va">neighbor</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span><span class="st">"data/neighborhood1.las"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># read trees</span></span>
+<span><span class="va">trees</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="st">"data/trees1"</span>, pattern <span class="op">=</span> <span class="st">"\\.las$"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># use purrr::map() to compute all trees</span></span>
+<span><span class="va">results1</span> <span class="op">&lt;-</span> <span class="fu">map</span><span class="op">(</span></span>
+<span>  <span class="va">trees</span>, </span>
+<span>  <span class="op">~</span><span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span></span>
+<span>    forest_source <span class="op">=</span> <span class="va">neighbor</span>, </span>
+<span>    tree_source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"data/trees1"</span>, <span class="va">.x</span><span class="op">)</span>, </span>
+<span>    cyl_r <span class="op">=</span> <span class="fl">4</span>, </span>
+<span>    tree_name <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">gsub</a></span><span class="op">(</span><span class="st">"\\.las"</span>, <span class="st">""</span>, <span class="va">.x</span><span class="op">)</span>, <span class="co"># take id directly from name</span></span>
+<span>    comp_method <span class="op">=</span> <span class="st">"cylinder"</span><span class="op">)</span></span>
+<span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>If there is overlap in the studied areas, this may be faster than
+loading local subsets separately for each tree even for relatively large
+neighbourhoods because loading the data tends to be slower than
+processing them once they are in memory.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
