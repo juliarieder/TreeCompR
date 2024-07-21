@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-## Pre-processing of TLS or MLS point clouds
+## Pre-processing of TLS or MLS point clouds for deriving size-distance-dependent competition indizes
 
 For extracting information on tree level from close-range laser scanning 
 (TLS or MLS), you can use e.g. the [TreeLS](https://www.rdocumentation.org/packages/TreeLS/versions/2.0.2) package. 
