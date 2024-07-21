@@ -213,12 +213,18 @@ read_pc <- function(pc_source, verbose = TRUE,
         pc <- subset(pc, select = nums[1:3])
         # message about used coordinate vectors
         if(verbose){
+          nm <- names(pc)
+          if(all(substr(nm, 1, 1) == "V")){
+          nm <- ""
+          } else {
+            nm <- paste0("('", paste(nm, colapse = "', '"), "') ")
+          }
           message(
             .wr(
-              "No named coordinates. Columns ",
-              paste(names(pc), collapse = ", "),
-              " (no. ", paste(nums[1:3], collapse = ", "),
-              " in raw data) used as x, y, z coordinates, respectively."
+              "No named coordinates. Columns no.",
+              paste(nums[1:3], collapse = ", "),
+              "in raw data ", nm,
+              "used as x, y, z coordinates, respectively."
             )
           )
         }
