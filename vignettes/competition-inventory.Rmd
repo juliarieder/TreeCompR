@@ -37,6 +37,7 @@ To be able to be parsed as a `forest_inv` object, inventory data must contain x 
 
 To ensure that the inventory data is assigned correctly, inspect the data thoroughly. Make sure to specify the units for dbh and height if they differ from the default, which is cm for dbh and m for height. Tree coordinates should __always__ be specified in m. You can either use `read_inv()` to validate data.frames or paths to files with inventory data and convert them to an object type used by the `TreeCompR` functions, or directly pass them to `compete_inv()`. The former is especially useful if you have data with non-standard column names or data structures and want to have full control over how they are parsed.
 
+### Automatic column identification
 In a simple case, reading data with `read_inv()` with standard settings (except for the metric tree diameters) looks like this:
 
 ```{r read-inv1, eval=FALSE, message=FALSE, warning=FALSE}
@@ -45,10 +46,10 @@ inventory1 <- read_inv(
   inv_source = "data/inventory1.csv",
   dbh_unit = "m")
 #> The following columns were used to create the inventory dataset:
-#> id     ---	ID
-#> x      ---	X
-#> y      ---	Y
-#> dbh    ---	DBH
+#> id     ---	  ID
+#> x      ---	  X
+#> y      ---	  Y
+#> dbh    ---	  DBH
 ```
 
 If `verbose = TRUE` (the default), `read_inv()` prints the names of the main inventory variables from the original data set. This is helpful as a sanity check for the automatic column detection. 
@@ -58,10 +59,10 @@ If `verbose = TRUE` (the default), `read_inv()` prints the names of the main inv
 The resulting "forest_inv" object looks like this (basically a modified data.table object that is printed with a header to easily identify its class). 
 ``` {r read-inv1a, eval=FALSE, message=FALSE, warning=FALSE}
 inventory1
-#> ---------------------------------------  
-#> 'forest_inv' class inventory dataset: 
-#> collection of 63 observations 
-#> ---------------------------------------
+#> ------------------------------------
+#> 'forest_inv' class inventory dataset
+#> No. of obs.: 63             
+#> ------------------------------------
 #>             id      x      y    dbh
 #>         <char>  <num>  <num>  <num>
 #>  1: FASY-43-01  1.009  0.908  5.047
@@ -74,6 +75,7 @@ inventory1
 ```
 
 
+### Manual column specification
 If you have variable names that cannot be automatically recognized, you can specify them explicitly with the corresponding arguments either as a character string of length 1 with the variable name or by directly specifying the name without quotes. 
 For example, assume you have a data set with (metric) UTM coordinates from a Spanish source, i.e. with "dap_cm" (diámetro en altura de pecho) instead of dbh and "altura" instead of height:
 
@@ -88,21 +90,21 @@ inventory2 <- read_inv(
   dbh_unit = "cm", 
   height_unit = "m")
 #> The following columns were used to create the inventory dataset:
-#> id     ---	automatically generated
-#> x      ---	utmx
-#> y      ---	utmy
-#> dbh    ---	dap_cm
-#> height ---	altura
+#> id     ---	  automatically generated
+#> x      ---	  utmx
+#> y      ---	  utmy
+#> dbh    ---	  dap_cm
+#> height ---	  altura
 ```
 
 Note that in this case, the function automatically generated an "id" column with ascending numbers as there was nothing in the raw data that could be automatically identified as an ID:
 
 ```{r read-inv2a, message=FALSE, warning=FALSE, eval=FALSE}
 inventory2
-#> ---------------------------------------  
-#> 'forest_inv' class inventory dataset: 
-#> collection of 88 observations 
-#> ---------------------------------------
+#> --------------------------------------
+#> 'forest_inv' class inventory dataset
+#> No. of obs.: 88   No. of data cols.: 2
+#> --------------------------------------
 #>         id      x      y    dbh height
 #>     <char>  <num>  <num>  <num>  <num>
 #>  1:      1  0.573  0.168  7.232 13.168
@@ -114,6 +116,8 @@ inventory2
 #> 88:     88  6.962 29.644  4.585 10.219
 ```
 
+
+### Non-standard file formats
 Non-standard field separators etc. can be internally passed on to `data.table::fread()` via the `...` arguments to read more exotic formats such as the semicolon-separated ".csv" files with commas as decimal separators used for example in Germany. If the units are not specified explicitly, it is assumed that they are in the standard units (m for height and cm for diameter) and do not need conversion.
 
 ```{r read-inv3, message=FALSE, warning=FALSE, eval=FALSE}
@@ -125,6 +129,7 @@ inventory3 <- read_inv(
   verbose = FALSE)
 ```
 
+### Additional variables
 In many cases, pre-processing of the inventories based on other variables than coordinates and tree size is necessary. For that reason, it is possible to read in any objects that inherit from class `data.frame` (e.g., tibbles, data.tables or actual data.frames) with `read_inv()`. In this example, a dataset is first read in externally and filtered to get data of only one of the plots in the dataset and then read in.
 
 ```{r read-inv4, message=FALSE, warning=FALSE, eval=FALSE}
@@ -156,10 +161,10 @@ inventory4 <- read_inv(
   height_unit = "m", 
   verbose = FALSE)
 inventory4
-#> ---------------------------------------  
-#> 'forest_inv' class inventory dataset: 
-#> collection of 131 observations 
-#> ---------------------------------------
+#> ------------------------------------------
+#> 'forest_inv' class inventory dataset
+#> No. of obs.: 131      No. of data cols.: 2
+#> ------------------------------------------
 #>          id        x       y    dbh height
 #>      <char>    <num>   <num>  <num>  <num>
 #>   1:  20492 563148.6 5508576 25.966 27.448
@@ -183,10 +188,10 @@ inventory4a <- read_inv(
   keep_rest = TRUE,
   verbose = FALSE)
 inventory4a
-#> ---------------------------------------  
-#> 'forest_inv' class inventory dataset: 
-#> collection of 131 observations 
-#> ---------------------------------------
+#> --------------------------------------------------------------
+#> 'forest_inv' class inventory dataset
+#> No. of obs.: 131                          No. of data cols.: 4
+#> --------------------------------------------------------------
 #>          id        x       y    dbh height plot_id canopy_area
 #>      <char>    <num>   <num>  <num>  <num>  <char>       <num>
 #>   1:  20492 563148.6 5508576 25.966 27.448  Plot 1       0.755
@@ -214,20 +219,20 @@ targets1 <- define_target(
   target_source = c("FASY-43-24", "FASY-43-27", "FASY-43-30")
 )
 targets1
-#> --------------------------------------------------------------- 
-#> 'target_inv' class inventory dataset with defined target trees: 
-#> collection of 63 observations containing 3 target trees. 
-#> Source of target trees: character vector 
-#> ---------------------------------------------------------------
-#>             id      x      y    dbh target
-#>         <char>  <num>  <num>  <num> <lgcl>
-#>  1: FASY-43-01  1.009  0.908  5.047  FALSE
-#>  2: ACPL-43-02 11.683  1.449  6.786  FALSE
-#>  3: SOAU-43-03  6.770  2.155  4.675  FALSE
+#> ----------------------------------------------------
+#> 'target_inv' class inventory with target definitions
+#> No. of obs.: 63                 No. of data cols.: 1
+#> No. of target trees: 3       Target source: tree IDs
+#> ----------------------------------------------------
+#>             id      x      y target    dbh
+#>         <char>  <num>  <num> <lgcl>  <num>
+#>  1: FASY-43-01  1.009  0.908  FALSE  5.047
+#>  2: ACPL-43-02 11.683  1.449  FALSE  6.786
+#>  3: SOAU-43-03  6.770  2.155  FALSE  4.675
 #> ---                                       
-#> 61: FASY-43-61  9.390 28.357 40.283  FALSE
-#> 62: FASY-43-62  5.350 27.977 32.405  FALSE
-#> 63: FASY-43-63 16.750 28.615 43.841  FALSE
+#> 61: FASY-43-61  9.390 28.357  FALSE 40.283
+#> 62: FASY-43-62  5.350 27.977  FALSE 32.405
+#> 63: FASY-43-63 16.750 28.615  FALSE 43.841
 ```
 
 Objects of class "target_inv" are "forest_inv" type forest inventory datasets that have an additional target column with a logical "target" vector that identifies the target trees.
@@ -250,7 +255,7 @@ targets2 <- define_target(
   target_source = grepl("FASY", inventory1$id)
   )
 # visual inspection
-plot_target(targets1, radius = 10)
+plot_target(targets2, radius = 10)
 ```
 
 <img src="../man/figures/targets2.png" alt="plot_trees" width="600">
@@ -268,10 +273,10 @@ In these cases, it is possible to supply an inventory based on a second set of c
 # read target tree positions
 (target_pos <- read_inv(
   "data/target_tree_gps.csv", x = gps_x, y = gps_y))
-#> ---------------------------------------  
-#> 'forest_inv' class inventory dataset: 
-#> collection of 15 observations 
-#> ---------------------------------------
+#> ------------------------------------
+#> 'forest_inv' class inventory dataset
+#> No. of obs.: 15                     
+#> ------------------------------------
 #>          id        x       y
 #>      <char>    <num>   <num>
 #>  1: FASY-01 563157.6 5508615
@@ -371,11 +376,11 @@ If target trees have already been specified with `target_inv()`, the outcome can
 # compute Hegyi index based on existing 'target_inv' object
  (CI1 <- compete_inv(inv_source = targets4, radius = 8, 
                     method = "CI_Hegyi"))
-#> --------------------------------------------------------------------- 
-#> 'compete_inv' class inventory with distance-based competition indices 
-#> Results for 43 target trees based on an inventory with 131 trees. 
-#> Source of target trees: buffer around edge 	 Search radius: 8 m
-#> ---------------------------------------------------------------------
+#> ------------------------------------------------------------
+#> 'compete_inv' class distance-based competition index dataset
+#> No. of target trees: 43     Source inventory size: 131 trees
+#> Target source: 'buff_edge' (8 m)          Search radius: 8 m
+#> ------------------------------------------------------------
 #>         id        x       y    dbh height CI_Hegyi
 #>     <char>    <num>   <num>  <num>  <num>    <num>
 #>  1:  21277 563160.3 5508586  9.863 12.098    0.952
@@ -405,10 +410,10 @@ CI2 <- compete_inv(
   dec = ","
   )
 #> The following columns were used to create the inventory dataset:
-#> id	  ---	Baumname
-#> x	  ---	Koord_x
-#> y	  ---	Koord_y
-#> dbh	---	Durchmesser
+#> id	  ---	  Baumname
+#> x	  ---	  Koord_x
+#> y	  ---	  Koord_y
+#> dbh	---	  Durchmesser
 ```
 
 The output of this function can then again be inspected in the same way as above using `plot_target()` to make sure the selection of target trees make sense:
@@ -455,11 +460,11 @@ If `method = "all_methods"` (the standard setting), `compete_inv()` computes all
 CI3 <- compete_inv(inv_source = targets4, 
                     radius = 8, method = "all_methods")
 CI3[, -c(2:3)] # remove coordinates to make room for printing
-#> --------------------------------------------------------------------- 
-#> 'compete_inv' class inventory with distance-based competition indices 
-#> Results for 43 target trees based on an inventory with 131 trees. 
-#> Source of target trees: buffer around edge 	 Search radius: 8 m 
-#> ---------------------------------------------------------------------
+#> ------------------------------------------------------------------------
+#> 'compete_inv' class distance-based competition index dataset
+#> No. of target trees: 43                 Source inventory size: 131 trees
+#> Target source: 'buff_edge' (8 m)                      Search radius: 8 m
+#> ------------------------------------------------------------------------
 #>         id    dbh height CI_Hegyi CI_RK1 CI_RK2 CI_Braathe CI_RK3 CI_RK4
 #>     <char>  <num>  <num>    <num>  <num>  <num>      <num>  <num>  <num>
 #>  1:  21277  9.863 12.098    0.952  4.233  6.599      0.909  3.702  6.208
@@ -490,11 +495,11 @@ This function can then be called with the `method` argument `compete_inv()` as a
 ```{r index1a, message=FALSE, warning=FALSE, eval=FALSE}
 compete_inv(inv_source = targets4, radius = 8,
             method = c("CI_Hegyi", "CI_Hegyi_new"))
-#> --------------------------------------------------------------------- 
-#> 'compete_inv' class inventory with distance-based competition indices 
-#> Results for 43 target trees based on an inventory with 131 trees. 
-#> Source of target trees: buffer around edge 	 Search radius: 8 m 
-#> ---------------------------------------------------------------------
+#> ---------------------------------------------------------------
+#> 'compete_inv' class distance-based competition index dataset
+#> No. of target trees: 43        Source inventory size: 131 trees
+#> Target source: 'buff_edge' (8 m)             Search radius: 8 m
+#> ---------------------------------------------------------------
 #>         id        x       y    dbh height CI_Hegyi CI_Hegyi_new
 #>     <char>    <num>   <num>  <num>  <num>    <num>        <num>
 #>  1:  21277 563160.3 5508586  9.863 12.098    0.952        0.952
@@ -531,40 +536,40 @@ CI_Hegyi_FREC <- function(target, neigh)
 # load complete dataset (keep rest: information about species etc is maintained)
 inv_species <- read_inv("data/inventory6.csv", keep_rest = TRUE)
 form(inv_species)
-#> ---------------------------------------  
-#> 'forest_inv' class inventory dataset: 
-#> collection of 1091 observations 
-#> ---------------------------------------
-#>           id      x       y    dbh height            species
-#>       <char>  <num>   <num>  <num>  <num>             <char>
-#>    1:  31316 26.630   0.722 10.693 15.061   Carpinus betulus
-#>    2:  31339  6.338   0.712  6.668 10.162   Carpinus betulus
-#>    3:  31374  4.718   0.792  6.603  9.240 Fraxinus excelsior
-#>   ---                                                       
-#> 1089:  38564 46.397 100.414  4.850  7.597 Fraxinus excelsior
-#> 1090:  38565 54.600  99.893  5.804  8.178   Carpinus betulus
-#> 1091:  38567 94.888 100.531  3.412  6.133   Carpinus betulus
+#> -----------------------------------------------------------
+#> 'forest_inv' class inventory dataset
+#> No. of obs.: 597                       No. of data cols.: 3
+#> -----------------------------------------------------------
+#>          id      x       y    dbh height            species
+#>      <char>  <num>   <num>  <num>  <num>             <char>
+#>   1:  22059  7.077   0.187 39.001 31.559      Quercus robur
+#>   2:  22061 18.967   0.518 42.586 32.799 Fraxinus excelsior
+#>   3:  22062 27.169   0.647  3.440  6.623      Quercus robur
+#>  ---                                                       
+#> 595:  29263  8.327  98.759 41.372 36.088      Quercus robur
+#> 596:  29388 47.928 100.059 57.913 33.186      Quercus robur
+#> 597:  29429 35.799 100.089 37.972 29.876      Quercus robur
 
 
 # compute species-decomposed Hegyi
 comp_species <- compete_inv(
   inv_source = inv_species, target_source = "buff_edge", radius = 12, 
   method = c("CI_Hegyi_QURO", "CI_Hegyi_CABE", "CI_Hegyi_FREC", "CI_Hegyi"))
-comp_species[, -c(1:5)]
-#> --------------------------------------------------------------------- 
-#> 'compete_inv' class inventory with distance-based competition indices 
-#> Results for 622 target trees based on an inventory with 1090 trees. 
-#> Source of target trees: buffer around edge 	 Search radius: 12 m 
-#> ---------------------------------------------------------------------
-#>                 species CI_Hegyi_QURO CI_Hegyi_CABE CI_Hegyi_FREC CI_Hegyi
-#>                  <char>         <num>         <num>         <num>    <num>
-#>   1:      Quercus robur        12.514         8.501         4.086   25.101
-#>   2: Fraxinus excelsior         5.045         1.529         3.396    9.971
-#>   3: Fraxinus excelsior         6.303         2.955         3.156   12.414
-#>  ---                                                                      
-#> 620:   Carpinus betulus         3.771         1.582         1.329    6.682
-#> 621:      Quercus robur         2.006         1.977         1.372    5.355
-#> 622:      Quercus robur         3.349         2.888         1.571    7.807
+> comp_species[, c(1, 6:9)] # only show ID and indices
+#> --------------------------------------------------------------
+#> 'compete_inv' class distance-based competition index dataset
+#> No. of target trees: 350      Source inventory size: 597 trees
+#> Target source: 'buff_edge' (12 m)          Search radius: 12 m
+#> --------------------------------------------------------------
+#>          id CI_Hegyi_QURO CI_Hegyi_CABE CI_Hegyi_FREC CI_Hegyi
+#>      <char>         <num>         <num>         <num>    <num>
+#>   1:  23028         2.604         1.164         1.005    4.773
+#>   2:  23029         2.685         1.805         1.659    6.149
+#>   3:  23030         3.319         1.213         1.961    6.493
+#>  ---                                                          
+#> 348:  28457         1.947         0.601         0.431    2.979
+#> 349:  28485         4.910         5.807         1.817   12.534
+#> 350:  28534         8.705         6.316         0.904   15.925
 ```
 
 As in the plot the three species are the only species that occur, this constitutes a full decomposition of the Hegyi index into the contributions of different competitor species:
