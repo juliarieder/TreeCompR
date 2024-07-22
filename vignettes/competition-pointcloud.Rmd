@@ -2,20 +2,20 @@
 title: "Quantifying competition from point cloud data"
 output: rmarkdown::html_vignette
 vignette: >
-%\VignetteIndexEntry{Quantifying competition from point cloud data}
+  %\VignetteIndexEntry{Quantifying competition from point cloud data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-  ---
+---
+ 
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+collapse = TRUE,
+comment = "#>"
+)
+```
   
-  ```{r, include=FALSE}
-  knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-  )
-  ```
-  
-  ## Getting started 
-  Before you can start computing competition indices based on point cloud data from terrestrial or mobile laserscanning with `TreeCompR`, these data have to be thoroughly vetted and pre-processed. In this tutorial, we will first summarize our main recommendations for the handling and preprocessing point-cloud data, and then explain how to use `compete_pc()` and the associated `TreeCompR` functions to compute competition indices.
+## Getting started 
+Before you can start computing competition indices based on point cloud data from terrestrial or mobile laserscanning with `TreeCompR`, these data have to be thoroughly vetted and pre-processed. In this tutorial, we will first summarize our main recommendations for the handling and preprocessing point-cloud data, and then explain how to use `compete_pc()` and the associated `TreeCompR` functions to compute competition indices.
   
   To illustrate how `TreeCompR` can be included inside a tidy workflow, we will make use of [tidyverse](https://www.tidyverse.org/) functions throughout the tutorial:
   
