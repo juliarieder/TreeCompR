@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title> • TreeCompR</title>
+<title>Quantifying competition from point cloud data • TreeCompR</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
 <link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
@@ -16,7 +16,7 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Quantifying competition from point cloud data">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -42,7 +42,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/ALS_inventory.html">ALS competition workflow</a></li>
     <li><a class="dropdown-item" href="../articles/competition-inventory.html">Quantifying competition from inventory data</a></li>
-    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">UNKNOWN TITLE</a></li>
+    <li><a class="dropdown-item" href="../articles/competition-pointcloud.html">Quantifying competition from point cloud data</a></li>
     <li><a class="dropdown-item" href="../articles/TLS_inventory.html">TLS competition workflow</a></li>
   </ul>
 </li>
@@ -64,7 +64,7 @@
 
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1></h1>
+      <img src="../logo.png" class="logo" alt=""><h1>Quantifying competition from point cloud data</h1>
             
       
       <small class="dont-index">Source: <a href="https://github.com/juliarieder/TreeCompR/blob/development/vignettes/competition-pointcloud.Rmd" class="external-link"><code>vignettes/competition-pointcloud.Rmd</code></a></small>
@@ -73,28 +73,11 @@
 
     
     
-<table class="table"><tbody>
-<tr class="odd">
-<td>title: “Quantifying competition from point cloud data”</td>
-</tr>
-<tr class="even">
-<td>output: rmarkdown::html_vignette</td>
-</tr>
-<tr class="odd">
-<td>vignette: &gt;</td>
-</tr>
-<tr class="even">
-<td>%</td>
-</tr>
-<tr class="odd">
-<td>%</td>
-</tr>
-<tr class="even">
-<td>%</td>
-</tr>
-</tbody></table>
-<p>## Getting started Before you can start computing competition indices
-based on point cloud data from terrestrial or mobile laserscanning with
+<div class="section level2">
+<h2 id="getting-started">Getting started<a class="anchor" aria-label="anchor" href="#getting-started"></a>
+</h2>
+<p>Before you can start computing competition indices based on point
+cloud data from terrestrial or mobile laserscanning with
 <code>TreeCompR</code>, these data have to be thoroughly vetted and
 pre-processed. In this tutorial, we will first summarize our main
 recommendations for the handling and preprocessing point-cloud data, and
@@ -294,6 +277,7 @@ the analysis considerably when batch processing a large number of trees
 from the same data source even if the neighbourhood is large. Should the
 objects become too large to handle within memory, we recommend to split
 them up outside R during the data preparation step.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="example-for-batch-processing-workflows">Example for batch-processing workflows<a class="anchor" aria-label="anchor" href="#example-for-batch-processing-workflows"></a>
