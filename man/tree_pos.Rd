@@ -37,6 +37,9 @@ coordinates of the central point of the crown projected
 area and the z position of the stem base identified as
 above.}
 \item{\code{height}} {numeric of length one containing the tree height in m.}
+\item{\code{cpa}} {numeric of length one containing the crown projected area
+in m².}
+\item{\code{cp}} {\code{data.table} with the voxels building the crown.}
 \item{\code{tree_name}} {name of the object used as the "tree" argument, or
 name specified by the user.}
 }
