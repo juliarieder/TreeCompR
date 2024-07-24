@@ -63,6 +63,9 @@ distance-dbh-dependent competition indices based on forest inventory data.</p>
 <span>  height_unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"m"</span>, <span class="st">"cm"</span>, <span class="st">"mm"</span><span class="op">)</span>,</span>
 <span>  keep_rest <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  parallelize <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  cores <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="st">"cores"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span><span class="st">"cores"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>    <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  tol <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  kmax <span class="op">=</span> <span class="fl">999</span>,</span>
 <span>  <span class="va">...</span></span>
@@ -181,6 +184,18 @@ computations? Defaults to FALSE.</p></dd>
 printed? Defaults to TRUE.</p></dd>
 
 
+<dt id="arg-parallelize">parallelize<a class="anchor" aria-label="anchor" href="#arg-parallelize"></a></dt>
+<dd><p>logical of length 1. Should the computation of the
+competition indices be split over several cores? Defaults to FALSE.</p></dd>
+
+
+<dt id="arg-cores">cores<a class="anchor" aria-label="anchor" href="#arg-cores"></a></dt>
+<dd><p>numeric of length 1. If <code>parallelize = TRUE</code>, on how many cores
+should the computations be run on? Defaults to the value registered in
+<code>options("cores")[[1]]</code>, or, if this is not available, to
+<code>parallel::detectCores())</code>.</p></dd>
+
+
 <dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
 <dd><p>numeric of length 1. Tolerance for the match with the tree
 coordinates. If coordinates are measured in the field with GPS, but
@@ -277,7 +292,11 @@ than the maximum number of trees expected in the search radius. When
 working with small datasets (from classical forest inventories or MLS/TLS
 sources), this will likely not matter, but when working with large ALS
 datasets this implementation can speed up calculation by several orders of
-magnitude.</p>
+magnitude.
+For even larger datasets, it is possible to compute the indices in parallel
+using <code><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach::foreach()</a></code> via the doParallel backend. If
+<code>parallelize = TRUE</code>, the computation of the competition indices will be
+distributed onto <code>cores</code> parallel cores.</p>
 <p>As all these indices are distance-weighted sums of the relative size of all
 competitor trees within the search radius compared to the target tree (or a
 sum of transformations thereof), they are very sensitive to the choice of
