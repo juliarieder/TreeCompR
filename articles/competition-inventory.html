@@ -363,7 +363,7 @@ assuming you want to compute competition indices for 3 adjacent
 datasets that have an additional target column with a logical “target”
 vector that identifies the target trees.</p>
 <p>To visually inspect the position of the designated target trees
-relative to the other trees in the neighbourhood, you can use the
+relative to the other trees in the neighborhood, you can use the
 function <code><a href="../reference/plot_target.html">plot_target()</a></code>, which automatically displays the
 relevant information depending on the <code>target_source</code> setting
 for both <code>target_inv</code> datasets and the output of
@@ -575,7 +575,7 @@ files and require different sets of custom column name settings, or
 because an inspection of the target settings and spatial configuration
 is desired <em>before</em> computing the results (which is certainly a
 good idea for large datasets).</p>
-<p>To identify the neighbour trees within the search radius of each
+<p>To identify the neighbor trees within the search radius of each
 target tree, <code><a href="../reference/compete_inv.html">compete_inv()</a></code>uses the function
 <code>knn()</code> from package <a href="https://github.com/jefferis/nabor" class="external-link">nabor</a> that is based on a
 very efficient C++ implementation of the k-nearest neighbor algorithm
@@ -627,7 +627,7 @@ argument and all further arguments that are passed on to
 <span><span class="co">#&gt; 43:  23652 563141.8 5508616 11.017 13.886    5.866</span></span></code></pre></div>
 <p>The resulting “compete_inv” object contains only the target trees,
 and has one additional column for each computed competition index.
-Information about the neighbour trees as well as information about the
+Information about the neighbor trees as well as information about the
 methods are stored as attributes.</p>
 <p>In addition to analyses based on existing “target_inv” objects, it is
 possible to read data from file, for example from a “.csv” source with
@@ -674,14 +674,14 @@ equations, where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>i</mi></msub><annotation encoding="application/x-tex">d_i</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>h</mi><mi>i</mi></msub><annotation encoding="application/x-tex">h_i</annotation></semantics></math>
-are the dbh and height of neighbour tree
+are the dbh and height of neighbor tree
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>d</mi><annotation encoding="application/x-tex">d</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>h</mi><annotation encoding="application/x-tex">h</annotation></semantics></math>
 are dbh and height of the target tree, and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">dist_i</annotation></semantics></math>
-is the distance from neighbour tree
+is the distance from neighbor tree
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
 to the target tree.</p>
 <p><strong>Diameter-based competition indices</strong></p>
@@ -704,14 +704,14 @@ for all trees with
 <p><strong>CI_size</strong> based on Hegyi (1974), but with a
 user-specified size-related variable
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>s</mi><mi>i</mi></msub><annotation encoding="application/x-tex">s_i</annotation></semantics></math>:
-size for neighbour tree
+size for neighbor tree
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>s</mi><annotation encoding="application/x-tex">s</annotation></semantics></math>:
 size of the target tree):
 <math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi><msub><mi>I</mi><mrow><mi>s</mi><mi>i</mi><mi>z</mi><mi>e</mi></mrow></msub><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mfrac><msub><mi>s</mi><mi>i</mi></msub><mrow><mi>s</mi><mo>⋅</mo><mi>d</mi><mi>i</mi><mi>s</mi><msub><mi>t</mi><mi>i</mi></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">CI_{size} = \sum_{i=1}^{n} \frac{s_{i}}{s \cdot dist_{i}}</annotation></semantics></math></p>
 <p>An advantage of the classical distance-based indices (CI_Hegyi and
 CI_Braathe) is their clear interpretation as the sum of the relative
-sizes of the neighbour trees relative to the target tree size, weighted
+sizes of the neighbor trees relative to the target tree size, weighted
 by their distance to the target tree.</p>
 <p>If <code>method = "all_methods"</code> (the standard setting),
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code> computes all indices that can be computed
@@ -743,7 +743,7 @@ CI_size are included in the output.</p>
 </h3>
 <p>All indices that can be calculated with <code><a href="../reference/compete_inv.html">compete_inv()</a></code>
 are based on a distance-weighted sum of the relative size of all
-neighbour trees within the search radius compared to the size of the
+neighbor trees within the search radius compared to the size of the
 central tree, or a sum of a transformation thereof. As the search radius
 determines how many trees are included for calculating these metric for
 each tree, all these distance-based competition indices are extremely
