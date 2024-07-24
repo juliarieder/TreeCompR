@@ -55,8 +55,8 @@ exact matching. Defaults to 1 (match within a 1 m buffer).}
 
 \item{crop_to_target}{logical of length 1. Should the inventory be limited
 to the extent of the target coordinates? If TRUE, the extent of \code{inv} will
-be cropped to the extent of \code{forest_inv} \eqn{\pm} \code{radius + tol} to
-reduce computational load in later steps. Defaults to FALSE.}
+be cropped to the extent of \code{forest_inv} \eqn{\pm} \code{radius} + 1 m for
+safety to reduce computational load in later steps. Defaults to FALSE.}
 
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
