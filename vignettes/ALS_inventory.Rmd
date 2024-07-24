@@ -166,7 +166,7 @@ ggplot(CI, aes(x = x, y = y, color = CI_Braathe)) +
 
 ## Use other size parameters to compute competition
 
-Besides the tree height there was also the crown projection area ("convhull_area") of each tree as output from the ALS workflow. This size can also be used to quantify competition, e.g. with **CI_size**, a generic size-based Hegyi-type competition index with a user-specified size-related variable ($s_i$: size for neighbour tree $i$, $s$: size of the target tree):
+Besides the tree height there was also the crown projection area ("convhull_area") of each tree as output from the ALS workflow. This size can also be used to quantify competition, e.g. with **CI_size**, a generic size-based Hegyi-type competition index with a user-specified size-related variable ($s_i$: size for neighbor tree $i$, $s$: size of the target tree):
 $$CI_{size} = \sum_{i=1}^{n} \frac{s_{i}}{s \cdot dist_{i}}$$
 To use the crown projection area, just specify the parameter `size` and the `method` "CI_size":
 

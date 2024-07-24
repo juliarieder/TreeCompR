@@ -30,18 +30,18 @@ Before you can start computing competition indices based on point cloud data fro
   ## Pre-processing the point clouds
   Before using the cone and cylinder point cloud approaches, the trees for which competition is to be quantified must be extracted from the plot. The most accurate (if time consuming) way to do this is by manual segmentation, for instance with [CloudCompare](https://www.danielgm.net/cc/). 
   
-  In CloudCompare, load your point cloud of the whole plot and use the [Segment](https://www.cloudcompare.org/doc/wiki/index.php/Interactive_Segmentation_Tool) function to extract the target tree. Make sure you do not miss any part or include neighbouring trees or their branches, as it is crucial to determine which parts of the point cloud belong to neighbours and which points belong to the target tree. Pay particular attention to the ground and do not include any ground points in your target tree's point cloud, otherwise the tree's base position may be determined imprecisely in later steps as the `tree_pos()` function is based on the lowest points in the point cloud of the target tree. 
+  In CloudCompare, load your point cloud of the whole plot and use the [Segment](https://www.cloudcompare.org/doc/wiki/index.php/Interactive_Segmentation_Tool) function to extract the target tree. Make sure you do not miss any part or include neighboring trees or their branches, as it is crucial to determine which parts of the point cloud belong to neighbors and which points belong to the target tree. Pay particular attention to the ground and do not include any ground points in your target tree's point cloud, otherwise the tree's base position may be determined imprecisely in later steps as the `tree_pos()` function is based on the lowest points in the point cloud of the target tree. 
   
   <img src="../man/figures/CloudCompare.jpg" alt="Methods Workflow" width="700">
   
   After extracting the target tree, export the point cloud by selecting the file in the DB Tree and click File - Save. Do the same for the whole plot, but first clip the point cloud to your area of interest. The best way to do this is to select top view and use the [Cross Section](https://www.cloudcompare.org/doc/wiki/index.php/Cross_Section) function to clip your point cloud. Make sure that your target tree is not at the edge of the plot. For the example dataset in our paper, we used 30 x 30 m plots. 
   
-  When exporting/saving the point clouds, you can select .las/.laz, .txt, .csv, ... TreeCompR is flexible with file formats, but if possible, use the same format for target trees and their neighbourhoods, as there may be slight numeric differences between formats that complicate coordinate matching. 
+  When exporting/saving the point clouds, you can select .las/.laz, .txt, .csv, ... TreeCompR is flexible with file formats, but if possible, use the same format for target trees and their neighborhoods, as there may be slight numeric differences between formats that complicate coordinate matching. 
   
-  After clicking save, you will be asked to select the output resolution. If you choose a custom resolution or coordinate accuracy, make sure you choose the same for the target tree and the neighbourhood cloud! In our examples, we rounded our coordinates to 2 decimal places (i.e. to 1 cm accuracy), which also is what the `compete_pc()` uses by default for coordinate matching, but other values are possible. 
+  After clicking save, you will be asked to select the output resolution. If you choose a custom resolution or coordinate accuracy, make sure you choose the same for the target tree and the neighborhood cloud! In our examples, we rounded our coordinates to 2 decimal places (i.e. to 1 cm accuracy), which also is what the `compete_pc()` uses by default for coordinate matching, but other values are possible. 
   
   ## Quantifying competition with TreeCompR
-  Once you have the two point clouds for target tree and neighbourhood, you can use the `read_pc()` function of TreeCompR to read and validate them, or directly pass the paths to the point clouds to `compete_pc()`. 
+  Once you have the two point clouds for target tree and neighborhood, you can use the `read_pc()` function of TreeCompR to read and validate them, or directly pass the paths to the point clouds to `compete_pc()`. 
   <img src="../man/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700">
   
   ### Basic use of `compete_pc()`
@@ -86,7 +86,7 @@ CI1
 The result is an object of type `compete_pc`, i.e. a modified data.frame that you can save or use for further statistical analysis. It contains the name or ID (filename) of the tree, its height, the type center_position used, the computed competition index value(s) (voxel counts) and the settings of the parameters controlling cylinder and cone size.
 
 ### Reading different formats with `read_pc()`
-If you want to use the same neighbourhood again because you have more than one target tree within that plot, you do not need to read the point cloud from the file each time. Instead, simply read it once with `read_pc()` and use it again. You can also load the target tree outside the `compete_pc()` function.
+If you want to use the same neighborhood again because you have more than one target tree within that plot, you do not need to read the point cloud from the file each time. Instead, simply read it once with `read_pc()` and use it again. You can also load the target tree outside the `compete_pc()` function.
 
 ```{r comp1, warning=FALSE, eval=FALSE}
 neighbours <- read_pc("data/neighborhood.txt")
@@ -134,15 +134,15 @@ CI3 <-  compete_pc(
 
 
 ### Data handling in`compete_pc()`
-Internally, `compete_pc()` crops the neighbourhood to the immediate surroundings of the cone or cylinder before matching the neighbour and tree point clouds, as for large neighbourhoods this is the by far computationally most expensive step. Once a neighbourhood is loaded, filtering (which is done efficiently using `data.table` functions package) is comparably fast. To speed up the coordinate matching, it is done on integer coordinates rounded to the digit accuracy specified by `acc_digits`, which defaults to 2 (round to cm). Should you have more accurate data, you can consider increasing that value, though it will slow down computations and likely will not have a large impact on the outcome as the competition indices are computed on a coarser spatial scale (by default 0.1 m). 
+Internally, `compete_pc()` crops the neighborhood to the immediate surroundings of the cone or cylinder before matching the neighbor and tree point clouds, as for large neighborhoods this is the by far computationally most expensive step. Once a neighborhood is loaded, filtering (which is done efficiently using `data.table` functions package) is comparably fast. To speed up the coordinate matching, it is done on integer coordinates rounded to the digit accuracy specified by `acc_digits`, which defaults to 2 (round to cm). Should you have more accurate data, you can consider increasing that value, though it will slow down computations and likely will not have a large impact on the outcome as the competition indices are computed on a coarser spatial scale (by default 0.1 m). 
 
-Since loading a large point cloud into memory has a non-negligible computational overhead and can take a lot of time (especially on systems with older hard drives), loading a neighbourhood just once can speed up the analysis considerably when batch processing a large number of trees from the same data source even if the neighbourhood is large. Should the objects become too large to handle within memory, we recommend to split them up outside R during the data preparation step.
+Since loading a large point cloud into memory has a non-negligible computational overhead and can take a lot of time (especially on systems with older hard drives), loading a neighborhood just once can speed up the analysis considerably when batch processing a large number of trees from the same data source even if the neighborhood is large. Should the objects become too large to handle within memory, we recommend to split them up outside R during the data preparation step.
 
 
 ## Example for batch-processing workflows
 
 ### Working with a lookup table
-If your study consists of many target trees that each are surrounded by their own neighbourhood plot, it may be useful to create a lookup table to more efficiently run the function for all your trees. Here is an example of what such a lookup table might look like:
+If your study consists of many target trees that each are surrounded by their own neighborhood plot, it may be useful to create a lookup table to more efficiently run the function for all your trees. Here is an example of what such a lookup table might look like:
 
 ```{r lookup, echo = TRUE, eval=FALSE}
 # Define the base paths
@@ -186,7 +186,7 @@ lookup_table
 #> # ℹ 15 more rows
 ```
 
-In this case, the lookup table contains one path for each segmented target tree point cloud, and another path for the corresponding 30 x 30 m² neighbourhood. 
+In this case, the lookup table contains one path for each segmented target tree point cloud, and another path for the corresponding 30 x 30 m² neighborhood. 
 
 We can now use `dplyr::mutate()` to append the other function arguments for `compete_pc()`, and `purr::pmap()` to map over the paths and settings line by line and use `compete_pc()` with the settings specified in each of them. As this can take a considerable amount of time if processing hundreds of trees, the different options for `print_progress` can be useful to be able to keep track of the analysis and interrupt it in time if something goes wrong.
 
@@ -232,7 +232,7 @@ results
 
 
 ### Multiple trees in one plot
-If you have more than one tree in the same neighbourhood, it makes sense to load the neighbourhood first and then loop over the trees to avoid loading the neighbourhood several time:
+If you have more than one tree in the same neighborhood, it makes sense to load the neighborhood first and then loop over the trees to avoid loading the neighborhood several time:
 
 ```{r batch2, echo = TRUE, eval=FALSE}
 # Read neighborhood
@@ -254,4 +254,4 @@ results1 <- map(
   bind_rows()
 ```
 
-If there is overlap in the studied areas, this may be faster than loading local subsets separately for each tree even for relatively large neighbourhoods because loading the data tends to be slower than processing them once they are in memory. 
+If there is overlap in the studied areas, this may be faster than loading local subsets separately for each tree even for relatively large neighborhoods because loading the data tends to be slower than processing them once they are in memory. 
