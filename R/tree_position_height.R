@@ -58,6 +58,10 @@
 #'                      area and the z position of the stem base identified as
 #'                      above.}
 #'     \item{`height`} {numeric of length one containing the tree height in m.}
+#'     \item{`cpa_m2`} {numeric of length one containing the crown projected area
+#'                   in m².}
+#'     \item{`cpa_xy`} {`data.table` with the x and y positions of the
+#'                           crown.}
 #'     \item{`tree_name`} {name of the object used as the "tree" argument, or
 #'                         name specified by the user.}
 #'   }
@@ -96,7 +100,7 @@ tree_pos <- function(tree, z_min = 100L, h_xy = 0.3, res = 0.1,
     y = stats::median(stem_base$y),
     z = zpos)
   # get coordinates in projected area of the tree
-  cpa <- unique(tree[, c("x", "y")])
+  cpa <- unique(tree_v[, c("x", "y")])
   # compute centroid of crown projected area
   crown_pos <- c(
     x = stats::median(cpa$x),
@@ -106,6 +110,8 @@ tree_pos <- function(tree, z_min = 100L, h_xy = 0.3, res = 0.1,
   height <- max(tree_v$z - zpos)
   # prepare output
   output <- list(base_pos = base_pos, crown_pos = crown_pos, height = height,
+                 cpa_m2 = sum(cpa) * res^2,
+                 cpa_xy = cpa,
                  tree_name = tree_name)
   class(output) <- c("tree_pos", class(output))
   # return output
@@ -130,6 +136,7 @@ print.tree_pos <- function(x, ...){
         paste(c("x", "y", "z"), "=",
               round(x$crown_pos, 1)), collapse = ", "),")\n",
       "Tree height:                   ", x$height, "m\n",
+      "Crown projected area:          ", round(x$cpa_m2, 2), "m\n",
       "------------------------------------------------------------------\n"
   )
   # return object invisibly
