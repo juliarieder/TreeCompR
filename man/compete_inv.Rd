@@ -21,6 +21,9 @@ compete_inv(
   height_unit = c("m", "cm", "mm"),
   keep_rest = FALSE,
   verbose = TRUE,
+  parallelize = FALSE,
+  cores = ifelse(!is.null(options("cores")[[1]]), options("cores")[[1]],
+    parallel::detectCores()),
   tol = 1,
   kmax = 999,
   ...
@@ -108,6 +111,14 @@ computations? Defaults to FALSE.}
 
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
+
+\item{parallelize}{logical of length 1. Should the computation of the
+competition indices be split over several cores? Defaults to FALSE.}
+
+\item{cores}{numeric of length 1. If \code{parallelize = TRUE}, on how many cores
+should the computations be run on? Defaults to the value registered in
+\code{options("cores")[[1]]}, or, if this is not available, to
+\verb{parallel::detectCores())}.}
 
 \item{tol}{numeric of length 1. Tolerance for the match with the tree
 coordinates. If coordinates are measured in the field with GPS, but
@@ -217,6 +228,10 @@ working with small datasets (from classical forest inventories or MLS/TLS
 sources), this will likely not matter, but when working with large ALS
 datasets this implementation can speed up calculation by several orders of
 magnitude.
+For even larger datasets, it is possible to compute the indices in parallel
+using \code{\link[foreach:foreach]{foreach::foreach()}} via the \link{doParallel} backend. If
+\code{parallelize = TRUE}, the computation of the competition indices will be
+distributed onto \code{cores} parallel cores.
 
 As all these indices are distance-weighted sums of the relative size of all
 competitor trees within the search radius compared to the target tree (or a

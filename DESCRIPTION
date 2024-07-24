@@ -23,7 +23,10 @@ Imports:
     sf,
     utils,
     concaveman,
-    nabor
+    nabor,
+    parallel,
+    doParallel,
+    foreach
 Suggests: 
     lidR,
     dplyr,
