@@ -82,7 +82,7 @@ Contreras et al. (2011): \cr
 \emph{Generic size-based Hegyi-type competition index}
 \itemize{
 \item CI_size based on Hegyi (1974), but with a user-specified size-related
-variable (\eqn{s_i}: size for neighbour tree \eqn{i}, \eqn{s}: size of the
+variable (\eqn{s_i}: size for neighbor tree \eqn{i}, \eqn{s}: size of the
 target tree):
 \eqn{$CI_{size} = \sum_{i=1}^{n} s_{i} / (s \cdot dist_{i})}
 }
