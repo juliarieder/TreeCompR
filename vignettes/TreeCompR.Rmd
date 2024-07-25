@@ -46,7 +46,7 @@ TreeCompR can read point clouds or inventory tables and quantify tree competitio
 
 ## Methodology of the point cloud-based approach
 
-LiDAR point clouds can be used directly to quantify the competition exerted by neighboring trees on the target tree. For this purpose, the target tree for which the competition is to be determined should be segmented beforehand. Since it is crucial whether a part of the point cloud is classified as "competing" or as part of the target tree itself, a manual segmentation (e.g. in CloudCompare) is recommended as it tends to be much more accurate. Read more about the pre-processing in our [Point-cloud-based approach](https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html)
+LiDAR point clouds can be used directly to quantify the competition exerted by neighboring trees on the target tree. For this purpose, the target tree for which the competition is to be determined should be segmented beforehand. Since it is crucial whether a part of the point cloud is classified as "competing" or as part of the target tree itself, a manual segmentation (e.g. in CloudCompare) is recommended as it tends to be much more accurate. Read more about the pre-processing in our [tutorial for the point-cloud-based approach](https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html).
 
 <img src="../man/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700">
 
@@ -59,38 +59,37 @@ With `compete_pc()`, it is easy to quantify the competition with `compete_pc()` 
 ```{r example1, message=FALSE, warning=FALSE, eval=FALSE}
 library(TreeCompR)
 ## insert path to point cloud of the forest plot and to the target tree 
-compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.txt", 
-           tree_source = "../tests/testthat/testdata/tree.txt", 
-           comp_method = "cone",
-           h_cone = 0.6,
+compete_pc(forest_source  = "data/neighborhood.las", 
+           tree_source    = "data/tree.las", 
+           comp_method    = "cone",
+           h_cone         = 0.6,
            print_progress = "none") # suppress messages
-
-#>  ------------------------------------------------------------------
-#>  Point cloud based competition indices for 'tree' 
-#>  ------------------------------------------------------------------
-#>   target height_target center_position CI_cone h_cone
-#> 1   tree          22.8    crown center   16046    0.6
+#> -------------------------------------------------------------------
+#> 'compete_pc' class point-cloud based competition indices for 'tree'
+#> -------------------------------------------------------------------
+#>    target height_target center_position CI_cone h_cone
+#>    <char>         <num>          <char>   <int>  <num>
+#> 1:   tree          22.8    crown center   15330    0.6
 ```
 
 Equivalently, the cylinder method can be used to count the amount of voxels belonging to competitor trees within a cylinder around the target tree with 5 m radius.
 
 ```{r example2, message=FALSE, warning=FALSE, eval=FALSE}
 ## or the cylinder method with radius 5 m
-compete_pc(forest_source = "../tests/testthat/testdata/neighborhood.las", 
-           tree_source = "../tests/testthat/testdata/tree.las", 
-           comp_method = "cylinder",
-           cyl_r = 5,
+compete_pc(forest_source  = "data/neighborhood.txt", 
+           tree_source    = "data/tree.txt", 
+           comp_method    = "cylinder",
+           cyl_r          = 5,
            print_progress = "none") # suppress messages
-
-#>  ------------------------------------------------------------------
-#>  Point cloud based competition indices for 'tree' 
-#>  ------------------------------------------------------------------
-#>   target height_target center_position CI_cyl cyl_r
-#> 1   tree          22.8    crown center 102169     5
+#> -------------------------------------------------------------------
+#> 'compete_pc' class point-cloud based competition indices for 'tree'
+#> -------------------------------------------------------------------
+#>    target height_target center_position CI_cyl cyl_r
+#>    <char>         <num>          <char>  <int> <num>
+#> 1:   tree          22.8    crown center 100512     5
 ```
 
-While these examples use the default settings of `compete_pc()`, the function is highly customizable and able to deal with a large number of different file formats and object types, the majority of which are identified and read automatically. In cases where this is not possible due to non-standard file structures, point clouds can be loaded and pre-processed outside of `compete_pc()` using `read_pc()` with custom settings or other functions and then passed on to `compete_pc()`.
-
+While these examples use the default settings of `compete_pc()`, the function is highly customizable and able to deal with a large number of different file formats and object types, the majority of which are identified and read automatically. In cases where this is not possible due to non-standard file structures, point clouds can be loaded and pre-processed outside of `compete_pc()` using `read_pc()` with custom settings or other functions and then passed on to `compete_pc()`. More information about these functions an be found in the point cloud [tutorial](https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html).
 
 ## Size- and distance-dependent tree competition metrics
 
@@ -126,15 +125,15 @@ As the `target_inv` object that results from a call to `define_target()` contain
 compete_inv(inv_source = targets,
             radius = 10, 
             method = "all_methods")
-
-#> --------------------------------------------------------------------- 
-#> 'compete_inv' class inventory with distance-based competition indices 
-#> Collection of data for 1 target and 47 edge trees. 
-#> Source of target trees: buffer around edge    Search radius: 10 
-#> ---------------------------------------------------------------------
-#>    id     x      y   dbh CI_Hegyi CI_RK1 CI_RK2
-#> 44 48 0.102 -0.494 0.244     4.39   1.07   1.58
+#> ------------------------------------------------------------
+#> 'compete_inv' class distance-based competition index dataset
+#> No. of target trees: 1       Source inventory size: 48 trees
+#> Target source: 'buff_edge' (10 m)        Search radius: 10 m
+#> ------------------------------------------------------------
+#>        id     x      y   dbh CI_Hegyi CI_RK1 CI_RK2
+#>    <char> <num>  <num> <num>    <num>  <num>  <num>
+#> 1:     48 0.102 -0.494 0.244    4.388  1.068  1.581
 ```
 
 
-Choosing `method = "all_methods"` computes all available metrics for the chosen data source. As the dataset only contains diameters, but no tree heights, in this case it is the Hegyi index as well as the RK1 and RK2 indices (see documentation of `compete_inv()` and our paper for details). For more examples on how to customize `compete_inv()`, have a look at the [Inventory-based approach](https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html).
+Choosing `method = "all_methods"` computes all available metrics for the chosen data source. As the dataset only contains diameters, but no tree heights, in this case it is the Hegyi index as well as the RK1 and RK2 indices (see documentation of `compete_inv()` and our paper for details). For more examples on how to customize `compete_inv()`, have a look at our [tutorial for the inventory-based approach](https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html).
