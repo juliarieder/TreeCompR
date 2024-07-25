@@ -1,4 +1,5 @@
 # testthat-based unit tests for the functionality of the compete_pc function
+require(testthat)
 
 test_that("compete_pc works for .txt file point clouds", {
   # test basic functionality for cone method

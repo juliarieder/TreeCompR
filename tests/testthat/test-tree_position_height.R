@@ -1,4 +1,5 @@
 # testthat-based unit tests for the functionality of the tree_pos function
+require(testthat)
 
 test_that("reading a tree point cloud in txt format works", {
   # try if loading works without error

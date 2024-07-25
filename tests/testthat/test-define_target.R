@@ -1,4 +1,6 @@
 # testthat-based unit tests for the functionality of the read_inv function
+require(testthat)
+
 test_that(
   "character vectors are handled correctly", {
     # reading in data
