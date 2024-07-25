@@ -32,6 +32,14 @@
 #'  constrain the z values to its range). This can be useful to for the
 #'  memory-efficient handling of very large point cloud objects. Defaults to
 #'  NULL (use full range of z coordinates).
+#' @param acc_digits integer of length 1 defining the accuracy of the point
+#'   cloud measurements. The data will be aggregated to this number of digits
+#'   to speed up calculations and avoid problems with joining tree and
+#'   neighborhood data resulting from numeric accuracy. The resolution of the
+#'   coordinates defined by `acc_digits` should alway be at least one order of
+#'   magnitude higher than the resolution `res` used  to compute the voxel
+#'   counts in later steps. Defaults to `acc_digits = 2` (round to 2 digits
+#'   after the decimal point).
 #' @param ... additional arguments passed on to [data.table::fread()]
 #'
 #' @details Function for reading and validating point cloud data. Currently,
@@ -52,6 +60,17 @@
 #'   filter the neighborhood dataset to a relevant range around the target tree
 #'   to speed up calculations.
 #'
+#'   Unless the input is already a `forest_inv` object, the coordinates will be
+#'   downsampled by rounding to `acc_digits`; duplicates will be discarded to
+#'   speed up  computations. The consistent rounding/voxelisation with the same
+#'   algorithm ensures that coordinates of neighbor and target trees are matched
+#'   correctly in `compete_pc()`, as we observed especially for the .las format
+#'   that numeric differences can result in a mismatch even with data from the
+#'   same source when using raw coordinates. By default is done to 2 digits (cm accuracy)
+#'   which in most settings should be sufficient. This value should always been
+#'   chosen at least one order of magnitude more accurate than the voxel
+#'   resolution in `compete_pc()`.
+#'
 #' ## Note: support of .las, .laz and .ply formats
 #'   The the `lidR` package has to be installed to be able to read in .las/.laz
 #'   files, which are internally processed by [lidR::readTLSLAS()].
@@ -59,7 +78,9 @@
 #'   required as these are loaded with [Rvcg::vcgPlyRead()].
 #'
 #' @return object of class `forest_pc` (inherits from `data.table`) with x, y
-#' and z coordinates of the tree or forest point cloud.
+#'   and z coordinates of the tree or forest point cloud. `acc_digits` is
+#'   additionally stored as an attribute to avoid matching point clouds with
+#'   inconsistent resolutions.
 #'
 #' @seealso [compete_pc()] for computing tree competition and [tree_pos()] for
 #'   computing tree position from point cloud objects. For more details on the
@@ -93,87 +114,97 @@
 #'
 #' }
 read_pc <- function(pc_source, verbose = TRUE,
-                    xlim = NULL, ylim = NULL, zlim = NULL, ...) {
-  . <- NULL
-  # if pc_source is a LAS object from the lidR package, extract data slot
-  if(inherits(pc_source, "LAS")) {
-    pc_source <- pc_source@data
-  }
-  # check class of source dataset
-  if (inherits(pc_source, "data.frame")){
-    pc <- .validate_pc(pc_source, verbose = verbose,
-                       xlim = xlim, ylim = ylim, zlim = zlim)
-  } else if (!(is.character(pc_source) && length(pc_source) == 1)){
-    stop(
-      .wr("Format of pc_source not recognized.",
-          "Please provide a data.frame or a path to a source file."
-      )
-    )
-  } else if(!file.exists(pc_source)){
-    stop(
-      .wr("File", pc_source,
-          "does not exist. Please check path to point cloud file.")
-    )
-  } else {
-    # treat pc_source as path to file
-    path <- pc_source
-    # get file extension
-    extension <- tolower( # allow lower and upper case extensions
-      utils::tail(
-        base::strsplit(path, split = ".", fixed = TRUE)[[1]], 1)
-    )
-    # load las/laz point cloud
-    if (extension %in% c("las", "laz")) {
-      # Check if lidR package is installed
-      if (requireNamespace("lidR", quietly = TRUE)) {
-        # If installed, proceed with the code for *.las files
-        las <- lidR::readTLSLAS(path)
-        # extract coordinates and validate
-        pc <- .validate_pc(las@data[,1:3], verbose = verbose,
-                           xlim = xlim, ylim = ylim, zlim = zlim)
-      } else {
-        # If not, return an error message about the missing package
-        stop(
-          .wr("Please install the 'lidR' package",
-              "if you want to use data in .las/.laz format.")
-        )
-      }
-      # load las/laz point cloud
-    } else if (extension == "ply") {
-      # Check if lidR package is installed
-      if (requireNamespace("Rvcg", quietly = TRUE)) {
-        # If installed, proceed with the code for *.ply files
-        ply <- Rvcg::vcgPlyRead(path, updateNormals = TRUE, clean = TRUE)
-        # extract coordinates and validate
-        pc  <- data.table::data.table(
-          x = ply$vb[1,], y = ply$vb[2,], z = ply$vb[3,])
-        pc <- .validate_pc(pc, verbose = verbose,
-                           xlim = xlim, ylim = ylim, zlim = zlim)
-      } else {
-        # If not, return an error message about the missing package
-        stop(
-          .wr("Please install the 'Rvcg' package",
-              "if you want to use data in .ply format.")
-        )
-      }
+                    xlim = NULL, ylim = NULL, zlim = NULL,
+                    acc_digits = 2, ...) {
+  # if supplied by a character string, try to read as a fhile path
+  if(is.character(pc_source)){
+    # test if it is of the correct length
+    if (!(is.character(pc_source) && length(pc_source) == 1)){
+      stop("Paths to source files have to be character strings of length 1.")
     } else {
-      # try loading in point cloud with fread
-      pc <- try(
-        data.table::fread(file = path, data.table = TRUE, ...)
-      )
-      if (inherits(pc, "try-error")) {
-        # if the file cannot be read, return error message about accepted formats.
+      if(!file.exists(pc_source)){
+        # test if file exists
         stop(
-          .wr("File format cannot be read.",
-              "Please use point cloud in .las/.laz or .ply format,",
-              "or a format readable by data.table::fread().")
+          .wr("File", pc_source,
+              "does not exist. Please check path to point cloud file.")
         )
-      } else{ # else validate and return
-        pc <- .validate_pc(pc, verbose = verbose,
-                           xlim = xlim, ylim = ylim, zlim = zlim)
+      } else {
+        # treat pc_source as path to file
+        path <- pc_source
+        # get file extension
+        extension <- tolower( # allow lower and upper case extensions
+          utils::tail(
+            base::strsplit(path, split = ".", fixed = TRUE)[[1]], 1)
+        )
+        # load las/laz point cloud
+        if (extension %in% c("las", "laz")) {
+          # Check if lidR package is installed
+          if (requireNamespace("lidR", quietly = TRUE)) {
+            # If installed, proceed with the code for *.las files
+            las <- lidR::readTLSLAS(path)
+            # extract coordinates and validate
+            pc <- las@data[,1:3]
+          } else {
+            # If not, return an error message about the missing package
+            stop(
+              .wr("Please install the 'lidR' package",
+                  "if you want to use data in .las/.laz format.")
+            )
+          }
+          # load las/laz point cloud
+        } else if (extension == "ply") {
+          # Check if lidR package is installed
+          if (requireNamespace("Rvcg", quietly = TRUE)) {
+            # If installed, proceed with the code for *.ply files
+            ply <- Rvcg::vcgPlyRead(path, updateNormals = TRUE, clean = TRUE)
+            # extract coordinates and validate
+            pc  <- data.table::data.table(
+              x = ply$vb[1,], y = ply$vb[2,], z = ply$vb[3,])
+          } else {
+            # If not, return an error message about the missing package
+            stop(
+              .wr("Please install the 'Rvcg' package",
+                  "if you want to use data in .ply format.")
+            )
+          }
+        } else {
+          # try loading in point cloud with fread
+          pc <- try(
+            data.table::fread(file = path, data.table = TRUE, ...)
+          )
+          if (inherits(pc, "try-error")) {
+            # if the file cannot be read, return error message about accepted
+            # formats.
+            stop(
+              .wr("File format cannot be read.",
+                  "Please use point cloud in .las/.laz or .ply format,",
+                  "or a format readable by data.table::fread().")
+            )
+          }
+        }
+      }
+    }
+  } else { # if an object, test if it can be processed
+    # if pc_source is a LAS object from the lidR package, extract data slot
+    if(inherits(pc_source, "LAS")) {
+      pc <- pc_source@data
+    } else{
+      # check class of source dataset
+      if (inherits(pc_source, "data.frame")){
+        pc <- pc_source
+      } else {
+        stop(
+          .wr("Format of pc_source not recognized. Please",
+              "provide a data.frame, LAS object or a path to a source file."
+          )
+        )
       }
     }
   }
+  # validate and return pointcloud
+  pc <- .validate_pc(pc, verbose = verbose,
+                     xlim = xlim, ylim = ylim, zlim = zlim,
+                     acc_digits = acc_digits)
   # return forest_pc object with correct column numbers, names and types
   return(pc)
 }
@@ -181,9 +212,11 @@ read_pc <- function(pc_source, verbose = TRUE,
 #' @keywords internal
 #' internal function for the validation of point cloud data
 .validate_pc <- function(pc, res, xlim = NULL, ylim = NULL, zlim = NULL,
-                         verbose = FALSE){
-  # check if pc is not in forest_pc format, ensure correct formatting
+                         verbose = FALSE, acc_digits = 2){
+  # if necessary, convert to forest_pc format
   if (!inherits(pc, "forest_pc")){
+    # check if acc_digits is
+
     # if dataset is a different format, convert to data.table format
     if (!inherits(pc, "data.table")) pc <- data.table::as.data.table(pc)
     # if coordinates are named, use these
@@ -215,7 +248,7 @@ read_pc <- function(pc_source, verbose = TRUE,
         if(verbose){
           nm <- names(pc)
           if(all(substr(nm, 1, 1) == "V")){
-          nm <- ""
+            nm <- ""
           } else {
             nm <- paste0("('", paste(nm, colapse = "', '"), "') ")
           }
@@ -232,7 +265,24 @@ read_pc <- function(pc_source, verbose = TRUE,
         names(pc) <- c("x", "y", "z")
       }
     }
+    # validate digit accuracy
+    if(length(acc_digits) > 1) stop("acc_digits has to be a length 1 integer")
+    if(acc_digits < 0) stop("acc_digits has to be positive")
+    if(abs(acc_digits) - round(acc_digits) > 1e-5)
+      warning("acc_digits has to be an integer value. Using acc_digits = ",
+              round(acc_digits))
+    # set class to forest_pc
+    class(pc) <- c("forest_pc", class(pc))
+    # round to acc_digits
+    for (i in 1:3){
+      pc[[i]] <- Rfast::Round(pc[[i]], digit = round(acc_digits))
+    }
+    # remove duplicates
+    pc <- unique(pc)
+    # add accuracy as an attribute
+    attr(pc, "acc_digits") <- acc_digits
   }
+
   # identify dimensions with range limits
   sub <- !sapply(list(xlim, ylim, zlim), is.null)
   # if there are filters, filter accordingly
@@ -251,8 +301,7 @@ read_pc <- function(pc_source, verbose = TRUE,
       )
     )
   }
-  # set class to forest_pc object if not of that class already
-  if (!inherits(pc, "forest_pc")) class(pc) <- c("forest_pc", class(pc))
+
   # return the validated forest object
   return(pc)
 }

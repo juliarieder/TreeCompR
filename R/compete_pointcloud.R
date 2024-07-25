@@ -4,20 +4,22 @@
 #'   et al. (2015) and Metz et al. (2013).
 #' @param forest_source path to file of neighborhood point cloud or data.frame
 #'   or LAS object (see [lidR::LAS-class]) with point cloud data which are
-#'   passed on to [read_pc()], or object of class forest_pc as created with
+#'   passed on to [read_pc()], or object of class `forest_pc` as created with
 #'   [read_pc()]. The neighborhood can, but does not have to include the target
 #'   tree itself, should not be height normalized, and can include ground
 #'   points. Coordinates have to be in a Cartesian coordinate system in m.
 #'   For paths to source files, the supported formats are are .las, .laz, .ply
 #'   as well as all formats accepted by [data.table::fread()] (.csv, .txt, and
-#'   others).
+#'   others). If supplied as an object of class `forest_pc`, arguments passed
+#'   to `read_inv()` are ignored.
 #' @param tree_source path to file of the point cloud of the segmented target,
 #'   tree or data.frame or LAS object (see [lidR::LAS-class]) with point cloud
-#'   data which are passed on to [read_pc()], or object of class forest_pc
+#'   data which are passed on to [read_pc()], or object of class `forest_pc`
 #'   as created with [read_pc()].
 #'   Coordinates have to be in the same coordinate system as `forest_source`.
 #'   For paths to source files, the supported formats are are .las, .laz,
-#'   .ply and formats accepted by [data.table::fread()].
+#'   .ply and formats accepted by [data.table::fread()].  If supplied as an
+#'   object of class `forest_pc`, arguments passed to `read_inv()` are ignored.
 #' @param comp_method character string of length 1 with competition method.
 #'   Allowed values are "cone" for the cone method, "cylinder" for the cylinder
 #'   method or "both" for both methods. Default is the cone method.
@@ -25,27 +27,23 @@
 #' @param center_position character string of length 1 with the position used
 #'   as the center of the search cone/cylinder. Allowed values are "crown_pos"
 #'   for the central point of the crown projected area and "base_pos" for the
-#'   stem base position as computed by [tree_pos()]. Default value is "crown_pos".
+#'   stem base position as computed by [tree_pos()]. Default value is
+#'   "crown_pos".
 #' @param tree_name (optional) ID for the tree. If no argument is put, defaults
 #'   to the name of the argument provided as `tree_source`.
-#' @param cyl_r (optional) only needed when using comp_method "cylinder";
-#'   numeric value of cylinder radius in m. Default is 5 m.
-#' @param h_cone (optional) only when using comp_method "cone"; numeric value
-#'   describing the fraction of the height of the tree where the tip of the
-#'   search cone is located. For example, values of 0.5 or 0.6 specify that the
-#'   cone opens in 50 or 60 % of target tree's height, respectively. Default is
-#'   0.6 as proposed by Seidel et al. (2015).
+#' @param cyl_r numeric of length one. Size of the cylinder radius in m. Default
+#'   is 5 m. Only useed when `comp_method = "cylinder"`.
+#' @param h_cone numeric of length one. Faction of the height of the tree where
+#'   the tip of the search cone is located. For example, values of 0.5 or 0.6
+#'   specify that the cone opens in 50 or 60 % of the height of the target tree,
+#'   respectively. Default is 0.6 (see Seidel et al., 2015). Only used when
+#'   `comp_method = "cone"`.
 #' @param z_min integer of length 1 describing the minimum number of points
 #'   needed in the lowermost 1 voxel depth Z layer to consider it part of the
 #'   target tree. Default is 100. If changing the voxel resolution (`res`) from
 #'   the default value of 0.1, different settings may be necessary.  Used to
 #'   calculate the stem base position of the target tree. For details see
 #'   [tree_pos()].
-#' @param acc_digits integer of length 1 defining the number of digits of
-#'   accuracy of the point cloud measurements. Data will be rounded internally
-#'   to this value to speed up calculations and avoid problems with joining tree
-#'   and neighborhood data resulting from numeric accuracy. Defaults to 2
-#'   (round to 2 digits after the decimal point).
 #' @param h_xy numeric of length 1 describing the height range in m over the
 #'   stem base over which the x and y positions are used to calculate the x and
 #'   y coordinates of the stem base of the target tree. Default is 0.3 m. Used
@@ -63,7 +61,8 @@
 #'   change if you have very good reasons to do so, e.g., when computing the
 #'   competition for a tree situated at the edge of a forest stand.
 #' @param ... additional arguments passed on to [data.table::fread()].
-#'
+#' @inheritParams read_pc
+
 #' @details `compete_pc()` computes competition indices based on voxel counts of
 #'   neighbor trees that intersect a search cone or search cylinder around
 #'   the target tree. In most cases, the function [read_pc()] that is called
@@ -113,8 +112,8 @@
 #'   `TreeCompR` before analysis.
 #'   If the source files are very large, this may still lead to memory problems
 #'   especially on machines with low RAM capacity. In such cases, it may make
-#'   more sense to split up the data set into smaller chunks outside R to
-#'   reduce the memory load.
+#'   more sense to split up the data set into smaller chunks outside R that
+#'   each cover only a subset of the target trees to reduce the memory load.
 #'
 #' ## Note: support of .las, .laz and .ply formats
 #'   The `lidR` package has to be installed to be able to read in .las/.laz
@@ -187,7 +186,7 @@
 #'     bind_rows()
 #' }
 compete_pc <- function(forest_source, tree_source,
-                       comp_method = c("cone", "cylinder", "both"),
+                       comp_method = c("cone", "cylinder", "overlap", "both"),
                        center_position = c("crown_pos", "base_pos"),
                        tree_name = NULL,
                        cyl_r = 5, h_cone = 0.6, z_min = 100, h_xy = 0.3,
@@ -200,8 +199,8 @@ compete_pc <- function(forest_source, tree_source,
   center_position <- match.arg(center_position)
   print_progress <- match.arg(print_progress)
 
-  # avoid errors with undefined global values in CMD check
-  x <- y <- z <- ID <- h <- dist <- r_cone <- NULL
+  # supress cmdcheck warning about global variables
+  x <- y <- z <- NULL
 
   # if no tree_name is specified, get name from function call
   if(is.null(tree_name)){
@@ -217,7 +216,8 @@ compete_pc <- function(forest_source, tree_source,
     cat("----- Processing competition indices for:", tree_name, "-----\n")
   }
   # read data for central tree
-  tree <- read_pc(tree_source, verbose = print_progress == "full", ...)
+  tree <- read_pc(tree_source, verbose = print_progress == "full",
+                  acc_digits = acc_digits, ...)
   # get position and height of central tree
   position <- tree_pos(tree, z_min = z_min, h_xy = h_xy, res = res)
   # get basis position of the cone/cylinder
@@ -226,7 +226,25 @@ compete_pc <- function(forest_source, tree_source,
   h <- position[["height"]]
 
   # read data for neighborhood
-  hood <- read_pc(forest_source, verbose = print_progress == "full", ...)
+  hood <- read_pc(forest_source, verbose = print_progress == "full",
+                  acc_digits = acc_digits, ...)
+
+  # check if tree and hood have the same accuracy (only matters when supplied)
+  # as forest_pc objects, else it is set automatically
+  if (attr(hood, "acc_digits") != attr(tree, "acc_digits"))
+    stop(
+      "Neighborhood and target tree need the same accuracy for matching.\n",
+      "acc_digits of neighborhood:", attr(hood, "acc_digits"), "\n",
+      "acc_digits of target tree:", attr(tree, "acc_digits"), "\n")
+  # if forest_pc was supplied, if necessary override accuracy setting
+  if (acc_digits != attr(hood, "acc_digits")){
+    acc_digits <- attr(hood, "acc_digits")
+    message("Using accuracy from source forest_inv object: acc_digits = ",
+            acc_digits)
+  }
+  # check if voxel resolution is appropriate
+  if (acc_digits < -log(res, 10))
+    stop("Voxel resolution higher than resolution of the data")
 
   # check if the tree is part of this neighborhood
   if (!(pos["x"] %inrange% range(hood$x) && pos["y"] %inrange% range(hood$y))){
@@ -241,7 +259,6 @@ compete_pc <- function(forest_source, tree_source,
       )
     }
   }
-
   # define filters for relevant ranges in the neighborhood
   if (comp_method == "cylinder"){
     xlim <- pos["x"] + c(-1, +1) * (cyl_r + res)
@@ -255,6 +272,12 @@ compete_pc <- function(forest_source, tree_source,
     ylim <- pos["y"] + c(-1, +1) * (cone_r + res)
     zlim <- c(h * h_cone + pos["z"] - res, Inf)
   }
+  if (comp_method == "overlap"){
+    # radius of search cone at highest point in the dataset
+    xlim <- range(tree$x)
+    ylim <- range(tree$y)
+    zlim <- NULL
+  }
   if (comp_method == "both"){
     # radius of search cone at highest point in the dataset
     cone_r <- tan(pi / 6) * (max(hood$z) - pos["z"] - h_cone * h)
@@ -265,11 +288,10 @@ compete_pc <- function(forest_source, tree_source,
   # remove values outside the relevant range (in separate step)
   hood <- .validate_pc(hood, xlim = xlim, ylim = ylim, zlim = zlim)
 
-  # round neighborhood and tree to the specified digits of accuracy
-  # (in two steps to perform anti_join with integers: much faster)
+  # convert to integer coordinates for matching (much faster with data.table)
   for (i in 1:3){
-    hood[[i]] <- as.integer(Rfast::Round(hood[[i]] * 10 ^ acc_digits))
-    tree[[i]] <- as.integer(Rfast::Round(tree[[i]] * 10 ^ acc_digits))
+    hood[[i]] <- as.integer(hood[[i]] * 10 ^ acc_digits)
+    tree[[i]] <- as.integer(tree[[i]] * 10 ^ acc_digits)
   }
   # remove points in the neighborhood that belong to the central tree
   # (data.table version of anti_join)
@@ -312,6 +334,11 @@ compete_pc <- function(forest_source, tree_source,
     # append voxel count inside the cylinder and cylinder radius to results
     results$CI_cyl <- with(voxel2, sum(dist <= cyl_r))
     results$cyl_r <- cyl_r
+  }
+  if (comp_method == "overlap"){
+    neigh_xy <- unique(voxel[voxel$z >= h_cone * h, c("x", "y")])
+    antijoin <- position$cpa_xy[!neigh_xy, on = c("x", "y")]
+    results$overlap = 1 - nrow(antijoin) / nrow(position$cpa_xy)
   }
 
   # remove row.names of results for proper printing

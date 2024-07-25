@@ -9,7 +9,7 @@
 compete_pc(
   forest_source,
   tree_source,
-  comp_method = c("cone", "cylinder", "both"),
+  comp_method = c("cone", "cylinder", "overlap", "both"),
   center_position = c("crown_pos", "base_pos"),
   tree_name = NULL,
   cyl_r = 5,
@@ -26,21 +26,23 @@ compete_pc(
 \arguments{
 \item{forest_source}{path to file of neighborhood point cloud or data.frame
 or LAS object (see \link[lidR:LAS-class]{lidR::LAS}) with point cloud data which are
-passed on to \code{\link[=read_pc]{read_pc()}}, or object of class forest_pc as created with
+passed on to \code{\link[=read_pc]{read_pc()}}, or object of class \code{forest_pc} as created with
 \code{\link[=read_pc]{read_pc()}}. The neighborhood can, but does not have to include the target
 tree itself, should not be height normalized, and can include ground
 points. Coordinates have to be in a Cartesian coordinate system in m.
 For paths to source files, the supported formats are are .las, .laz, .ply
 as well as all formats accepted by \code{\link[data.table:fread]{data.table::fread()}} (.csv, .txt, and
-others).}
+others). If supplied as an object of class \code{forest_pc}, arguments passed
+to \code{read_inv()} are ignored.}
 
 \item{tree_source}{path to file of the point cloud of the segmented target,
 tree or data.frame or LAS object (see \link[lidR:LAS-class]{lidR::LAS}) with point cloud
-data which are passed on to \code{\link[=read_pc]{read_pc()}}, or object of class forest_pc
+data which are passed on to \code{\link[=read_pc]{read_pc()}}, or object of class \code{forest_pc}
 as created with \code{\link[=read_pc]{read_pc()}}.
 Coordinates have to be in the same coordinate system as \code{forest_source}.
 For paths to source files, the supported formats are are .las, .laz,
-.ply and formats accepted by \code{\link[data.table:fread]{data.table::fread()}}.}
+.ply and formats accepted by \code{\link[data.table:fread]{data.table::fread()}}.  If supplied as an
+object of class \code{forest_pc}, arguments passed to \code{read_inv()} are ignored.}
 
 \item{comp_method}{character string of length 1 with competition method.
 Allowed values are "cone" for the cone method, "cylinder" for the cylinder
@@ -50,19 +52,20 @@ See details for computation.}
 \item{center_position}{character string of length 1 with the position used
 as the center of the search cone/cylinder. Allowed values are "crown_pos"
 for the central point of the crown projected area and "base_pos" for the
-stem base position as computed by \code{\link[=tree_pos]{tree_pos()}}. Default value is "crown_pos".}
+stem base position as computed by \code{\link[=tree_pos]{tree_pos()}}. Default value is
+"crown_pos".}
 
 \item{tree_name}{(optional) ID for the tree. If no argument is put, defaults
 to the name of the argument provided as \code{tree_source}.}
 
-\item{cyl_r}{(optional) only needed when using comp_method "cylinder";
-numeric value of cylinder radius in m. Default is 5 m.}
+\item{cyl_r}{numeric of length one. Size of the cylinder radius in m. Default
+is 5 m. Only useed when \code{comp_method = "cylinder"}.}
 
-\item{h_cone}{(optional) only when using comp_method "cone"; numeric value
-describing the fraction of the height of the tree where the tip of the
-search cone is located. For example, values of 0.5 or 0.6 specify that the
-cone opens in 50 or 60 \% of target tree's height, respectively. Default is
-0.6 as proposed by Seidel et al. (2015).}
+\item{h_cone}{numeric of length one. Faction of the height of the tree where
+the tip of the search cone is located. For example, values of 0.5 or 0.6
+specify that the cone opens in 50 or 60 \% of the height of the target tree,
+respectively. Default is 0.6 (see Seidel et al., 2015). Only used when
+\code{comp_method = "cone"}.}
 
 \item{z_min}{integer of length 1 describing the minimum number of points
 needed in the lowermost 1 voxel depth Z layer to consider it part of the
@@ -77,11 +80,14 @@ y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 to calculate the stem base position of the target tree. For details see
 \code{\link[=tree_pos]{tree_pos()}}.}
 
-\item{acc_digits}{integer of length 1 defining the number of digits of
-accuracy of the point cloud measurements. Data will be rounded internally
-to this value to speed up calculations and avoid problems with joining tree
-and neighborhood data resulting from numeric accuracy. Defaults to 2
-(round to 2 digits after the decimal point).}
+\item{acc_digits}{integer of length 1 defining the accuracy of the point
+cloud measurements. The data will be aggregated to this number of digits
+to speed up calculations and avoid problems with joining tree and
+neighborhood data resulting from numeric accuracy. The resolution of the
+coordinates defined by \code{acc_digits} should alway be at least one order of
+magnitude higher than the resolution \code{res} used  to compute the voxel
+counts in later steps. Defaults to \code{acc_digits = 2} (round to 2 digits
+after the decimal point).}
 
 \item{res}{numeric of length 1 defining the resolution of a voxel as passed
 on to \code{\link[VoxR:vox]{VoxR::vox()}}. Defaults to 0.1 (10 cm voxel size). Only change if
@@ -162,8 +168,8 @@ cloud as an LAS object (see \link[lidR:LAS-class]{lidR::LAS}) and process it out
 \code{TreeCompR} before analysis.
 If the source files are very large, this may still lead to memory problems
 especially on machines with low RAM capacity. In such cases, it may make
-more sense to split up the data set into smaller chunks outside R to
-reduce the memory load.
+more sense to split up the data set into smaller chunks outside R that
+each cover only a subset of the target trees to reduce the memory load.
 }
 
 \subsection{Note: support of .las, .laz and .ply formats}{
