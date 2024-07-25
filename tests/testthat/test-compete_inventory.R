@@ -1,5 +1,6 @@
 # testthat-based unit tests for the functionality of the functions for
 # inventory-based competition indices
+require(testthat)
 
 test_that("Indices work for two different forest_inv datasets", {
   # read plot dataset
@@ -251,6 +252,42 @@ test_that("Handling of kmax works", {
                       method = "all_methods")
   },
   "Maximum number of target trees reached"
+  )
+})
+
+
+test_that("NA handling works", {
+  plot <- read_inv(test_path("testdata", "inventory.csv"), verbose = FALSE)
+  targets <- define_target(plot,target_source = "buff_edge", radius = 5)
+
+  # NA in dbh results in NA values for CIs
+  expect_no_error({
+    tt <-targets
+    tt$dbh[7:17] <- NA
+    CI1 <- compete_inv(inv_source = tt, radius = 5, kmax = 100,
+                      method = "CI_Hegyi")
+  }
+  )
+  expect_true(any(is.na(CI1$CI_Hegyi)))
+
+  # NA in id results in error
+  expect_error({
+    tt <-targets
+    tt$id[1] <- NA
+    CI2 <- compete_inv(inv_source = tt, radius = 5, kmax = 100,
+                       method = "CI_Hegyi")
+  },
+  regexp = "No missing values allowed in column id"
+  )
+
+  # NA in coordinates results in error
+  expect_error({
+    tt <-targets
+    tt$x[1] <- tt$y[5] <- NA
+    CI2 <- compete_inv(inv_source = tt, radius = 5, kmax = 100,
+                       method = "CI_Hegyi")
+  },
+  regexp = "No missing values allowed in column x and y"
   )
 })
 

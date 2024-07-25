@@ -313,8 +313,9 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
                          radius = radius, tol = tol, verbose = verbose,
                          crop_to_target = TRUE)
   } else {
-    # if inv_source is a target_inv object, use it as inv directly
-    inv <- inv_source
+    # if inv_source is a target_inv object, only check for NAs and use
+    # directly
+    inv <- .validate_inv(inv_source)
     # warn if radii are different
     if (attr(inv, "target_type") %in% c("buff_edge", "exclude_edge",
                                         "inventory")){
