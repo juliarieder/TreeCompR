@@ -57,7 +57,15 @@ accepted by <code><a href="https://rdatatable.gitlab.io/data.table/reference/fre
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_pc</span><span class="op">(</span><span class="va">pc_source</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span>, xlim <span class="op">=</span> <span class="cn">NULL</span>, ylim <span class="op">=</span> <span class="cn">NULL</span>, zlim <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">read_pc</span><span class="op">(</span></span>
+<span>  <span class="va">pc_source</span>,</span>
+<span>  verbose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  xlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ylim <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  zlim <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  acc_digits <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -106,6 +114,17 @@ memory-efficient handling of very large point cloud objects. Defaults to
 NULL (use full range of z coordinates).</p></dd>
 
 
+<dt id="arg-acc-digits">acc_digits<a class="anchor" aria-label="anchor" href="#arg-acc-digits"></a></dt>
+<dd><p>integer of length 1 defining the accuracy of the point
+cloud measurements. The data will be aggregated to this number of digits
+to speed up calculations and avoid problems with joining tree and
+neighborhood data resulting from numeric accuracy. The resolution of the
+coordinates defined by <code>acc_digits</code> should alway be at least one order of
+magnitude higher than the resolution <code>res</code> used  to compute the voxel
+counts in later steps. Defaults to <code>acc_digits = 2</code> (round to 2 digits
+after the decimal point).</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>additional arguments passed on to <code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread()</a></code></p></dd>
 
@@ -113,7 +132,9 @@ NULL (use full range of z coordinates).</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>object of class <code>forest_pc</code> (inherits from <code>data.table</code>) with x, y
-and z coordinates of the tree or forest point cloud.</p>
+and z coordinates of the tree or forest point cloud. <code>acc_digits</code> is
+additionally stored as an attribute to avoid matching point clouds with
+inconsistent resolutions.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -131,7 +152,17 @@ three numeric columns or one of the columns labeled x, y, and z is not
 numeric, the function fails with an error.</p>
 <p>The xlim, ylim and zlim arguments are used internally in <code><a href="compete_pc.html">compete_pc()</a></code> to
 filter the neighborhood dataset to a relevant range around the target tree
-to speed up calculations.</p><div class="section">
+to speed up calculations.</p>
+<p>Unless the input is already a <code>forest_inv</code> object, the coordinates will be
+downsampled by rounding to <code>acc_digits</code>; duplicates will be discarded to
+speed up  computations. The consistent rounding/voxelisation with the same
+algorithm ensures that coordinates of neighbor and target trees are matched
+correctly in <code><a href="compete_pc.html">compete_pc()</a></code>, as we observed especially for the .las format
+that numeric differences can result in a mismatch even with data from the
+same source when using raw coordinates. By default is done to 2 digits (cm accuracy)
+which in most settings should be sufficient. This value should always been
+chosen at least one order of magnitude more accurate than the voxel
+resolution in <code><a href="compete_pc.html">compete_pc()</a></code>.</p><div class="section">
 <h3 id="note-support-of-las-laz-and-ply-formats">Note: support of .las, .laz and .ply formats<a class="anchor" aria-label="anchor" href="#note-support-of-las-laz-and-ply-formats"></a></h3>
 
 

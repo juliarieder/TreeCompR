@@ -54,7 +54,7 @@ et al. (2015) and Metz et al. (2013).</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">compete_pc</span><span class="op">(</span></span>
 <span>  <span class="va">forest_source</span>,</span>
 <span>  <span class="va">tree_source</span>,</span>
-<span>  comp_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cone"</span>, <span class="st">"cylinder"</span>, <span class="st">"both"</span><span class="op">)</span>,</span>
+<span>  comp_method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cone"</span>, <span class="st">"cylinder"</span>, <span class="st">"overlap"</span>, <span class="st">"both"</span><span class="op">)</span>,</span>
 <span>  center_position <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"crown_pos"</span>, <span class="st">"base_pos"</span><span class="op">)</span>,</span>
 <span>  tree_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cyl_r <span class="op">=</span> <span class="fl">5</span>,</span>
@@ -76,23 +76,25 @@ et al. (2015) and Metz et al. (2013).</p>
 <dl><dt id="arg-forest-source">forest_source<a class="anchor" aria-label="anchor" href="#arg-forest-source"></a></dt>
 <dd><p>path to file of neighborhood point cloud or data.frame
 or LAS object (see <a href="https://rdrr.io/pkg/lidR/man/LAS-class.html" class="external-link">lidR::LAS</a>) with point cloud data which are
-passed on to <code><a href="read_pc.html">read_pc()</a></code>, or object of class forest_pc as created with
+passed on to <code><a href="read_pc.html">read_pc()</a></code>, or object of class <code>forest_pc</code> as created with
 <code><a href="read_pc.html">read_pc()</a></code>. The neighborhood can, but does not have to include the target
 tree itself, should not be height normalized, and can include ground
 points. Coordinates have to be in a Cartesian coordinate system in m.
 For paths to source files, the supported formats are are .las, .laz, .ply
 as well as all formats accepted by <code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread()</a></code> (.csv, .txt, and
-others).</p></dd>
+others). If supplied as an object of class <code>forest_pc</code>, arguments passed
+to <code><a href="read_inv.html">read_inv()</a></code> are ignored.</p></dd>
 
 
 <dt id="arg-tree-source">tree_source<a class="anchor" aria-label="anchor" href="#arg-tree-source"></a></dt>
 <dd><p>path to file of the point cloud of the segmented target,
 tree or data.frame or LAS object (see <a href="https://rdrr.io/pkg/lidR/man/LAS-class.html" class="external-link">lidR::LAS</a>) with point cloud
-data which are passed on to <code><a href="read_pc.html">read_pc()</a></code>, or object of class forest_pc
+data which are passed on to <code><a href="read_pc.html">read_pc()</a></code>, or object of class <code>forest_pc</code>
 as created with <code><a href="read_pc.html">read_pc()</a></code>.
 Coordinates have to be in the same coordinate system as <code>forest_source</code>.
 For paths to source files, the supported formats are are .las, .laz,
-.ply and formats accepted by <code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread()</a></code>.</p></dd>
+.ply and formats accepted by <code><a href="https://rdatatable.gitlab.io/data.table/reference/fread.html" class="external-link">data.table::fread()</a></code>.  If supplied as an
+object of class <code>forest_pc</code>, arguments passed to <code><a href="read_inv.html">read_inv()</a></code> are ignored.</p></dd>
 
 
 <dt id="arg-comp-method">comp_method<a class="anchor" aria-label="anchor" href="#arg-comp-method"></a></dt>
@@ -106,7 +108,8 @@ See details for computation.</p></dd>
 <dd><p>character string of length 1 with the position used
 as the center of the search cone/cylinder. Allowed values are "crown_pos"
 for the central point of the crown projected area and "base_pos" for the
-stem base position as computed by <code><a href="tree_pos.html">tree_pos()</a></code>. Default value is "crown_pos".</p></dd>
+stem base position as computed by <code><a href="tree_pos.html">tree_pos()</a></code>. Default value is
+"crown_pos".</p></dd>
 
 
 <dt id="arg-tree-name">tree_name<a class="anchor" aria-label="anchor" href="#arg-tree-name"></a></dt>
@@ -115,16 +118,16 @@ to the name of the argument provided as <code>tree_source</code>.</p></dd>
 
 
 <dt id="arg-cyl-r">cyl_r<a class="anchor" aria-label="anchor" href="#arg-cyl-r"></a></dt>
-<dd><p>(optional) only needed when using comp_method "cylinder";
-numeric value of cylinder radius in m. Default is 5 m.</p></dd>
+<dd><p>numeric of length one. Size of the cylinder radius in m. Default
+is 5 m. Only useed when <code>comp_method = "cylinder"</code>.</p></dd>
 
 
 <dt id="arg-h-cone">h_cone<a class="anchor" aria-label="anchor" href="#arg-h-cone"></a></dt>
-<dd><p>(optional) only when using comp_method "cone"; numeric value
-describing the fraction of the height of the tree where the tip of the
-search cone is located. For example, values of 0.5 or 0.6 specify that the
-cone opens in 50 or 60 % of target tree's height, respectively. Default is
-0.6 as proposed by Seidel et al. (2015).</p></dd>
+<dd><p>numeric of length one. Faction of the height of the tree where
+the tip of the search cone is located. For example, values of 0.5 or 0.6
+specify that the cone opens in 50 or 60 % of the height of the target tree,
+respectively. Default is 0.6 (see Seidel et al., 2015). Only used when
+<code>comp_method = "cone"</code>.</p></dd>
 
 
 <dt id="arg-z-min">z_min<a class="anchor" aria-label="anchor" href="#arg-z-min"></a></dt>
@@ -145,11 +148,14 @@ to calculate the stem base position of the target tree. For details see
 
 
 <dt id="arg-acc-digits">acc_digits<a class="anchor" aria-label="anchor" href="#arg-acc-digits"></a></dt>
-<dd><p>integer of length 1 defining the number of digits of
-accuracy of the point cloud measurements. Data will be rounded internally
-to this value to speed up calculations and avoid problems with joining tree
-and neighborhood data resulting from numeric accuracy. Defaults to 2
-(round to 2 digits after the decimal point).</p></dd>
+<dd><p>integer of length 1 defining the accuracy of the point
+cloud measurements. The data will be aggregated to this number of digits
+to speed up calculations and avoid problems with joining tree and
+neighborhood data resulting from numeric accuracy. The resolution of the
+coordinates defined by <code>acc_digits</code> should alway be at least one order of
+magnitude higher than the resolution <code>res</code> used  to compute the voxel
+counts in later steps. Defaults to <code>acc_digits = 2</code> (round to 2 digits
+after the decimal point).</p></dd>
 
 
 <dt id="arg-res">res<a class="anchor" aria-label="anchor" href="#arg-res"></a></dt>
@@ -237,8 +243,8 @@ cloud as an LAS object (see <a href="https://rdrr.io/pkg/lidR/man/LAS-class.html
 <code>TreeCompR</code> before analysis.
 If the source files are very large, this may still lead to memory problems
 especially on machines with low RAM capacity. In such cases, it may make
-more sense to split up the data set into smaller chunks outside R to
-reduce the memory load.</p>
+more sense to split up the data set into smaller chunks outside R that
+each cover only a subset of the target trees to reduce the memory load.</p>
 </div>
 
 <div class="section">
