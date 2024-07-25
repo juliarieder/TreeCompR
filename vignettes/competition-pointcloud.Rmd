@@ -262,6 +262,8 @@ If there is overlap in the studied areas, this may be faster than loading local 
 Point clouds obtained from static ground-based scanners (TLS) can have very high point densities, sometimes making it impossible to load the raw point cloud into memory in R. Whenever possible, the point cloud should be clipped beforehand. If this is not sufficient, the point cloud can theoretically be reduced in size, e.g. by voxelizing the point cloud. Depending on the method, however, this may slightly affect the results. For a better comparison, all point clouds should be voxelized with the same resolution. If the target tree was previously segmented manually, the individual tree point cloud should not be voxelized, as otherwise some voxels could be incorrectly assigned when distinguishing between the target tree and the competing neighborhood.
 
 ```{r tls1, echo = TRUE, eval=FALSE}
+library(lidR)
+library(VoxR)
 tree <- lidR::readTLSLAS("data/tree.las")
 las <- lidR::readTLSLAS("data/neighborhood.las")
 voxrvox <- VoxR::vox(las@data, res = 0.01)
