@@ -189,6 +189,10 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
                           verbose = TRUE){
   # check if inventory data is already formatted correctly and return if true
   if (inherits(inv_source, "forest_inv")){
+    # test for missing data in columns where it is not permitted
+    NAs <- sapply(inv_source[, c("id", "x", "y")], function(x) any(is.na(x)))
+    if (any(NAs)) stop("No missing values allowed in column ",
+                       paste(c("id", "x", "y")[NAs], collapse = " and "))
     return(inv_source)
   } else { #else check for consistency
     # get multipliers for units
@@ -241,6 +245,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       class_in = c("integer", "numeric"),
       class_out = "numeric",
       mult = dbh_mult,
+      na_allowed = TRUE, # missing values allowed in size-related vars
       fail_if_missing = FALSE # scrap column if not available
     )
     # validate tree height
@@ -251,6 +256,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       class_in = c("integer", "numeric"),
       class_out = "numeric",
       mult = height_mult,
+      na_allowed = TRUE, # missing values allowed in size-related vars
       fail_if_missing = FALSE # scrap column if not available
     )
     # validate tree height
@@ -261,6 +267,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       class_in = c("integer", "numeric"),
       class_out = "numeric",
       mult = height_mult,
+      na_allowed = TRUE, # missing values allowed in size-related vars
       fail_if_missing = FALSE # scrap column if not available
     )
     # get original column names
@@ -273,20 +280,22 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
         "The following columns were used to create the inventory dataset:\n",
         paste0(names(inv_out), "\t---\t", orig, "\n"))
     }
+
+    # get additional columns
+    if (keep_rest){
+      # get names of variables to keep
+      rest <- setdiff(names(inv_source),
+                      orig[orig != "automatically generated"])
+      # update output dataset
+      inv_out <- cbind(
+        inv_out, subset(data.table::as.data.table(inv_source), select = rest)
+      )
+    }
+    # set class to forest_inv object
+    class(inv_out) <- c("forest_inv", class(inv_out))
+    # return the validated inventory object
+    return(inv_out)
   }
-  # get additional columns
-  if (keep_rest){
-    # get names of variables to keep
-    rest <- setdiff(names(inv_source), orig[orig != "automatically generated"])
-    # update output dataset
-    inv_out <- cbind(
-      inv_out, subset(data.table::as.data.table(inv_source), select = rest)
-    )
-  }
-  # set class to forest_inv object
-  class(inv_out) <- c("forest_inv", class(inv_out))
-  # return the validated inventory object
-  return(inv_out)
 }
 
 
@@ -300,6 +309,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     class_out = NULL,      # output class
     mult = NULL,           # multiplier for unit conversion (NULL: no change)
     alternative = NULL,    # alternative value if column not available
+    na_allowed = FALSE,    # are missing values allowed
     fail_if_missing = TRUE # if column it missing, fail (TRUE) or remove
 ){                     # column (FALSE)
   # quote column specification
@@ -341,6 +351,9 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       }
     }
   }
+  # test for NAs if necessary
+  if (!na_allowed) if(any(is.na(out))) stop(
+    "No missing values allowed in column", which)
   # validate class and break if needed
   if(!is.null(class_in)){
     if (!inherits(out, class_in)) {
@@ -375,8 +388,8 @@ print.forest_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
   } else cols <- ""
   # prepare header
   header <- paste0(
-      "'forest_inv' class inventory dataset\n",
-      "No. of obs.: ", nrow(x), "\t ", cols
+    "'forest_inv' class inventory dataset\n",
+    "No. of obs.: ", nrow(x), "\t ", cols
   )
   # print data.table with trees
   .print_as_dt(x, digits = digits, topn = topn,

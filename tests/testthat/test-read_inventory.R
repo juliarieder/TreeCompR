@@ -1,4 +1,5 @@
 # testthat-based unit tests for the functionality of the read_inv function
+require(testthat)
 
 test_that("read_inv works for data.frame objects", {
   # reading in works
@@ -175,11 +176,82 @@ test_that("read_inv works for file paths", {
 
 
 test_that("print method for forest_pc objects works", {
-  # simple csv with named xyz columns is read without message
+  # print is possible without error
   expect_output(
     print(read_inv(test_path("testdata", "smallinv1.csv"),
                    verbose = FALSE)),
     "'forest_inv' class inventory dataset"
+  )
+})
+
+
+
+
+test_that("NA handling for forest_pc objects works", {
+  # read as test ata
+  test <- read.csv(test_path("testdata", "smallinv1.csv"),
+                   sep = ",", dec = ".")
+
+  # NA in x coordinates triggers error
+  expect_error({
+    tt <- test
+    tt$X[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  },
+  "No missing values allowed"
+  )
+
+  # NA in y coordinates triggers error
+  expect_error({
+    tt <- test
+    tt$Y[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  },
+  "No missing values allowed"
+  )
+
+  # NA in tree ID triggers error
+  expect_error({
+    tt <- test
+    tt$TreeID[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  },
+  "No missing values allowed"
+  )
+
+  # NA in DBH triggers no error
+  expect_no_error({
+    tt <- test
+    tt$DBH[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  }
+  )
+
+  # NA in height triggers no error
+  expect_no_error({
+    tt <- test
+    tt$height <- 1
+    tt$height[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  }
+  )
+
+  # NA in size triggers no error
+  expect_no_error({
+    tt <- test
+    tt$size <- 1
+    tt$size[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  }
+  )
+
+  # NA in other variables triggers no error
+  expect_no_error({
+    tt <- test
+    tt$brp <- 1
+    tt$brp[1] <- NA
+    read_inv(tt, verbose = FALSE, keep_rest = TRUE)
+  }
   )
 })
 
