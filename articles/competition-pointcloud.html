@@ -189,15 +189,15 @@ tree height and a cylinder radius of 4 m:</p>
 <span>print_progress <span class="op">=</span> <span class="st">"some"</span>        <span class="co"># controls how much of the progress is</span></span>
 <span><span class="op">)</span>                                <span class="co"># printed</span></span>
 <span><span class="co">#&gt; ----- Processing competition indices for: tree -----</span></span>
-<span><span class="co">#&gt; Cone-based CI = 16046      Cylinder-based CI = 56820</span></span></code></pre></div>
+<span><span class="co">#&gt; Cone-based CI = 15330      Cylinder-based CI = 55815      </span></span></code></pre></div>
 <p>With the standard settings (<code>print_progress = "some"</code>),
 the function only prints the computed competition indices. When no
-output is desired, the argument can be set to “none”, when even more
-detail are required it can be put to “full”. Having some idea whether
-the computed values are reasonable is rather useful when looping over a
-large number of trees as the computations can become rather
-time-consuming for large datasets.</p>
-<p>The resulting <code>compete_pc</code> object</p>
+output is desired, the argument can be set to <code>"none"</code>, when
+even more detail are required it can be put to <code>"full"</code>.
+Having some idea whether the computed values are reasonable is rather
+useful when looping over a large number of trees as the computations can
+become rather time-consuming for large datasets.</p>
+<p>The resulting <code>compete_pc</code> object looks like this:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">CI1</span></span>
 <span><span class="co">#&gt; -------------------------------------------------------------------</span></span>
@@ -205,7 +205,7 @@ time-consuming for large datasets.</p>
 <span><span class="co">#&gt; -------------------------------------------------------------------</span></span>
 <span><span class="co">#&gt;    target height_target center_position CI_cone h_cone CI_cyl cyl_r</span></span>
 <span><span class="co">#&gt;    &lt;char&gt;         &lt;num&gt;          &lt;char&gt;   &lt;int&gt;  &lt;num&gt;  &lt;int&gt; &lt;num&gt;</span></span>
-<span><span class="co">#&gt; 1:   tree          22.8    crown center   16046    0.6  56820     4</span></span></code></pre></div>
+<span><span class="co">#&gt; 1:   tree          22.8    crown center   15330    0.6  55815     4</span></span></code></pre></div>
 <p>The result is an object of type <code>compete_pc</code>, i.e. a
 modified data.frame that you can save or use for further statistical
 analysis. It contains the name or ID (filename) of the tree, its height,
@@ -267,7 +267,8 @@ plain-text formats readable to <code><a href="https://rdatatable.gitlab.io/data.
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="data-handling-incompete_pc">Data handling in<code>compete_pc()</code><a class="anchor" aria-label="anchor" href="#data-handling-incompete_pc"></a>
+<h3 id="data-handling-in-read_pc-and-compete_pc">Data handling in <code>read_pc()</code> and
+<code>compete_pc()</code><a class="anchor" aria-label="anchor" href="#data-handling-in-read_pc-and-compete_pc"></a>
 </h3>
 <p>Internally, <code><a href="../reference/compete_pc.html">compete_pc()</a></code> crops the neighborhood to the
 immediate surroundings of the cone or cylinder before matching the
@@ -277,17 +278,37 @@ loaded, filtering (which is done efficiently using
 <code>data.table</code> functions package) is comparably fast. To speed
 up the coordinate matching, it is done on integer coordinates rounded to
 the digit accuracy specified by <code>acc_digits</code>, which defaults
-to 2 (round to cm). Should you have more accurate data, you can consider
+to 2 (i.e., data are by default rounded to 2 digits, i.e. the nearest
+cm). Duplicate observations are then discarded already during the
+<code><a href="../reference/read_pc.html">read_pc()</a></code> step to reduce memory load and speed up
+computations. This built-in downsampling ensures consistency in
+coordinates between target and neighbor trees (as long as they come from
+a coordinate system with the same origin, which is a prerequisite for
+the analysis).</p>
+<p>Should you have substantially more accurate data, you can consider
 increasing that value, though it will slow down computations and likely
 will not have a large impact on the outcome as the competition indices
-are computed on a coarser spatial scale (by default 0.1 m).</p>
+are computed on a coarser spatial scale set via the <code>res</code>
+argument in <code><a href="../reference/compete_pc.html">compete_pc()</a></code> (by default,
+<code>res = 0.1</code>, i.e. the analysis itself is performed with
+voxels with 0.1 m edge length). The number of digits can be modified as
+follows:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Read a tree point cloud with 4 digits accuracy</span></span>
+<span><span class="va">acc_tree</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span>pc_source <span class="op">=</span> <span class="st">"data/tree_point_cloud.las"</span>, acc_digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
+<p>If a <code>forest_pc</code> object is used as an input for
+<code>compete_pc</code>, the function maintains the accuracy of the
+imported object (which is stored as <code>attr(x, "acc_digits")</code>),
+and it is tested if the <code>acc_digits</code> for target tree and
+neighborhood is consistent.</p>
 <p>Since loading a large point cloud into memory has a non-negligible
 computational overhead and can take a lot of time (especially on systems
 with older hard drives), loading a neighborhood just once can speed up
 the analysis considerably when batch processing a large number of trees
 from the same data source even if the neighborhood is large. Should the
 objects become too large to handle within memory, we recommend to split
-them up outside R during the data preparation step.</p>
+them up outside R during the data preparation step to ensure each subset
+contains one part of the forest with one or several target trees.</p>
 </div>
 </div>
 <div class="section level2">
@@ -300,7 +321,7 @@ them up outside R during the data preparation step.</p>
 by their own neighborhood plot, it may be useful to create a lookup
 table to more efficiently run the function for all your trees. Here is
 an example of what such a lookup table might look like:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Define the base paths</span></span>
 <span><span class="va">neighborhood_path</span> <span class="op">&lt;-</span> <span class="st">"data/neighborhood/"</span></span>
 <span><span class="va">trees_path</span> <span class="op">&lt;-</span> <span class="st">"data/trees/"</span></span>
@@ -322,7 +343,7 @@ an example of what such a lookup table might look like:</p>
 <span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>The table should now look like this:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lookup_table</span></span>
 <span><span class="co">#&gt;    tree_name forest_source                    tree_source        </span></span>
 <span><span class="co">#&gt;    &lt;chr&gt;     &lt;chr&gt;                            &lt;chr&gt;              </span></span>
@@ -348,7 +369,7 @@ each of them. As this can take a considerable amount of time if
 processing hundreds of trees, the different options for
 <code>print_progress</code> can be useful to be able to keep track of
 the analysis and interrupt it in time if something goes wrong.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#define additional parameter settings for compete_pc within the lookup table</span></span>
 <span><span class="va">lookup_cone50_cyl5</span> <span class="op">&lt;-</span> <span class="va">lookup_table</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>comp_method <span class="op">=</span> <span class="st">"both"</span>, </span>
@@ -370,7 +391,7 @@ total time it takes to compute the indices for large datasets and
 identify in time when the function gets stuck.</p>
 <p>It is possible to bind the results for several trees into a single
 dataset using bind_rows:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span>
 <span><span class="va">results</span></span>
 <span><span class="co">#&gt; -----------------------------------------------------------------------------</span></span>
@@ -392,7 +413,7 @@ dataset using bind_rows:</p>
 <p>If you have more than one tree in the same neighborhood, it makes
 sense to load the neighborhood first and then loop over the trees to
 avoid loading the neighborhood several time:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Read neighborhood</span></span>
 <span><span class="va">neighbor</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_pc.html">read_pc</a></span><span class="op">(</span><span class="st">"data/neighborhood1.las"</span><span class="op">)</span></span>
 <span></span>
@@ -430,7 +451,7 @@ with the same resolution. If the target tree was previously segmented
 manually, the individual tree point cloud should not be voxelized, as
 otherwise some voxels could be incorrectly assigned when distinguishing
 between the target tree and the competing neighborhood.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/r-lidar/lidR" class="external-link">lidR</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Blecigne/VoxR" class="external-link">VoxR</a></span><span class="op">)</span></span>
 <span><span class="va">tree</span> <span class="op">&lt;-</span> <span class="fu">lidR</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lidR/man/readLAS.html" class="external-link">readTLSLAS</a></span><span class="op">(</span><span class="st">"data/tree.las"</span><span class="op">)</span></span>

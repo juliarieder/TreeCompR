@@ -602,6 +602,13 @@ for 38,522 trees from an ALS inventory on a modern laptop took 750.73
 sec (around 12 min 31 sec), while computing the Braathe index with the
 same settings for all these trees with<code><a href="../reference/compete_inv.html">compete_inv()</a></code> took
 16.38 seconds.</p>
+<p>In our performance tests, using <code><a href="../reference/compete_inv.html">compete_inv()</a></code> with the
+built-in indices and standard settings was reasonably fast for datasets
+with up to several tens of thousands of trees, with computation times
+mostly below a minute. For larger inventories, it may be beneficial to
+use parallel computing, which in our package is implemented via the
+<code>foreach</code> package and the <code>doParallel</code> backend
+(see below for more details).</p>
 <p>If target trees have already been specified with
 <code>target_inv()</code>, the outcome can directly be passed to
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code>, which then ignores the target_source
@@ -871,6 +878,43 @@ contributions of different competitor species:</p>
 competing tree species, such a decomposition may often be more
 beneficial for understanding competition between trees than looking at
 the overall effect of competition.</p>
+</div>
+<div class="section level3">
+<h3 id="parallel-computing-with-compete_inv">Parallel computing with compete_inv()<a class="anchor" aria-label="anchor" href="#parallel-computing-with-compete_inv"></a>
+</h3>
+<p>if you have inventory datasets with substantially more than 100000
+trees, as is possible when using ALS sources, the computation time for
+the indices in <code><a href="../reference/compete_inv.html">compete_inv()</a></code> may become limiting. In such
+cases, the computation can be performed in parallel using
+<code>parallelize = TRUE</code>. In this case, the function internally
+registers a cluster using <code><a href="https://rdrr.io/pkg/doParallel/man/registerDoParallel.html" class="external-link">doParallel::registerDoParallel()</a></code>
+with a number of cores specified via the <code>cores</code> argument.
+<code>doParallel</code> acts as a backend for
+<code><a href="https://rdrr.io/pkg/foreach/man/foreach.html" class="external-link">foreach::foreach()</a></code> and uses the <code>parallel</code>
+package to split the computations for the loop for the competition
+indices on several cores.</p>
+<p>The standard for <code>cores</code> is to take the value registered
+in <code>options("cores")[[1]]</code>. If this value is
+<code>NULL</code>, by default it uses
+<code>⁠parallel::detectCores()</code> to detect the number of cores.</p>
+<p>An example running <code><a href="../reference/compete_inv.html">compete_inv()</a></code> on 8 processor cores
+for a large dataset is provided here:</p>
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">large_inv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span></span>
+<span>  inv_source <span class="op">=</span> <span class="st">"data/very_large_inv.csv"</span>, </span>
+<span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
+<span>  method <span class="op">=</span> <span class="st">"CI_Hegyi"</span>,</span>
+<span>  radius <span class="op">=</span> <span class="fl">12</span>,</span>
+<span>  kmax <span class="op">=</span> <span class="fl">100</span>,           <span class="co"># a minor speedup is possible by using lower values for kmax</span></span>
+<span>  parallelize <span class="op">=</span> <span class="cn">TRUE</span>,   <span class="co"># use parallel computing...</span></span>
+<span>  cores <span class="op">=</span> <span class="fl">8</span>             <span class="co"># ...on 8 processor cores</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>As setting up and registering the cluster can take a certain time,
+our benchmarks indicate that the speedup by running the computation on
+multiple cores does not really pay off for datasets below 100000 trees,
+but when the numbers go in the millions it can strongly speed things up,
+though above a certain point it is most likely better to split the
+analysis into chunks that are analyzed separately.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
