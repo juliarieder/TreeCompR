@@ -67,12 +67,12 @@ h_cone = 0.6,     # position where the cone starts to open relative to the
 print_progress = "some"        # controls how much of the progress is
 )                                # printed
 #> ----- Processing competition indices for: tree -----
-#> Cone-based CI = 16046      Cylinder-based CI = 56820
+#> Cone-based CI = 15330      Cylinder-based CI = 55815      
 ```
 
-With the standard settings (`print_progress = "some"`), the function only prints the computed competition indices. When no output is desired, the argument can be set to "none", when even more detail are required it can be put to "full". Having some idea whether the computed values are reasonable is rather useful when looping over a large number of trees as the computations can become rather time-consuming for large datasets.
+With the standard settings (`print_progress = "some"`), the function only prints the computed competition indices. When no output is desired, the argument can be set to `"none"`, when even more detail are required it can be put to `"full"`. Having some idea whether the computed values are reasonable is rather useful when looping over a large number of trees as the computations can become rather time-consuming for large datasets.
 
-The resulting `compete_pc` object 
+The resulting `compete_pc` object looks like this:
 
 ```{r first_CI1, message=FALSE, warning=FALSE, eval=FALSE}
 CI1
@@ -81,7 +81,7 @@ CI1
 #> -------------------------------------------------------------------
 #>    target height_target center_position CI_cone h_cone CI_cyl cyl_r
 #>    <char>         <num>          <char>   <int>  <num>  <int> <num>
-#> 1:   tree          22.8    crown center   16046    0.6  56820     4
+#> 1:   tree          22.8    crown center   15330    0.6  55815     4
 ```
 
 The result is an object of type `compete_pc`, i.e. a modified data.frame that you can save or use for further statistical analysis. It contains the name or ID (filename) of the tree, its height, the type center_position used, the computed competition index value(s) (voxel counts) and the settings of the parameters controlling cylinder and cone size.
@@ -134,10 +134,19 @@ CI3 <-  compete_pc(
 ```
 
 
-### Data handling in`compete_pc()`
-Internally, `compete_pc()` crops the neighborhood to the immediate surroundings of the cone or cylinder before matching the neighbor and tree point clouds, as for large neighborhoods this is the by far computationally most expensive step. Once a neighborhood is loaded, filtering (which is done efficiently using `data.table` functions package) is comparably fast. To speed up the coordinate matching, it is done on integer coordinates rounded to the digit accuracy specified by `acc_digits`, which defaults to 2 (round to cm). Should you have more accurate data, you can consider increasing that value, though it will slow down computations and likely will not have a large impact on the outcome as the competition indices are computed on a coarser spatial scale (by default 0.1 m). 
+### Data handling in `read_pc()` and `compete_pc()`
+Internally, `compete_pc()` crops the neighborhood to the immediate surroundings of the cone or cylinder before matching the neighbor and tree point clouds, as for large neighborhoods this is the by far computationally most expensive step. Once a neighborhood is loaded, filtering (which is done efficiently using `data.table` functions package) is comparably fast. To speed up the coordinate matching, it is done on integer coordinates rounded to the digit accuracy specified by `acc_digits`, which defaults to 2 (i.e., data are by default rounded to 2  digits, i.e. the nearest cm). Duplicate observations are then discarded already during the `read_pc()` step to reduce memory load and speed up computations. This built-in downsampling ensures consistency in coordinates between target and neighbor trees (as long as they come from a coordinate system with the same origin, which is a prerequisite for the analysis). 
 
-Since loading a large point cloud into memory has a non-negligible computational overhead and can take a lot of time (especially on systems with older hard drives), loading a neighborhood just once can speed up the analysis considerably when batch processing a large number of trees from the same data source even if the neighborhood is large. Should the objects become too large to handle within memory, we recommend to split them up outside R during the data preparation step.
+Should you have substantially more accurate data, you can consider increasing that value, though it will slow down computations and likely will not have a large impact on the outcome as the competition indices are computed on a coarser spatial scale set via the `res` argument in `compete_pc()` (by default, `res = 0.1`, i.e. the analysis itself is performed with voxels with 0.1 m edge length). The number of digits can be modified as follows:
+
+```{r acc_tree, warning=FALSE, eval=FALSE}
+# Read a tree point cloud with 4 digits accuracy
+acc_tree <- read_pc(pc_source = "data/tree_point_cloud.las", acc_digits = 4)
+```
+
+If a `forest_pc` object is used as an input for `compete_pc`, the function maintains the accuracy of the imported object (which is stored as `attr(x, "acc_digits")`), and it is tested if the `acc_digits` for target tree and neighborhood is consistent.
+
+Since loading a large point cloud into memory has a non-negligible computational overhead and can take a lot of time (especially on systems with older hard drives), loading a neighborhood just once can speed up the analysis considerably when batch processing a large number of trees from the same data source even if the neighborhood is large. Should the objects become too large to handle within memory, we recommend to split them up outside R during the data preparation step to ensure each subset contains one part of the forest with one or several target trees.
 
 
 ## Example for batch-processing workflows
