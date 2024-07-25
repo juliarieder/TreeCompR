@@ -35,10 +35,23 @@ test_that("compete_pc works for .txt file point clouds", {
       forest_source = test_path("testdata", "neighborhood.txt"),
       tree_source = test_path("testdata", "tree.txt"),
       comp_method = "both", center_position = "base_pos",
+      acc_digits = 1,
       res = 1,
       print_progress = "none"),
     "Creating voxelized dataset"
   )
+
+
+  # test basic functionality for crown overlap
+  expect_no_error(
+    test5 <- compete_pc(
+      forest_source = test_path("testdata", "neighborhood.txt"),
+      tree_source = test_path("testdata", "tree.txt"),
+      comp_method = "overlap",
+      acc_digits = 1,
+      print_progress = "none")
+  )
+
 
   # test for dimensions
   expect_equal(
@@ -75,19 +88,23 @@ test_that(
         forest_source = test_path("testdata", "neighborhood.txt"),
         tree_source = test_path("testdata", "tree.las"),
         comp_method = "cone",
+        acc_digits = 1,
         print_progress = "none")
       length(test1)},
       5)
     # load outside as LAS
     expect_equal({
       tree <- lidR::readTLSLAS(test_path("testdata", "tree.las"))
-      test1 <- compete_pc(
+      test2 <- compete_pc(
         forest_source = test_path("testdata", "neighborhood.txt"),
         tree_source = tree,
         comp_method = "cone",
+        acc_digits = 1,
         print_progress = "none")
       length(test1)},
       5)
+    # objects are identical
+    expect_identical(test1, test2)
   })
 
 test_that(
@@ -97,6 +114,7 @@ test_that(
         compete_pc(forest_source = test_path("testdata", "neighborhood.txt"),
                    tree_source = test_path("testdata", "tree.ply"),
                    comp_method = "cone",
+                   acc_digits = 1,
                    print_progress = "none")
       ),
       5)
@@ -119,6 +137,7 @@ test_that("compete_pc works for .txt file point clouds with customized radius",{
       forest_source = test_path("testdata", "neighborhood.txt"),
       tree_source = test_path("testdata", "tree.txt"),
       comp_method = "cylinder", cyl_r = 3,
+      acc_digits = 1,
       print_progress = "none")
   })
 
@@ -139,23 +158,26 @@ test_that("Position checks work as intended",{
   # loading works
   expect_no_error({
     tree <- read_pc(
-      test_path("testdata", "tree.txt"), verbose = FALSE)
+      test_path("testdata", "tree.txt"),
+      acc_digits = 1, verbose = FALSE)
     hood <- read_pc(
-      test_path("testdata", "neighborhood.txt"), verbose = FALSE)
+      test_path("testdata", "neighborhood.txt"),
+      acc_digits = 1, verbose = FALSE)
   })
 
   # compete_pc works as intended with the regular data
-  expect_no_error({compete_pc(hood, tree, "cone", print_progress = "none")})
+  expect_no_error({compete_pc(hood, tree, "cone", print_progress = "none",
+                              acc_digits = 1)})
 
   # compete_pc fails when the tree is situated in the wrong place
   expect_error({
     tree$x <- tree$x + 100
-    compete_pc(hood, tree, "cone", print_progress = "none")},
+    compete_pc(hood, tree, "cone", print_progress = "none", acc_digits = 1)},
     "The basis coordinates")
 
   # compete_pc works when the position check is overridden, but the result is 0
   expect_equal({
     compete_pc(hood, tree, "cone", print_progress = "none",
-               override_pos_check = TRUE)$CI_cone},
+               override_pos_check = TRUE, acc_digits = 1)$CI_cone},
     0)
 })
