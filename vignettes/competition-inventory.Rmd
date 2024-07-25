@@ -373,6 +373,8 @@ To identify the neighbor trees within the search radius of each target tree, `co
 
 For most datasets, the choice of `kmax` will not play a role as search radii large enough to contain that many trees rarely make sense from a biological perspective, and because in many cases performance differences between different values of `kmax` will hardly be notable. However, for very large inventory datasets, as can be expected when working with ALS data sources, The performance difference compared to the regular pairwise-distance-based implementations as e.g. `sf::st_is_within_distance()` can be several orders of magnitude. As a practical example, evaluating `sf::st_is_within_distance()` with a search radius of 10 m for 38,522 trees from an ALS inventory on a modern laptop took 750.73 sec (around 12 min 31 sec), while computing the Braathe index with the same settings for all these trees with` compete_inv()` took 16.38 seconds. 
 
+In our performance tests, using `compete_inv()` with the built-in indices and standard settings was reasonably fast for datasets with up to several tens of thousands of trees, with computation times mostly below a minute. For larger inventories, it may be beneficial to use parallel computing, which in our package is implemented via the `foreach` package and the `doParallel` backend (see below for more details).
+
 If target trees have already been specified with `target_inv()`, the outcome can directly be passed to `compete_inv()`, which then ignores the target_source argument and all further arguments that are passed on to `read_inv()` and `define_target()`.
 
 ```{r comp1, message=FALSE, warning=FALSE, eval=FALSE}
@@ -586,4 +588,25 @@ with(comp_species,
 
 As species-specific directed interaction are likely very common among competing tree species, such a decomposition may often be more beneficial for understanding competition between trees than looking at the overall effect of competition. 
 
+
+### Parallel computing with compete_inv()
+if you have inventory datasets with substantially more than 100000 trees, as is possible when using ALS sources, the computation time for the indices in `compete_inv()` may become limiting. In such cases, the computation can be performed in parallel using `parallelize = TRUE`. In this case, the function internally registers a cluster using  `doParallel::registerDoParallel()` with a number of cores specified via the `cores` argument. `doParallel` acts as a backend for `foreach::foreach()` and uses the `parallel` package to split the computations for the loop for the competition indices on several cores. 
+
+The standard for `cores` is to take the value registered in `options("cores")[[1]]`. If this value is `NULL`, by default it uses `⁠parallel::detectCores()` to detect the number of cores. 
+
+An example running `compete_inv()` on 8 processor cores for a large dataset is provided here:
+
+```{r index1a, message=FALSE, warning=FALSE, eval=FALSE}
+large_inv <- compete_inv(
+  inv_source = "data/very_large_inv.csv", 
+  target_source = "buff_edge", 
+  method = "CI_Hegyi",
+  radius = 12,
+  kmax = 100,           # a minor speedup is possible by using lower values for kmax
+  parallelize = TRUE,   # use parallel computing...
+  cores = 8             # ...on 8 processor cores
+)
+```
+
+As setting up and registering the cluster can take a certain time, our benchmarks indicate that the speedup by running the computation on multiple cores does not really pay off for datasets below 100000 trees, but when the numbers go in the millions it can strongly speed things up, though above a certain point it is most likely better to split the analysis into chunks that are analyzed separately. 
 
