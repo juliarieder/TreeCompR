@@ -15,7 +15,7 @@ comment = "#>"
 ```
   
 ## Getting started 
-Before you can start computing competition indices based on point cloud data from terrestrial or mobile laserscanning with `TreeCompR`, these data have to be thoroughly vetted and pre-processed. In this tutorial, we will first summarize our main recommendations for the handling and preprocessing point-cloud data, and then explain how to use `compete_pc()` and the associated `TreeCompR` functions to compute competition indices.
+Before you can start computing competition indices based on point cloud data from terrestrial or mobile laserscanning with `TreeCompR`, these data have to be thoroughly vetted and pre-processed. In this tutorial, we will first summarize our main recommendations for the handling and preprocessing of  point-cloud data, and then explain how to use `compete_pc()` and the associated `TreeCompR` functions to compute competition indices.
   
   To illustrate how `TreeCompR` can be included inside a tidy workflow, we will make use of [tidyverse](https://www.tidyverse.org/) functions throughout the tutorial:
   
@@ -27,10 +27,11 @@ Before you can start computing competition indices based on point cloud data fro
   To highlight where they are coming from, we will explicitly quote the corresponding package for all functions used in the tutorial in the form of `purrr::map()` for all functions besides the `magrittr` pipe operator `%>%`.
   
   
-  ## Pre-processing the point clouds
-  Before using the cone and cylinder point cloud approaches, the trees for which competition is to be quantified must be extracted from the plot. The most accurate (if time consuming) way to do this is by manual segmentation, for instance with [CloudCompare](https://www.danielgm.net/cc/). 
+## Pre-processing the point clouds
+
+Before using the cone and cylinder point cloud approaches, the trees for which competition is to be quantified must be extracted from the plot. The most accurate (if time consuming) way to do this is by manual segmentation, for instance with [CloudCompare](https://www.danielgm.net/cc/). Make sure that the point cloud is ready to use (e.g. co-registration of the TLS scans, or any filtering of outliers should be done beforehand).
   
-  In CloudCompare, load your point cloud of the whole plot and use the [Segment](https://www.cloudcompare.org/doc/wiki/index.php/Interactive_Segmentation_Tool) function to extract the target tree. Make sure you do not miss any part or include neighboring trees or their branches, as it is crucial to determine which parts of the point cloud belong to neighbors and which points belong to the target tree. Pay particular attention to the ground and do not include any ground points in your target tree's point cloud, otherwise the tree's base position may be determined imprecisely in later steps as the `tree_pos()` function is based on the lowest points in the point cloud of the target tree. 
+In CloudCompare, load your point cloud of the whole plot and use the [Segment](https://www.cloudcompare.org/doc/wiki/index.php/Interactive_Segmentation_Tool) function to extract the target tree. Make sure you do not miss any part or include neighboring trees or their branches, as it is crucial to determine which parts of the point cloud belong to neighbors and which points belong to the target tree. Pay particular attention to the ground and do not include any ground points in your target tree's point cloud, otherwise the tree's base position may be determined imprecisely in later steps as the `tree_pos()` function is based on the lowest points in the point cloud of the target tree. 
   
   <img src="../man/figures/CloudCompare.jpg" alt="Methods Workflow" width="700">
   
@@ -40,18 +41,18 @@ Before you can start computing competition indices based on point cloud data fro
   
   After clicking save, you will be asked to select the output resolution. If you choose a custom resolution or coordinate accuracy, make sure you choose the same for the target tree and the neighborhood cloud! In our examples, we rounded our coordinates to 2 decimal places (i.e. to 1 cm accuracy), which also is what the `compete_pc()` uses by default for coordinate matching, but other values are possible. 
   
-  ## Quantifying competition with TreeCompR
-  Once you have the two point clouds for target tree and neighborhood, you can use the `read_pc()` function of TreeCompR to read and validate them, or directly pass the paths to the point clouds to `compete_pc()`. 
+## Quantifying competition with TreeCompR
+Once you have the two point clouds for target tree and neighborhood, you can use the `read_pc()` function of TreeCompR to read and validate them, or directly pass the paths to the point clouds to `compete_pc()`. 
   <img src="../man/figures/cone_cyl_method.jpg" alt="Methods Workflow" width="700">
   
-  ### Basic use of `compete_pc()`
-  In `compete_pc()`, you can select the method for computing competition indices by setting `comp_method` to `"cylinder"`, `"cone"` or `"both"`. To compute the competition indices for either of these methods, the position of the center of the cone or cylinder has to be defined. The `center_position` argument allows to center the cone or cylinder either around the central point of the crown projected area (`"crown_pos"`) or the central point of the tree base (`"base_pos"`). 
-  Usually, the position of a tree is calculated by using the lowest points of a tree and take the mean or median. However, if a tree is not growing straight and we want to identify (crown-)competition, we think it is more reasonable to instead focus on the center of the crown. For that reason, `compete_pc()` currently defaults to `center_position = "crown_pos"`, the median of the x and y position of the voxelized crown projected area (see the documentation of `tree_pos()` for details).
+### Basic use of `compete_pc()`
+In `compete_pc()`, you can select the method for computing competition indices by setting `comp_method` to `"cylinder"`, `"cone"` or `"both"`. To compute the competition indices for either of these methods, the position of the center of the cone or cylinder has to be defined. The `center_position` argument allows to center the cone or cylinder either around the central point of the crown projected area (`"crown_pos"`) or the central point of the tree base (`"base_pos"`). 
+Usually, the position of a tree is calculated by using the lowest points of a tree and take the mean or median. However, if a tree is not growing straight and we want to identify (crown-)competition, we think it is more reasonable to instead focus on the center of the crown. For that reason, `compete_pc()` currently defaults to `center_position = "crown_pos"`, the median of the x and y position of the voxelized crown projected area (see the documentation of `tree_pos()` for details).
   
-  If you want to use the stem base position, there are additional parameters that you can adjust to ensure the correct position determination, namely `h_xy` (range in m above the lowermost point of the tree point cloud the base position should be calculated from) and `z_min` (minimum number of points in the lowermost layer of voxels used to calculate base position of the tree).
-  More about the methods themselves and the settings and sensitivity can be found in [Seidel et al. (2015)](https://doi.org/10.1016/j.foreco.2014.10.020), [Metz et al. (2013)](https://www.sciencedirect.com/science/article/pii/S0378112713005410), or, for the original KKL index, in [Pretzsch et al. (2002)](https://www.sciencedirect.com/science/article/pii/S0378112702000476). 
+If you want to use the stem base position, there are additional parameters that you can adjust to ensure the correct position determination, namely `h_xy` (range in m above the lowermost point of the tree point cloud the base position should be calculated from) and `z_min` (minimum number of points in the lowermost layer of voxels used to calculate base position of the tree).
+More about the methods themselves and the settings and sensitivity can be found in [Seidel et al. (2015)](https://doi.org/10.1016/j.foreco.2014.10.020), [Metz et al. (2013)](https://www.sciencedirect.com/science/article/pii/S0378112713005410), or, for the original KKL index, in [Pretzsch et al. (2002)](https://www.sciencedirect.com/science/article/pii/S0378112702000476). 
   
-  In the following example, the compete_pc is used to calculate both  cone and cylinder-based competition indices centered around the crown center, with a cone opening in a height of 0.6 times the total target tree height and a cylinder radius of 4 m:
+In the following example, the compete_pc is used to calculate both  cone and cylinder-based competition indices centered around the crown center, with a cone opening in a height of 0.6 times the total target tree height and a cylinder radius of 4 m:
   
 ```{r first_CI, message=FALSE, warning=FALSE, eval=FALSE}
 # compute competition indices
@@ -255,3 +256,20 @@ results1 <- map(
 ```
 
 If there is overlap in the studied areas, this may be faster than loading local subsets separately for each tree even for relatively large neighborhoods because loading the data tends to be slower than processing them once they are in memory. 
+
+## Dealing with large files (high point density)
+
+Point clouds obtained from static ground-based scanners (TLS) can have very high point densities, sometimes making it impossible to load the raw point cloud into memory in R. Whenever possible, the point cloud should be clipped beforehand. If this is not sufficient, the point cloud can theoretically be reduced in size, e.g. by voxelizing the point cloud. Depending on the method, however, this may slightly affect the results. For a better comparison, all point clouds should be voxelized with the same resolution. If the target tree was previously segmented manually, the individual tree point cloud should not be voxelized, as otherwise some voxels could be incorrectly assigned when distinguishing between the target tree and the competing neighborhood.
+
+```{r tls1, echo = TRUE, eval=FALSE}
+tree <- lidR::readTLSLAS("data/tree.las")
+las <- lidR::readTLSLAS("data/neighborhood.las")
+voxrvox <- VoxR::vox(las@data, res = 0.01)
+lidrvox <- lidR::voxelize_points(las, res = 0.01)
+
+CI <- compete_pc(las, tree_source = tree, method = "both", center_position = "crown_pos", cyl_r = 4.5, h_cone = 0.5, acc_digits = 2)
+CI <- compete_pc(voxrvox, tree_source = tree, method = "both", center_position = "crown_pos", cyl_r = 4.5, h_cone = 0.5, acc_digits = 2)
+CI <- compete_pc(lidrvox, tree_source = tree, method = "both", center_position = "crown_pos", cyl_r = 4.5, h_cone = 0.5, acc_digits = 2)
+```
+
+Downsampling can lead to variations in results compared to using the original, high-density point clouds. This makes it challenging to ensure comparability and consistency across different datasets. If downsampling is necessary, it is crucial to apply it uniformly to all point clouds that you intend to compare or use within a single study. Otherwise, results may be misinterpreted due to inconsistencies in point densities.
