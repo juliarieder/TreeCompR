@@ -6,6 +6,7 @@
 #' @importFrom data.table :=
 #' @importFrom data.table fread
 #' @importFrom data.table %inrange%
+#' @importFrom foreach %dopar%
 #' @importFrom nabor knn
 #' @importFrom Rfast Round
 #' @importFrom rlang enquo

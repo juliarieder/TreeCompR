@@ -39,8 +39,8 @@
 #'   exact matching. Defaults to 1 (match within a 1 m buffer).
 #' @param crop_to_target logical of length 1. Should the inventory be limited
 #'   to the extent of the target coordinates? If TRUE, the extent of `inv` will
-#'   be cropped to the extent of `forest_inv` \eqn{\pm} `radius + tol` to
-#'   reduce computational load in later steps. Defaults to FALSE.
+#'   be cropped to the extent of `forest_inv` \eqn{\pm} `radius` + 1 m for
+#'   safety to reduce computational load in later steps. Defaults to FALSE.
 #' @param verbose logical of length 1. Should information about progress be
 #'   printed? Defaults to TRUE.
 #'
@@ -293,8 +293,8 @@ define_target <- function(inv, target_source = "buff_edge", radius = 10,
     spatial <- TRUE
     # test if there are trees outside the relevant range
     inside <-
-      inv$x %inrange% (range(inv[inv$target,"x"]) + c(-1, +1) * (radius + tol)) &
-      inv$y %inrange% (range(inv[inv$target,]$y) + c(-1, +1) * (radius + tol))
+      inv$x %inrange% (range(inv[inv$target,"x"]) + c(-1, +1) * (radius + 1)) &
+      inv$y %inrange% (range(inv[inv$target,]$y) + c(-1, +1) * (radius + 1))
     # message if dataset was modified
     if (any(!inside) && verbose) message(
       .wr(
@@ -503,7 +503,7 @@ plot_target <- function(inv, radius = NULL) {
 
   # if only edge trees are considered, identify edge trees
   if (type == "exclude_edge"){
-    closest <- inv$id[.closest(conc[-1,], inv[,2:3], 0.1)]
+    closest <- inv$id[.closest(conc[-1,], inv[,2:3], 0.01)]
     inv$target <- !(inv$id %in% closest)
   } else {
     if(type == "buff_edge"){

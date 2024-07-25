@@ -254,6 +254,17 @@ test_that("Handling of kmax works", {
   )
 })
 
+test_that("Parallel processing is possible", {
+  # run on 2 cores
+  expect_no_error({
+    plot <- read_inv(test_path("testdata", "inventory.csv"), verbose = FALSE)
+    targets <- define_target(plot, target_source = "exclude_edge", radius = 5)
+    CI <- compete_inv(inv_source = targets, radius = 5,
+                      method = "all_methods",
+                      parallelize = TRUE, cores = 2)
+  }
+  )
+})
 
 test_that("Function works with manual column specifications", {
   # specification with quoted names

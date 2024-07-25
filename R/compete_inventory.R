@@ -38,6 +38,12 @@
 #'    `"CI_size"` and/or the names of user-specified functions, or
 #'    `"all_methods"` (the default).`"all_methods"` computes all built-in
 #'   indices that can be calculated with the available data.
+#' @param parallelize logical of length 1. Should the computation of the
+#'   competition indices be split over several cores? Defaults to FALSE.
+#' @param cores numeric of length 1. If `parallelize = TRUE`, on how many cores
+#'   should the computations be run on? Defaults to the value registered in
+#'   `options("cores")[[1]]`, or, if this is not available, to
+#'   `parallel::detectCores())`.
 #' @param tol numeric of length 1. Tolerance for the match with the tree
 #'   coordinates. If coordinates are measured in the field with GPS, but
 #'   `inv_source` contains x and y coordinates from a larger number of trees
@@ -129,6 +135,10 @@
 #'  sources), this will likely not matter, but when working with large ALS
 #'  datasets this implementation can speed up calculation by several orders of
 #'  magnitude.
+#'  For even larger datasets, it is possible to compute the indices in parallel
+#'  using [foreach::foreach()] via the [doParallel] backend. If
+#'  `parallelize = TRUE`, the computation of the competition indices will be
+#'  distributed onto `cores` parallel cores.
 #'
 #'  As all these indices are distance-weighted sums of the relative size of all
 #'  competitor trees within the search radius compared to the target tree (or a
@@ -262,6 +272,10 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
                         height_unit = c("m", "cm", "mm"),
                         keep_rest = FALSE,
                         verbose = TRUE,
+                        parallelize = FALSE,
+                        cores = ifelse(!is.null(options("cores")[[1]]),
+                                       options("cores")[[1]],
+                                       parallel::detectCores()),
                         tol = 1, kmax = 999,
                         ...) {
   # validate vector of specified CI methods
@@ -339,18 +353,45 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
   for (meth in method){
     out[[meth]] <- NA_real_
   }
-  # loop over all target trees
-  for (i in 1:nrow(targets)){
-    # get target tree
-    target <- targets[i, ]
-    # get neighborhood
-    ids <- nn$nn.idx[i,-1] # remove first tree: target tree
-    neigh   <- inv[ids[ids>0],]
-    neigh$dist <-  nn$nn.dists[i, 1:nrow(neigh) + 1]
 
-    # loop over methods to compute indices
-    for(meth in method){
-      out[[meth]][i] <- do.call(meth, args = list(target, neigh))
+  if (parallelize){
+    # register cluster
+    clust <-  parallel::makeCluster(cores)
+    doParallel::registerDoParallel(clust, cores = cores)
+    # loop over all target trees
+    tryCatch({
+      foreach::foreach(i = 1:nrow(targets), .combine = "rbind") %dopar% {
+        # get target tree
+        target <- targets[i, ]
+        # get neighborhood
+        ids <- nn$nn.idx[i,-1] # remove first tree: target tree
+        neigh   <- inv[ids[ids>0],]
+        neigh$dist <-  nn$nn.dists[i, 1:nrow(neigh) + 1]
+
+        # loop over methods to compute indices
+        for(meth in method){
+          out[[meth]][i] <- do.call(meth, args = list(target, neigh))
+        }
+      }
+    },finally = {
+      tryCatch({
+        parallel::stopCluster(clust)
+      }, error = function (e) print(e))
+    })
+  } else{
+    # loop over all target trees
+    for (i in 1:nrow(targets)){
+      # get target tree
+      target <- targets[i, ]
+      # get neighborhood
+      ids <- nn$nn.idx[i,-1] # remove first tree: target tree
+      neigh   <- inv[ids[ids>0],]
+      neigh$dist <-  nn$nn.dists[i, 1:nrow(neigh) + 1]
+
+      # loop over methods to compute indices
+      for(meth in method){
+        out[[meth]][i] <- do.call(meth, args = list(target, neigh))
+      }
     }
   }
   # add radius and method as attributes
@@ -484,11 +525,11 @@ print.compete_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
 
   # prepare header
   header <- paste0(
-      "'compete_inv' class distance-based competition index dataset\n",
-      "No. of target trees: ", nrow(x),"\t Source inventory size: ",
-      nrow(x) + nrow(attr(x, "edge_trees")),
-      " trees\nTarget source: ", target,
-      "\t Search radius: ", attr(x, "radius"), " m")
+    "'compete_inv' class distance-based competition index dataset\n",
+    "No. of target trees: ", nrow(x),"\t Source inventory size: ",
+    nrow(x) + nrow(attr(x, "edge_trees")),
+    " trees\nTarget source: ", target,
+    "\t Search radius: ", attr(x, "radius"), " m")
 
   # print data.table with trees
   .print_as_dt(x, digits = digits, topn = topn,
