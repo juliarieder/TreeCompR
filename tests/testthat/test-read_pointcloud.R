@@ -1,4 +1,5 @@
 # testthat-based unit tests for the functionality of the read_pc function
+require(testthat)
 
 test_that("reading a tree point cloud in txt format works", {
   # try if loading works without error
@@ -140,7 +141,7 @@ test_that("reading pc in laz format works", {
   expect_equal(
     colSums(test_tree),
     c(x = 196801.95, y = -108219.71, z = 1868380.0)
-    )
+  )
 })
 
 
@@ -171,7 +172,7 @@ test_that("reading pc in ply format works", {
   expect_equal(
     colSums(test_tree),
     c(x = 196801.95, y = -108219.71, z = 1868380.0)
-    )
+  )
 })
 
 test_that("reading point clouds with filters works", {
@@ -253,14 +254,23 @@ test_that(
       read_pc(test)},
       regexp = "One or more of the coordinate vectors x, y, z is not numeric"
     )
-  })
 
-test_that("print method for forest_pc objects works", {
-  # simple csv with named xyz columns is read without message
-  expect_output(
-    print(read_pc(test_path("testdata", "tinytree1.csv"))),
-    "'forest_pc' class point cloud"
-  )
+    # an error is thrown if there are missing coordinates
+    expect_error({
+      test <- as.data.frame(tinytree1)
+      test$x[1] <- NA
+      read_pc(test)},
+      regexp = "Missing data are not allowed"
+    )
+
+
+    test_that("print method for forest_pc objects works", {
+      # simple csv with named xyz columns is read without message
+      expect_output(
+        print(read_pc(test_path("testdata", "tinytree1.csv"))),
+        "'forest_pc' class point cloud"
+      )}
+    )
 })
 
 

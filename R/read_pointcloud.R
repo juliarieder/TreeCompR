@@ -215,8 +215,6 @@ read_pc <- function(pc_source, verbose = TRUE,
                          verbose = FALSE, acc_digits = 2){
   # if necessary, convert to forest_pc format
   if (!inherits(pc, "forest_pc")){
-    # check if acc_digits is
-
     # if dataset is a different format, convert to data.table format
     if (!inherits(pc, "data.table")) pc <- data.table::as.data.table(pc)
     # if coordinates are named, use these
@@ -265,6 +263,8 @@ read_pc <- function(pc_source, verbose = TRUE,
         names(pc) <- c("x", "y", "z")
       }
     }
+    # check for NAs
+    if(any(is.na(pc))) stop("Missing data are not allowed in point clouds.")
     # validate digit accuracy
     if(length(acc_digits) > 1) stop("acc_digits has to be a length 1 integer")
     if(acc_digits < 0) stop("acc_digits has to be positive")
@@ -311,7 +311,8 @@ read_pc <- function(pc_source, verbose = TRUE,
 #' @format NULL
 #' @usage NULL
 #' @export
-print.forest_pc <- function(x, topn = 3, digits = 2, nrows = 8, ...){
+print.forest_pc <- function(x, topn = 3, digits = attr(x, "acc_digits"),
+                            nrows = 8, ...){
   # prepare header
   header <- paste0(
     "'forest_pc' class point cloud\ncollection of ", nrow(x)," observations")
