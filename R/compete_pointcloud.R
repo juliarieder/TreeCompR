@@ -32,7 +32,7 @@
 #' @param tree_name (optional) ID for the tree. If no argument is put, defaults
 #'   to the name of the argument provided as `tree_source`.
 #' @param cyl_r numeric of length one. Size of the cylinder radius in m. Default
-#'   is 5 m. Only useed when `comp_method = "cylinder"`.
+#'   is 5 m. Only used when `comp_method = "cylinder"`.
 #' @param h_cone numeric of length one. Faction of the height of the tree where
 #'   the tip of the search cone is located. For example, values of 0.5 or 0.6
 #'   specify that the cone opens in 50 or 60 % of the height of the target tree,
@@ -186,7 +186,7 @@
 #'     bind_rows()
 #' }
 compete_pc <- function(forest_source, tree_source,
-                       comp_method = c("cone", "cylinder", "overlap", "both"),
+                       comp_method = c("cone", "cylinder", "both"),
                        center_position = c("crown_pos", "base_pos"),
                        tree_name = NULL,
                        cyl_r = 5, h_cone = 0.6, z_min = 100, h_xy = 0.3,
@@ -272,12 +272,6 @@ compete_pc <- function(forest_source, tree_source,
     ylim <- pos["y"] + c(-1, +1) * (cone_r + res)
     zlim <- c(h * h_cone + pos["z"] - res, Inf)
   }
-  if (comp_method == "overlap"){
-    # radius of search cone at highest point in the dataset
-    xlim <- range(tree$x)
-    ylim <- range(tree$y)
-    zlim <- NULL
-  }
   if (comp_method == "both"){
     # radius of search cone at highest point in the dataset
     cone_r <- tan(pi / 6) * (max(hood$z) - pos["z"] - h_cone * h)
@@ -334,11 +328,6 @@ compete_pc <- function(forest_source, tree_source,
     # append voxel count inside the cylinder and cylinder radius to results
     results$CI_cyl <- with(voxel2, sum(dist <= cyl_r))
     results$cyl_r <- cyl_r
-  }
-  if (comp_method == "overlap"){
-    neigh_xy <- unique(voxel[voxel$z >= h_cone * h, c("x", "y")])
-    antijoin <- position$cpa_xy[!neigh_xy, on = c("x", "y")]
-    results$overlap = 1 - nrow(antijoin) / nrow(position$cpa_xy)
   }
 
   # remove row.names of results for proper printing

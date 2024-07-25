@@ -9,7 +9,7 @@
 compete_pc(
   forest_source,
   tree_source,
-  comp_method = c("cone", "cylinder", "overlap", "both"),
+  comp_method = c("cone", "cylinder", "both"),
   center_position = c("crown_pos", "base_pos"),
   tree_name = NULL,
   cyl_r = 5,
@@ -59,7 +59,7 @@ stem base position as computed by \code{\link[=tree_pos]{tree_pos()}}. Default v
 to the name of the argument provided as \code{tree_source}.}
 
 \item{cyl_r}{numeric of length one. Size of the cylinder radius in m. Default
-is 5 m. Only useed when \code{comp_method = "cylinder"}.}
+is 5 m. Only used when \code{comp_method = "cylinder"}.}
 
 \item{h_cone}{numeric of length one. Faction of the height of the tree where
 the tip of the search cone is located. For example, values of 0.5 or 0.6

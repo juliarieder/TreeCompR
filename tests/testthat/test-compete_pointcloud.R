@@ -41,18 +41,6 @@ test_that("compete_pc works for .txt file point clouds", {
     "Creating voxelized dataset"
   )
 
-
-  # test basic functionality for crown overlap
-  expect_no_error(
-    test5 <- compete_pc(
-      forest_source = test_path("testdata", "neighborhood.txt"),
-      tree_source = test_path("testdata", "tree.txt"),
-      comp_method = "overlap",
-      acc_digits = 1,
-      print_progress = "none")
-  )
-
-
   # test for dimensions
   expect_equal(
     c(length(test1), length(test2),
