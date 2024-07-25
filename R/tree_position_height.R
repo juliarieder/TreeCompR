@@ -33,6 +33,9 @@
 #'   stem base (on default: first 0.3 m - values that are too low should be
 #'   avoided here as the stem shape may be irregular close to the ground).
 #'
+#'   The *crown projected area* is computed as the projected area of all voxels
+#'   belonging to the tree.
+#'
 #'   The *central point of the crown projected area* is computed as the median
 #'   of the x and y position of the projected area of the tree.
 #'
