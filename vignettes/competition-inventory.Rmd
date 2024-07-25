@@ -497,7 +497,7 @@ CI_Hegyi_new <- function(target, neigh)  sum(neigh$dbh / (target$dbh * neigh$dis
 
 This function can then be called with the `method` argument `compete_inv()` as a competition index:
 
-```{r index1a, message=FALSE, warning=FALSE, eval=FALSE}
+```{r index1b, message=FALSE, warning=FALSE, eval=FALSE}
 compete_inv(inv_source = targets4, radius = 8,
             method = c("CI_Hegyi", "CI_Hegyi_new"))
 #> ---------------------------------------------------------------
