@@ -5,29 +5,44 @@
 \alias{print.tree_pos}
 \title{Position and Height of a Tree from Point Cloud}
 \usage{
-tree_pos(tree, z_min = 100L, h_xy = 0.3)
+tree_pos(tree, z_min = 100L, h_xy = 0.3, res = 0.1, tree_name = NULL)
 }
 \arguments{
 \item{tree}{tree_pc or data.frame (x, y, z) of the tree point cloud.
 Coordinates have to be in metric system!}
 
 \item{z_min}{integer of length 1 describing the the minimum number of points
-needed in the lowermost 0.1 m Z layer to consider it part of the tree.
-Default is 100.}
+needed in the lowermost 1 voxel depth Z layer to consider it part of the
+tree. Default is 100. If changing the voxel resolution (res) from the
+default value of 0.1, different settings may be necessary.}
 
 \item{h_xy}{numeric of length 1 describing the height range in m over the
 stem base over which the x and y positions are used to calculate the x and
 y coordinates of the stem base. Default is 0.3 m.}
+
+\item{res}{res numeric of length 1 defining the resolution of a voxel as
+passed on to \code{\link[VoxR:vox]{VoxR::vox()}}. Defaults to 0.1 (10 cm voxel size).}
+
+\item{tree_name}{character vector of length 1 with the name of the tree as
+returned with the output object. Defaults to NULL (take name from \code{tree}
+argument).}
 }
 \value{
 object of class "tree_pos" containing the following components:
 \itemize{
-\item{base_pos}{numeric vector of length 3 with the x, y, z coordinates
-of the tree base position.}
-\item{crown_pos}{numeric vector of length 3 with the x, y, z coordinates
-of the position of the centroid of the tree crown.}
-\item{height}{numeric of length one containing the tree height in m.}
-\item{tree_name}{name of the object used as the "tree" argument.}
+\item{\code{base_pos}} {numeric vector of length 3 with the x, y, z
+coordinates of the tree base position.}
+\item{\code{crown_pos}} {numeric vector of length 3 with the x, and y
+coordinates of the central point of the crown projected
+area and the z position of the stem base identified as
+above.}
+\item{\code{height}} {numeric of length one containing the tree height in m.}
+\item{\code{cpa_m2}} {numeric of length one containing the crown projected area
+in m².}
+\item{\code{cpa_xy}} {\code{data.table} with the x and y positions of the
+crown.}
+\item{\code{tree_name}} {name of the object used as the "tree" argument, or
+name specified by the user.}
 }
 }
 \description{
@@ -50,15 +65,24 @@ voxelized x and y coordinates of all voxels in the first h_xy m over the
 stem base (on default: first 0.3 m - values that are too low should be
 avoided here as the stem shape may be irregular close to the ground).
 
-The \emph{metroid of the crown projected area} is the median x and y position of
-all x and y positions attributed to the tree.
+The \emph{crown projected area} is computed as the projected area of all voxels
+belonging to the tree.
+
+The \emph{central point of the crown projected area} is computed as the median
+of the x and y position of the projected area of the tree.
 
 The \emph{height} is based on difference between the z value of the highest
-voxel belonging to the tree over and the z value of the stem base.
+voxel belonging to the tree over and the z value identified for the stem
+base.
 
 The calculation is done on voxels to ensure consistency with downstream
-analyses and to reduce bias caused by inhomogeneous scanning coverage on
+analyses and to reduce bias caused by inhomogeneous point densities on
 different sides of the stem.
+
+In our opinion, in most cases it makes more sense to calculate competition
+indices based on the central point of the tree crown than based on the
+stem base because for strongly inclined trees a cylinder constructed around
+its base may contain no voxels of the crown of the central tree at all.
 }
 \examples{
 \dontrun{
@@ -68,4 +92,8 @@ tree <- read_tree(path = "path/to/tree_point_cloud.txt")
 pos <- tree_pos(tree)
 pos
 }
+}
+\seealso{
+\code{\link[=read_pc]{read_pc()}} for details on reading point clouds,
+\code{\link[=compete_pc]{compete_pc()}} for computing tree competition from point cloud objects.
 }

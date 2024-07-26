@@ -3,6 +3,7 @@
 \name{read_inv}
 \alias{read_inv}
 \alias{print.forest_inv}
+\alias{rbind.forest_inv}
 \title{Read forest inventory data}
 \usage{
 read_inv(
@@ -11,11 +12,12 @@ read_inv(
   y = NULL,
   dbh = NULL,
   height = NULL,
+  size = NULL,
   id = NULL,
   dbh_unit = c("cm", "m", "mm"),
   height_unit = c("m", "cm", "mm"),
+  keep_rest = FALSE,
   verbose = TRUE,
-  names_as_is = FALSE,
   ...
 )
 }
@@ -44,6 +46,10 @@ containing the height of the tree (by default in m, but   can be defined
 via \code{heigh_unit}). If \code{NULL} (default), the function tries to identify the
 height from the data.}
 
+\item{size}{character of length 1 or name of the variable in \code{inv_source}
+containing a generic size-related variable for \code{\link[=CI_size]{CI_size()}}. If \code{NULL}
+(default), the variable is not assigned.}
+
 \item{id}{character of length 1 or name of the variable in \code{inv_source}
 containing a unique tree ID. If \code{NULL} (default), the function tries to
 identify the ID from the data. If this is not possible, the trees are
@@ -55,20 +61,18 @@ assigned a unique number. All IDs are coerced to character.}
 \item{height_unit}{character of length 1. Unit for the diameter measurements
 (one of "m", "cm" or "mm". defaults to "m").}
 
+\item{keep_rest}{logical of length 1. Keep additional variables in the
+inventory table besides x, y, dbh, size and id for filtering or further
+computations? Defaults to FALSE.}
+
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
-
-\item{names_as_is}{logical of length 1. If TRUE, only NULL or characters
-are excepted as column names in \code{x}, \code{y}, \code{dbh}, \code{height} and \code{id}, and
-the column names are not internally substituted. Defaults to FALSE, which
-should normally be the right choice for interactive use (TRUE is only
-needed for use within functions).}
 
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
-object of class \code{c("forest_inv", "data.frame")} with x and y
-coordinates of the tree, a unique tree identifier (\code{id}) and tree diameter
+object of class \code{forest_inv}: a modified data.table with x and
+y coordinates of the tree, a unique tree identifier (\code{id}) and tree diameter
 at breast height (\code{dbh}, in cm) and tree height (\code{height}, in m) if
 available.
 }
@@ -87,7 +91,11 @@ the function by default takes the columns named "X" and "Y" (or "x" and
 capitalization) as size-related variables. The tree ids are taken from
 columns named "id", "tree_id", "treeID" or "tree.id" (in any
 capitalization). All special characters besides "." and "_" are stripped
-from the column names before matching.
+from the column names before matching. For "size", the variable has to be
+specified explicitly; if not specified no generic size-related variable
+will be selected.
+All other columns in the source dataset are appended to the inventory when
+\code{keep_rest = TRUE}, but they are not validated, type-checked or sanitized.
 
 If no columns with coordinates can be identified, the function fails with
 an error. If no ID column is available, the function assigns a unique
@@ -99,12 +107,56 @@ taking their GPS coordinates manually in the field).
 }
 \examples{
 \dontrun{
-# prepare inventory table for compete_inv()
-inv <- fread(path = "path/to/table.csv")
-#specify the units of parameters within your input
-inv_table <- read_inv(inv, dbh_unit = "cm", height_unit = "m")
-# Read inventory table directly from directory
-inv_table <- read_inv(inv_source = "path/to/table.csv", dbh_unit = "cm",
-height_unit = "m")
+# read inventory with diameter and height units set to m
+inventory1 <- read_inv(
+  inv_source = "data/inventory1.csv",
+  dbh_unit = "m")
+
+# read inventory with custom (Spanish) column titles
+inventory2 <- read_inv(
+  inv_source = "data/inventory2.csv",
+  x = utmx,
+  y = utmy,
+  dbh = dap_cm,
+  height = altura,
+  dbh_unit = "cm",
+  height_unit = "m")
+
+
+# read inventory with custom decimal and column separators
+inventory3 <- read_inv(
+  inv_source = "data/inventory3.csv",
+  dec = ",",
+  sep = ";",
+  verbose = FALSE)
+
+# read dataset outside read_inv and filter to a single plot
+dat <- readr::read_csv("data/inventory4.csv") \%>\%
+  dplyr::filter(plot_id == "Plot 1")
+
+# use read_inv to convert to a forest_inv object that works with
+TreeCompR functions
+inventory4 <- read_inv(
+  inv_source = dat,
+  dbh = diam,
+  dbh_unit = "cm",
+  height_unit = "m",
+  verbose = FALSE)
+
+# read same inventory without dropping columns
+inventory4a <- read_inv(
+  inv_source = dat,
+  dbh = diam,
+  dbh_unit = "cm",
+  height_unit = "m",
+  keep_rest = TRUE,
+  verbose = FALSE)
 }
+}
+\seealso{
+\code{\link[=define_target]{define_target()}} for designating target trees,
+\code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
+\link{competition_indices} for a list of available indices,
+\code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
+\code{compete_inv} objects. Find more examples in our \href{https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#reading-in-forest-inventory-data-with-read_inv}{tutorial}.
 }

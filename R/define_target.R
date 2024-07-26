@@ -16,9 +16,7 @@
 #'   target trees. In this case, the coordinates are matched against the
 #'   coordinates in `inv` and IDs may differ (useful e.g. when target trees
 #'   are defined based on GPS coordinates and matched against an airborne laser
-#'   scanning dataset). In this case, the extent of `inv` will be cropped to
-#'   the extent of `forest_inv` \eqn{\pm} `radius + tol` to reduce
-#'   computational load.
+#'   scanning dataset).
 #'   4. a character vector of length 1 defining the method by which the target
 #'   trees should be determined. Allowed are `"buff_edge"` for excluding all
 #'   trees that are at least one search radius from the forest edge,
@@ -28,155 +26,285 @@
 #'   `"buff_edge"`. See below for details.
 #' @param radius numeric of length 1, Search radius (in m) around target tree
 #'   wherein all neighboring trees are classified as competitors. Only used if
-#'   `target_source` is `"buff_edge"`, `"exclude_edge"` or of type `forest_inv`.
-#'   Defaults to 10.
-#' @param tol numeric. Tolerance for the match between tree coordinates in the
-#'   forest inventory and target datasets if specified as a second set of
-#'   coordinates. If a field measurements (e.g. based on GPS) are used to
+#'   `target_source` is `"buff_edge"`, `"exclude_edge"` or if
+#'   `crop_to_target = TRUE`. Defaults to 10.
+#' @param tol numeric of length 1. Only used when `target_source` is an
+#'   inventory with a second set of coordinates. Tolerance for the match between
+#'   tree coordinates in the forest inventory and target datasets if specified
+#'    as a second set of coordinates.
+#'    If (GPS-based) field measurements of coordinate are used to
 #'   identify target trees and the full inventory is from a different data
-#'   source (e.g. ALS data), a higher tolerance value may be required to
-#'   identify the trees depending on the measurement accuracy. Values of 0 mean
-#'   exact matching.
+#'   source (e.g. ALS data), a the tolerance value may have to be adjusted to
+#'   identify the trees depending on the GPS accuracy. Values of 0 mean
+#'   exact matching. Defaults to 1 (match within a 1 m buffer).
+#' @param crop_to_target logical of length 1. Should the inventory be limited
+#'   to the extent of the target coordinates? If TRUE, the extent of `inv` will
+#'   be cropped to the extent of `forest_inv` \eqn{\pm} `radius` + 1 m for
+#'   safety to reduce computational load in later steps. Defaults to FALSE.
 #' @param verbose logical of length 1. Should information about progress be
 #'   printed? Defaults to TRUE.
 #'
-#' @details
-#' The input data can either be taken directly from field measurements or
-#' derived beforehand from LiDAR point clouds.
+#' @details `define_target()` can be used to select target trees from a
+#'   `forest_inv` object either by manually specifying them as a character
+#'   vector with tree IDs, as a logical vector that specifies for each tree in
+#'   the inventory whether or not it is treated as a target tree, a separate
+#'   set of (approximate) coordinates of the target trees that is matched
+#'   against the original inventory, or a character string describing how to
+#'   choose the target trees based on their spatial arrangement.
 #'
-#' Various approaches can be used to segment airborne laser scanning point
-#' clouds into single trees and to obtain inventory data based it. Existing R
-#' packages for this are for example:
-#' * lidR package with different options to segment the point cloud or a Canopy
-#'    Height Model (CHM)
-#' * itcLiDARallo within the package itcSegment
+#'   When the target is defined by a second set of coordinates, these
+#'   coordinates will then be matched against the inventory data. IDs are
+#'   ignored in this case and  matching is based only on the closest trees with
+#'   in a buffer of `tol` m  (the default is `tol = 1`: matching within 1 m).
+#'   All further size-related variables in the second set of coordinates are
+#'   ignored as well to make sure that in later steps competition indices will
+#'   be computed with data from the same data source.
+#'   When different target trees are matched to the same tree in the inventory,
+#'   or when two trees in the inventory have the same distance to a target
+#'   tree within 5 cm, the function fails with an error. If two inventory trees
+#'   are within the specified tolerance and the difference is larger, the
+#'   function proceeds with a warning.
+#'   The intended use case for determining target trees in this way is to
+#'   compute tree competition from ALS data based on GPS coordinates of single
+#'   trees in studies that are based on single tree rather than plot-level
+#'   data, which creates a need for different data sources to compute
+#'   competition.
 #'
-#' Be careful with low resolution/low density point clouds, as oversegmentation
-#' of trees is usually an issue!
+#'   The methods `target_source = "buff_edge"` and
+#'   `target_source = "exclude_edge"` are intended for cases where it is desired
+#'   to compute valid competition indices for as many trees as possible while
+#'   avoiding edge effects. While it is possible to designate all trees in the
+#'   dataset as target tree by setting `target_source = "all_trees"`, this is
+#'   not a good idea in the majority of cases: unless your dataset contains all
+#'   trees in the forest (possible for ALS-based data, but very unlikely for
+#'   data based on classical inventory methods and TLS/MLS), there will be very
+#'   extreme edge effects at the outer edge of the extent of the covered trees
+#'   resulting in strongly underestimated competition for edge trees.
+#'   `target_source = "buff_edge"` excludes all trees who are less than one
+#'   search radius (`radius`) away from the plot border (approximated by a
+#'   concave hull based on [concaveman::concaveman()] using a length threshold
+#'   of 2 times the desired search radius) and hence guarantees to
+#'   only include trees that can obtain valid competition index values for that
+#'   search radius. `target_source = "exclude_edge"` only removes the edge trees
+#'   and hence is less restrictive, but more prone to edge effects.
 #'
+#'   Do not use `target_source = "all_trees"` unless you know exactly what you
+#'   are doing!
 #'
-#' @return object of `c("target_inv", "forest_inv", "data.frame")` with x and y
-#'  coordinates of the tree, a unique tree identifier (`id`), at least one
-#'  of tree diameter at breast height (`dbh`, in cm) and tree height (`height`,
-#'  in m) and a new logical column `target` specifying whether a tree is
-#'  considered a target tree.
+#' @return object of class `target_inv` (inherits from `forest_inv`): a
+#'  modified data.table with the x and y coordinates of the tree, a unique tree
+#'  identifier (`id`), at least one of tree diameter at breast height (`dbh`,
+#'  in cm) and tree height (`height`,in m) and a new logical column `target`
+#'   specifying whether a tree is defined as a target tree.
+#'
+#' @seealso [read_inv()] to read forest inventory data,
+#'   [compete_inv()] for computing tree competition from inventory data,
+#'   [competition_indices] for a list of available indices,
+#'   [plot_target()] to plot target tree positions in `target_inv` and
+#'   `compete_inv` objects. For visualized examples, see [competition
+#'   inventory](https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#designating-target-trees-with-define_target)
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' # red inventory
-#' inv <- read_inv("path/to/invtable.csv")
-#' # target trees defined by a buffer around the plot edges
-#' target <- define_target(inv, target_source = "buff_edge", radius = 10)
+#' # read inventory
+#' inventory1 <- read_inv(inv_source = "data/inventory1.csv", dbh_unit = "m")
+#'
+#' # designate target trees based on character vector with tree ids
+#' targets1 <- define_target(
+#'   inv = inventory1,
+#'   target_source = c("FASY-43-24", "FASY-43-27", "FASY-43-30")
+#' )
+#'
+#' # designate target trees based on logical vector
+#' targets2 <- define_target(
+#'   inv = inventory1,
+#'   target_source = grepl("FASY", inventory1$id)
+#' )
+#'
+#' # designate target trees based on GPS coordinates
+#' # read target tree positions
+#' target_pos <- read_inv("data/target_tree_gps.csv",
+#'                        x = gps_x, y = gps_y, verbose = FALSE)
+#'
+#' # read inventory
+#' inventory4 <- readr::read_csv("data/inventory4.csv") %>%
+#'   dplyr::filter(plot_id == "Plot 1") %>%
+#'   read_inv(dbh = diam, verbose = FALSE)
+#'
+#' # define target trees
+#' targets3 <- define_target(
+#'   inv = inventory4,
+#'   target_source = target_pos,
+#'   tol = 1 # match within 1 m accuracy
+#' )
+#'
+#' # designate target trees with a 10 m buffer to the plot border
+#' targets4 <- define_target(
+#'   inv = inventory4,
+#'   target_source = "buff_edge",
+#'   radius = 8)
+#'
+#' # designate target trees by only excluding the plot border
+#' targets5 <- define_target(
+#'   inv = inventory4,
+#'   target_source = "exclude_edge",
+#'   radius = 8
+#' )
+#'
+#' # designate all trees as target trees
+#' targets6 <- define_target(
+#'   inv = inventory4,
+#'   target_source = "all_trees")
 #' }
 #'
-define_target <- function(inv, target_source, radius = 10,
-                          tol = 1, verbose = TRUE) {
+define_target <- function(inv, target_source = "buff_edge", radius = 10,
+                          tol = 1, crop_to_target = FALSE, verbose = TRUE) {
   # validate class of inventory
   if(!inherits(inv, "forest_inv")){
-    stop("Please supply forest inventory data in the forest_inv format",
-         "as created with read_inv().")
+    stop(.wr("Please supply forest inventory data in the forest_inv format",
+             "as created with read_inv()."))
   }
   # check if forest inventory contains the required variables
   if(ncol(inv) < 4){
-    stop("To calculate competition indices, at least one of 'dbh' or 'height'",
-         "are required. Please check data structure in 'inv'.")
+    stop(
+      .wr("To calculate competition indices, at least one of 'dbh' or 'height'",
+          "are required. Please check data structure in 'inv'.")
+    )
   }
   # check if radius, buffer threshold and tolerance are valid
   if (!(inherits(radius, "numeric") & length(radius) == 1))
-      stop("'radius' should be a numeric of length 1.")
+    stop("'radius' should be a numeric of length 1.")
   if (!(inherits(tol, "numeric") & length(tol) == 1))
     stop("'tol' should be a numeric of length 1.")
 
   # set flag for spatial methods
   spatial <- FALSE
+
   # handle different cases for target_source
-  if (is.logical(target_source)){
-    # handle logical vector
-    if (length(target_source) == nrow(inv)) {
-      # define target
-      inv$target <- target_source
-      # keep information about source
-      target_type <- "logical"
-    } else {
-      stop("If 'target_source' is a logical vector, its length has to match ",
-           "the number of rows of 'inv.'")
-    }
-  } else{
-    if (is.character(target_source)){
-      # handle characters
-      if (length(target_source) == 1){
-        if (target_source %in% c("buff_edge", "exclude_edge")) {
-          # set flag for spatial methods
-          spatial <- TRUE
-          # compute target trees from spatial arrangement using internal fun
-          inv <- .spatial_comp(inv, type = target_source,
-                               radius = radius)
-          # keep information about source
-          target_type <- target_source
-        } else {
-          if (target_source == "all_trees"){
-            # define all trees as target trees and send a warning
-            inv$target <- TRUE
+  if (inherits(target_source, "target_inv")){
+    # if a target_inv file was supplied as a target_source, just carry over the
+    # target trees and send a message
+    inv$target <- inv$id %in% target_source[target_source$target,]$id
+    message(
+      .wr("target_source already is of class target_inv.",
+          "Target tree IDs specified in target_source are kept.")
+    )
+    # keep information about source
+    target_type <- "inventory"
+  } else {
+    if (is.logical(target_source)){
+      # handle logical vector
+      if (length(target_source) == nrow(inv)) {
+        # define target
+        inv$target <- target_source
+        # keep information about source
+        target_type <- "logical"
+      } else {
+        stop(.wr(
+          "If 'target_source' is a logical vector, its length has to match ",
+          "the number of rows of 'inv.'")
+        )
+      }
+    } else{
+      if (is.character(target_source)){
+        # handle characters
+        if (length(target_source) == 1){
+          if (target_source %in% c("buff_edge", "exclude_edge")) {
+            # set flag for spatial methods
+            spatial <- TRUE
+            # compute target trees from spatial arrangement using internal fun
+            inv <- .spatial_comp(inv, type = target_source,
+                                 radius = radius)
             # keep information about source
             target_type <- target_source
-            warning(
-              "Defining all trees as target trees is rarely a good idea.",
-              " Unless your forest inventory contains all trees in the",
-              " forest, this will lead to strong edge effects. Please make",
-              " sure that this is really what you want to do.")
           } else {
-            # set single target tree
-            inv$target <- inv$id %in% target_source
-            # keep information about source
-            target_type <- "character"
+            if (target_source == "all_trees"){
+              # define all trees as target trees
+              inv$target <- TRUE
+              # keep information about source
+              target_type <- target_source
+            } else {
+              # set single target tree
+              inv$target <- inv$id %in% target_source
+              # keep information about source
+              target_type <- "character"
+            }
           }
+        } else {
+          # set multiple target trees
+          inv$target <- inv$id %in% target_source
+          # warn if trees were not found
+          if (any(!target_source %in% inv$id)){
+            warning(
+              "The following target tree id(s) are not in the inventory:\n",
+              paste(target_source[!target_source %in% inv$id], collapse = ", ")
+            )
+          }
+          # keep information about source
+          target_type <- "character"
         }
       } else {
-        # set multiple target trees
-        inv$target <- inv$id %in% target_source
-        # keep information about source
-        target_type <- "character"
-      }
-    } else {
-      if (inherits(target_source, "forest_inv")){
-        # handle second inventory
-        # set flag for spatial methods
-        spatial <- TRUE
-        # test if there are trees outside the relevant range
-        inside <- inv$x >= min(target_source$x) - radius - tol &
-          inv$x <= max(target_source$x) + radius + tol &
-          inv$y >= min(target_source$y) - radius - tol &
-          inv$y <= max(target_source$y) + radius + tol
-        # message if dataset was modified
-        if (any(!inside) && verbose) message(
-          sum(!inside), " trees outside the competitive zone around the target",
-          " trees were removed. ", sum(inside), " trees remain.")
-        # filter out trees outside of radius
-        inv <- inv[inside, ]
-        # get matching coordinates
-        closest <- .closest(inv[, c("x", "y")],
-                            target_source[, c("x", "y")],
-                            tol = tol)
-        # check for target trees missing within tolerance
-        if (any(is.na(closest))){
-          warning("No matching coordinates found for the following ",
-                  "target tree(s):\n", paste(target_source$id, sep = ", "))
+        if (inherits(target_source, "forest_inv")){
+          # handle second inventory
+          # get matching coordinates
+          closest <- .closest(
+            target = target_source[, c("x", "y")],
+            inv = inv[, c("x", "y")],
+            tol = tol)
+          # check for target trees missing within tolerance
+          if (any(is.na(closest))){
+            warning(
+              "No matching coordinates found for the following ",
+              "target tree(s):\n",
+              paste(target_source$id[is.na(closest)], collapse = ", "),
+              "\n. Revise coordinates and consider increasing 'tol'."
+            )
           }
-        # get target trees
-        inv$target <- inv$id %in% inv$id[stats::na.omit(closest)]
-        # carry over ID
-        inv$target_id <- NA
-        inv$target_id[stats::na.omit(closest)] <-
-          target_source$id[!is.na(closest)]
-        # keep information about source
-        target_type <- "inventory"
+          # get target trees
+          inv$target <- inv$id %in% inv$id[stats::na.omit(closest)]
+          # carry over ID
+          inv$target_id <- NA
+          inv$target_id[stats::na.omit(closest)] <-
+            target_source$id[!is.na(closest)]
+          # keep information about source
+          target_type <- "inventory"
+        }
       }
     }
   }
   # check if the selection has resulted in any target trees
-  if (!any(inv$target)) warning(
-    "No target trees have been found with the provided specifications.")
+  if (!any(inv$target)){
+    warning("No target trees have been found with the provided specifications.")
+  }
+  # check if the selection has resulted in any edge trees
+  if (!any(!inv$target)){
+    warning(
+      .wr(
+        "Defining all trees as target trees is rarely a good idea.",
+        "Unless your forest inventory contains all trees in the",
+        "forest, this will lead to strong edge effects. Please make",
+        "sure that this is really what you want to do.")
+    )
+  }
+  # remove trees outside range of the target trees if crop_to_target = TRUE
+  if (crop_to_target){
+    # set flag for spatial methods
+    spatial <- TRUE
+    # test if there are trees outside the relevant range
+    inside <-
+      inv$x %inrange% (range(inv[inv$target,"x"]) + c(-1, +1) * (radius + 1)) &
+      inv$y %inrange% (range(inv[inv$target,]$y) + c(-1, +1) * (radius + 1))
+    # message if dataset was modified
+    if (any(!inside) && verbose) message(
+      .wr(
+        sum(!inside),
+        "trees outside the competitive zone around the target",
+        " trees were removed.", sum(inside), "trees remain.")
+    )
+    # filter out trees outside of radius
+    inv <- inv[inside, ]
+  }
   # update class
   class(inv) <- c("target_inv", class(inv))
   # set attribute for target type
@@ -185,6 +313,13 @@ define_target <- function(inv, target_source, radius = 10,
   if (spatial) {
     attr(inv, "spatial_radius") <- radius
   }
+  # update column order
+  # identify standard columns
+  first <- base::intersect(
+    c("id", "x", "y", "target", "target_id", "dbh", "height", "size"),
+    names(inv))
+  # reorder output
+  inv <- subset(inv, select = c(first, base::setdiff(names(inv), first)))
   # return inventory
   return(inv)
 }
@@ -213,55 +348,95 @@ define_target <- function(inv, target_source, radius = 10,
 #'   validity of the choice of target trees.
 #'
 #' @return A plot of the spatial arrangement of target trees.
+#'
+#' @seealso [read_inv()] to read forest inventory data,
+#'   [define_target()] for designating target trees,
+#'   [compete_inv()] for computing tree competition from inventory data,
+#'   [competition_indices] for a list of available indices. For visualized examples,
+#'   see [competition inventory](https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#designating-target-trees-with-define_target)
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#'   # plot neighborhood for existing inventory
-#'   comp <- compete_inv(inv, "buff_edge", radius = 10)
-#'   plot_target(comp)
+#' # read inventory dataset
+#' inv <- read_inv("data/inventory.csv")
+#'
+#' # lot neighborhood for 'target_inv' object
+#' target <- target_inv(
+#'   inv, target_source = c("Tree 1", "Tree 2", "Tree 7"))
+#' plot_target(target, radius = 10)
+#'
+#' # plot neighborhood for 'compete_inv' object
+#' comp <- compete_inv(inv, "buff_edge", radius = 10)
+#' plot_target(comp)
 #' }
 #'
 plot_target <- function(inv, radius = NULL) {
+  # prepare placeholders for center and border trees
+  center <- border <- NULL
+
   # if provided with compete_inv object, get corresponding target inventory
   # and search radius
   if(inherits(inv, "compete_inv")){
     # get radius from attributes
     radius <- attr(inv, "radius")
-    # get full positions from attributes
-    center <- sf::st_multipoint(attr(inv, "target_trees"))
-    border <- sf::st_multipoint(attr(inv, "edge_trees"))
+    # get full positions from attributes (with case handling for
+    # target_trees == "all_trees" + other cases without border or center trees)
+    if (nrow(attr(inv, "edge_trees")) > 0) {
+      center <- sf::st_multipoint(attr(inv, "target_trees"))
+    }
+    if (nrow(attr(inv, "edge_trees")) > 0) {
+      border <- sf::st_multipoint(attr(inv, "edge_trees"))
+    }
   } else {
     # if it is a target_inv object, get coordinates by filtering by col target
-    center <- sf::st_multipoint(
-      as.matrix(inv[inv$target,c("x", "y")]))
-    border <-  sf::st_multipoint(
-      as.matrix(inv[!inv$target,c("x", "y")]))
-  # check if a spatial radius was defined
-  if (is.null(radius)){
-    if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")){
-      radius <- attr(inv, "spatial_radius")
-    } else{ # if not, stop with an error
-      stop("'radius' has to be defined for plotting.")
+    if (any(inv$target)){
+      center <- sf::st_multipoint(
+        as.matrix(inv[inv$target,c("x", "y")]))
+    }
+    if (any(!inv$target)){
+      border <-  sf::st_multipoint(
+        as.matrix(inv[!inv$target,c("x", "y")]))
+    }
+    # check if a spatial radius was defined
+    if (is.null(radius)){
+      if(attr(inv, "target_type") %in% c("exclude_edge", "buff_edge")){
+        radius <- attr(inv, "spatial_radius")
+      } else{ # if not, stop with an error
+        stop("'radius' has to be defined for plotting.")
+      }
     }
   }
-  }
   # get full coordinates for both data sources (for plot dimensions)
-  coords <- rbind(as.matrix(center), as.matrix(border))
+  coords <- as.matrix(rbind(border, center))
+  if (is.null(border)){
+    warning("All trees in the dataset are defined as as target trees.")
+  }
+  if (is.null(center)){
+    warning("No target trees have been defined.")
+  }
+
   # get original graphics parameters
   op <- graphics::par(c("mfrow", "mar"))
   # reset original parameters if function breaks
   on.exit(graphics::par(op))
   # set graphical parameters for plot
-  graphics::par(mfrow = c(1, 1), mar = c(0,0,2,0))
+  graphics::par(mar = c(0,0,0,0))
+  graphics::layout(
+    mat = matrix(c(1,2,1,3), nrow = 2),
+    widths = c(1, 0.7), heights = c(1, 9))
+  # plot title
+  graphics::plot.new()
+  graphics::text(x = 0.5, y = 0.5,"Plot of tree positions",
+                 cex = 1.5,font = 2)
   # plot points and buffer
   plot(sf::st_buffer(center, dist = radius),
        col = "grey90", lty = 0,
-       xlim = range(coords[,1]) + c(-radius, radius + diff(range(coords[, 1]))),
-       ylim = range(coords[,2]) +  c(-radius, radius),
-       main = "Plot of tree positions")
+       xlim = range(coords[,1]) + c(-radius, radius),
+       ylim = range(coords[,2]) +  c(-radius, radius)
+  )
   plot(center, pch = 16, add = TRUE)
-  plot(border, pch = 1, add = TRUE)
+  if(!is.null(border)) plot(border, pch = 1, add = TRUE)
   # get subset of legend
   leg <- data.frame(pch = c(16, 1, 16), lty = NA,
                     col = c(1, 1, "grey90"),
@@ -298,16 +473,17 @@ plot_target <- function(inv, radius = NULL) {
     }
   }
   # plot legend
+  graphics::plot.new()
   if (nrow(leg) == 3){ # plot without lty when no lines are involved
-    with(leg, legend(x = max(coords[,1]) + diff(range(coords[,1]))/3,
-                     y = max(coords[,2]),
-                     pch = pch,  col = col, pt.cex = cex,
-                     legend = label, bty = "n", y.intersp = 1.5))
+    with(leg,
+         legend(x = "center",
+                pch = pch,  col = col, pt.cex = cex,
+                legend = label, bty = "n", y.intersp = 1.5))
   } else{ # plot with lty if lines are involved
-    with(leg, legend(x = max(coords[,1]) + diff(range(coords[,1]))/4,
-                     y = max(coords[,2]) + diff(range(coords[,1]))/4,
-                     pch = pch, lty = lty, col = col, pt.cex = cex,
-                     legend = label, bty = "n", y.intersp = 1.5))
+    with(leg,
+         legend(x = "center",
+                pch = pch, lty = lty, col = col, pt.cex = cex,
+                legend = label, bty = "n", y.intersp = 1.5))
   }
   # reset graphical parameters
   graphics::par(op)
@@ -327,7 +503,7 @@ plot_target <- function(inv, radius = NULL) {
 
   # if only edge trees are considered, identify edge trees
   if (type == "exclude_edge"){
-    closest <- inv$id[.closest(inv[,2:3], conc[-1,], 0.1)]
+    closest <- inv$id[.closest(conc[-1,], inv[,2:3], 0.01)]
     inv$target <- !(inv$id %in% closest)
   } else {
     if(type == "buff_edge"){
@@ -354,18 +530,39 @@ plot_target <- function(inv, radius = NULL) {
 
 #' @keywords internal
 #' internal function for identifying the closest point in two set of coordinates
-.closest <- function(xy1, xy2, tol){
-  # get best matches
-  out <- apply(xy2, 1, function(x){
-    d <- sqrt((xy1[,1] - x[1])^2 + (xy1[,2] - x[2])^2)
-    if (!any(d <= tol)) return(NA) else
-      if (sum(d == min(d)) > 1)
-        stop("More than one point is any equally good match.")
-    else(which.min(d))
-  })
-  # check if there are duplicates
-  if (any(duplicated(out)))
-    stop("More than one point is any equally good match.")
+.closest <- function(target, inv, tol){
+  # get nearest neighbors with nabor::knn (k = 2 to speed up,
+  # more than one triggers an error)
+  nn <- nabor::knn(inv, target,  k = 2, radius = tol)
+  # check for duplicates in inventory
+  if (any(dups <- nn$nn.idx[,2] > 0)) {
+    if (any(
+      abs(nn$nn.dists[dups,1] - nn$nn.dists[dups, 2]) < 0.05)){
+      stop(
+        .wr("More than one set of coordinates in the inventory is",
+            "an equally good match (within 5 cm difference) for at least one",
+            "target tree. Revise coordinates and consider reducing 'tol'.")
+      )
+    } else{
+      warning(
+        .wr("More than one set of coordinates in the inventory is",
+            "within the desired tolerance for at least one target tree.",
+            "Revise coordinates and consider reducing 'tol'.")
+      )
+    }
+  }
+  # prepare output
+  out <- nn$nn.idx[,1]
+  # check for duplicate targets
+  if (any(duplicated(out[!out == 0]))){
+    stop(
+      .wr("More than one target tree has been matched to",
+          "at least one coordinate in the inventory.",
+          "Revise coordinates and consider reducing 'tol'.")
+    )
+  }
+  # set target trees without matches to NA and return output
+  out[out == 0] <- NA
   return(out)
 }
 
@@ -375,39 +572,46 @@ plot_target <- function(inv, radius = NULL) {
 #' @format NULL
 #' @usage NULL
 #' @export
-print.target_inv <- function(x, ...){
+print.target_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
   # get description of target source from lookup table
   target <- as.character(
-    c(inventory = "second inventory",
-      character = "character vector",
-      logical   = "logical vector",
-      exclude_edge = "excluding edge",
-      buff_edge = "buffer around edge"
+    c(inventory = "tree coordinates",
+      character = "tree IDs",
+      logical   = "logical selection",
+      exclude_edge = "'exclude_edge'",
+      buff_edge = "'buff_edge'",
+      all_trees = "'all_trees'"
     )[ attr(x, "target_type")]
   )
-  # print header
-  cat("---------------------------------------------------------------",
-      "\n'target_inv' class inventory dataset with defined target trees:",
-      "\ncollection of", nrow(x),"observations",
-      "\nSource of target trees:",target,
-      "\n---------------------------------------------------------------\n"
-  )
-  if (nrow(x) < 6) {
-    # if there are almost no observations, print the entire dataset
-    print(as.data.frame(x), digits = 3)
-  } else {
-    # else print beginning and end of the data.frame
-    temp <- x[1,]
-    row.names(temp) <- " "
-    for(i in 1:ncol(temp)) temp[, i] <- "..."
-    x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
-    print(
-      rbind(utils::head(as.data.frame(x), 3),
-            temp,
-            utils::tail(as.data.frame(x), n = 3)
-      )
-    )
-  }
+  if (target == "'buff_edge'")
+    target <- paste0(target, " (", attr(x, "spatial_radius"), " m)")
+
+  # get number of data columns
+  if (ncol(x) > 4){
+    cols <- paste0("No. of data cols.: ", ncol(x) - 4)
+  } else cols <- ""
+  # prepare header
+  header <- paste0(
+    "'target_inv' class inventory with target definitions",
+    "\nNo. of obs.: ", nrow(x), "\t ", cols,
+    "\nNo. of target trees: ", sum(x$target),"   \t Target source: ", target)
+
+  # print data.table with trees
+  .print_as_dt(x, digits = digits, topn = topn,
+               nrows = nrows, header = header, ...)
+
+  # return object invisibly
+  invisible(x)
 }
 
+
+# Define rbind method for forest_inv objects:
+#' @rdname define_target
+#' @format NULL
+#' @usage NULL
+#' @export
+rbind.target_inv <- function(
+    ..., use.names = TRUE, fill = FALSE, idcol = NULL){
+  .rbind_with_class(..., use.names = use.names, fill = fill, idcol = idcol)
+}
 

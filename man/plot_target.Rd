@@ -35,9 +35,24 @@ validity of the choice of target trees.
 }
 \examples{
 \dontrun{
-  # plot neighborhood for existing inventory
-  comp <- compete_inv(inv, "buff_edge", radius = 10)
-  plot_target(comp)
+# read inventory dataset
+inv <- read_inv("data/inventory.csv")
+
+# lot neighborhood for 'target_inv' object
+target <- target_inv(
+  inv, target_source = c("Tree 1", "Tree 2", "Tree 7"))
+plot_target(target, radius = 10)
+
+# plot neighborhood for 'compete_inv' object
+comp <- compete_inv(inv, "buff_edge", radius = 10)
+plot_target(comp)
 }
 
+}
+\seealso{
+\code{\link[=read_inv]{read_inv()}} to read forest inventory data,
+\code{\link[=define_target]{define_target()}} for designating target trees,
+\code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
+\link{competition_indices} for a list of available indices. For visualized examples,
+see \href{https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#designating-target-trees-with-define_target}{competition inventory}
 }

@@ -3,9 +3,17 @@
 \name{define_target}
 \alias{define_target}
 \alias{print.target_inv}
+\alias{rbind.target_inv}
 \title{Define target trees in forest inventory data}
 \usage{
-define_target(inv, target_source, radius = 10, tol = 1, verbose = TRUE)
+define_target(
+  inv,
+  target_source = "buff_edge",
+  radius = 10,
+  tol = 1,
+  crop_to_target = FALSE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{inv}{object of class \code{forest_inv} as created with \code{\link[=read_inv]{read_inv()}}.}
@@ -20,9 +28,7 @@ the corresponding tree is a target tree.
 target trees. In this case, the coordinates are matched against the
 coordinates in \code{inv} and IDs may differ (useful e.g. when target trees
 are defined based on GPS coordinates and matched against an airborne laser
-scanning dataset). In this case, the extent of \code{inv} will be cropped to
-the extent of \code{forest_inv} \eqn{\pm} \code{radius + tol} to reduce
-computational load.
+scanning dataset).
 \item a character vector of length 1 defining the method by which the target
 trees should be determined. Allowed are \code{"buff_edge"} for excluding all
 trees that are at least one search radius from the forest edge,
@@ -34,26 +40,33 @@ all trees in the entire forest are in the dataset). The standard is
 
 \item{radius}{numeric of length 1, Search radius (in m) around target tree
 wherein all neighboring trees are classified as competitors. Only used if
-\code{target_source} is \code{"buff_edge"}, \code{"exclude_edge"} or of type \code{forest_inv}.
-Defaults to 10.}
+\code{target_source} is \code{"buff_edge"}, \code{"exclude_edge"} or if
+\code{crop_to_target = TRUE}. Defaults to 10.}
 
-\item{tol}{numeric. Tolerance for the match between tree coordinates in the
-forest inventory and target datasets if specified as a second set of
-coordinates. If a field measurements (e.g. based on GPS) are used to
+\item{tol}{numeric of length 1. Only used when \code{target_source} is an
+inventory with a second set of coordinates. Tolerance for the match between
+tree coordinates in the forest inventory and target datasets if specified
+as a second set of coordinates.
+If (GPS-based) field measurements of coordinate are used to
 identify target trees and the full inventory is from a different data
-source (e.g. ALS data), a higher tolerance value may be required to
-identify the trees depending on the measurement accuracy. Values of 0 mean
-exact matching.}
+source (e.g. ALS data), a the tolerance value may have to be adjusted to
+identify the trees depending on the GPS accuracy. Values of 0 mean
+exact matching. Defaults to 1 (match within a 1 m buffer).}
+
+\item{crop_to_target}{logical of length 1. Should the inventory be limited
+to the extent of the target coordinates? If TRUE, the extent of \code{inv} will
+be cropped to the extent of \code{forest_inv} \eqn{\pm} \code{radius} + 1 m for
+safety to reduce computational load in later steps. Defaults to FALSE.}
 
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
 }
 \value{
-object of \code{c("target_inv", "forest_inv", "data.frame")} with x and y
-coordinates of the tree, a unique tree identifier (\code{id}), at least one
-of tree diameter at breast height (\code{dbh}, in cm) and tree height (\code{height},
-in m) and a new logical column \code{target} specifying whether a tree is
-considered a target tree.
+object of class \code{target_inv} (inherits from \code{forest_inv}): a
+modified data.table with the x and y coordinates of the tree, a unique tree
+identifier (\code{id}), at least one of tree diameter at breast height (\code{dbh},
+in cm) and tree height (\code{height},in m) and a new logical column \code{target}
+specifying whether a tree is defined as a target tree.
 }
 \description{
 \code{define_target()} takes a \code{forest_inv} dataset and returns an updated forest
@@ -63,27 +76,111 @@ dataset or identified automatically by excluding edge trees from their
 coordinates.
 }
 \details{
-The input data can either be taken directly from field measurements or
-derived beforehand from LiDAR point clouds.
+\code{define_target()} can be used to select target trees from a
+\code{forest_inv} object either by manually specifying them as a character
+vector with tree IDs, as a logical vector that specifies for each tree in
+the inventory whether or not it is treated as a target tree, a separate
+set of (approximate) coordinates of the target trees that is matched
+against the original inventory, or a character string describing how to
+choose the target trees based on their spatial arrangement.
 
-Various approaches can be used to segment airborne laser scanning point
-clouds into single trees and to obtain inventory data based it. Existing R
-packages for this are for example:
-\itemize{
-\item lidR package with different options to segment the point cloud or a Canopy
-Height Model (CHM)
-\item itcLiDARallo within the package itcSegment
-}
+When the target is defined by a second set of coordinates, these
+coordinates will then be matched against the inventory data. IDs are
+ignored in this case and  matching is based only on the closest trees with
+in a buffer of \code{tol} m  (the default is \code{tol = 1}: matching within 1 m).
+All further size-related variables in the second set of coordinates are
+ignored as well to make sure that in later steps competition indices will
+be computed with data from the same data source.
+When different target trees are matched to the same tree in the inventory,
+or when two trees in the inventory have the same distance to a target
+tree within 5 cm, the function fails with an error. If two inventory trees
+are within the specified tolerance and the difference is larger, the
+function proceeds with a warning.
+The intended use case for determining target trees in this way is to
+compute tree competition from ALS data based on GPS coordinates of single
+trees in studies that are based on single tree rather than plot-level
+data, which creates a need for different data sources to compute
+competition.
 
-Be careful with low resolution/low density point clouds, as oversegmentation
-of trees is usually an issue!
+The methods \code{target_source = "buff_edge"} and
+\code{target_source = "exclude_edge"} are intended for cases where it is desired
+to compute valid competition indices for as many trees as possible while
+avoiding edge effects. While it is possible to designate all trees in the
+dataset as target tree by setting \code{target_source = "all_trees"}, this is
+not a good idea in the majority of cases: unless your dataset contains all
+trees in the forest (possible for ALS-based data, but very unlikely for
+data based on classical inventory methods and TLS/MLS), there will be very
+extreme edge effects at the outer edge of the extent of the covered trees
+resulting in strongly underestimated competition for edge trees.
+\code{target_source = "buff_edge"} excludes all trees who are less than one
+search radius (\code{radius}) away from the plot border (approximated by a
+concave hull based on \code{\link[concaveman:concaveman]{concaveman::concaveman()}} using a length threshold
+of 2 times the desired search radius) and hence guarantees to
+only include trees that can obtain valid competition index values for that
+search radius. \code{target_source = "exclude_edge"} only removes the edge trees
+and hence is less restrictive, but more prone to edge effects.
+
+Do not use \code{target_source = "all_trees"} unless you know exactly what you
+are doing!
 }
 \examples{
 \dontrun{
-# red inventory
-inv <- read_inv("path/to/invtable.csv")
-# target trees defined by a buffer around the plot edges
-target <- define_target(inv, target_source = "buff_edge", radius = 10)
+# read inventory
+inventory1 <- read_inv(inv_source = "data/inventory1.csv", dbh_unit = "m")
+
+# designate target trees based on character vector with tree ids
+targets1 <- define_target(
+  inv = inventory1,
+  target_source = c("FASY-43-24", "FASY-43-27", "FASY-43-30")
+)
+
+# designate target trees based on logical vector
+targets2 <- define_target(
+  inv = inventory1,
+  target_source = grepl("FASY", inventory1$id)
+)
+
+# designate target trees based on GPS coordinates
+# read target tree positions
+target_pos <- read_inv("data/target_tree_gps.csv",
+                       x = gps_x, y = gps_y, verbose = FALSE)
+
+# read inventory
+inventory4 <- readr::read_csv("data/inventory4.csv") \%>\%
+  dplyr::filter(plot_id == "Plot 1") \%>\%
+  read_inv(dbh = diam, verbose = FALSE)
+
+# define target trees
+targets3 <- define_target(
+  inv = inventory4,
+  target_source = target_pos,
+  tol = 1 # match within 1 m accuracy
+)
+
+# designate target trees with a 10 m buffer to the plot border
+targets4 <- define_target(
+  inv = inventory4,
+  target_source = "buff_edge",
+  radius = 8)
+
+# designate target trees by only excluding the plot border
+targets5 <- define_target(
+  inv = inventory4,
+  target_source = "exclude_edge",
+  radius = 8
+)
+
+# designate all trees as target trees
+targets6 <- define_target(
+  inv = inventory4,
+  target_source = "all_trees")
 }
 
+}
+\seealso{
+\code{\link[=read_inv]{read_inv()}} to read forest inventory data,
+\code{\link[=compete_inv]{compete_inv()}} for computing tree competition from inventory data,
+\link{competition_indices} for a list of available indices,
+\code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
+\code{compete_inv} objects. For visualized examples, see \href{https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#designating-target-trees-with-define_target}{competition inventory}
 }

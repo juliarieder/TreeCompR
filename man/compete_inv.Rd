@@ -3,34 +3,42 @@
 \name{compete_inv}
 \alias{compete_inv}
 \alias{print.compete_inv}
+\alias{rbind.compete_inv}
 \title{Quantify size- and distance-dependent competition using inventory data}
 \usage{
 compete_inv(
   inv_source,
-  target_source,
+  target_source = "buff_edge",
   radius,
-  method = c("all_methods", "CI_Hegyi", "CI_Braathe", "CI_RK1", "CI_RK2", "CI_RK3",
-    "CI_RK4"),
+  method = "all_methods",
   x = NULL,
   y = NULL,
   dbh = NULL,
   height = NULL,
+  size = NULL,
   id = NULL,
   dbh_unit = c("cm", "m", "mm"),
   height_unit = c("m", "cm", "mm"),
+  keep_rest = FALSE,
   verbose = TRUE,
+  parallelize = FALSE,
+  cores = ifelse(!is.null(options("cores")[[1]]), options("cores")[[1]],
+    parallel::detectCores()),
   tol = 1,
+  kmax = 999,
   ...
 )
 }
 \arguments{
-\item{inv_source}{either an object of class \code{target_inv}, or any object that
-can be imported by \code{\link[=read_inv]{read_inv()}} (in this case, \code{x}, \code{y}, \code{id},
-\code{dbh}, and/or \code{height} can be specified as in this function -- see the
-corresponding documentation for details).
-If provided with a \code{target_inv} object, the function ignores
-\code{target_source} and overrides further arguments passed to \code{\link[=read_inv]{read_inv()}} and
-\code{\link[=define_target]{define_target()}}.}
+\item{inv_source}{either an object of class \code{forest_inv} or \code{target_inv}, or
+any object that can be imported by \code{\link[=read_inv]{read_inv()}}. If the object is read in
+from a source path or an unformatted data.frame,\code{x}, \code{y}, \code{id}, \code{dbh},
+\code{height} and/or \code{size} can be specified as in \code{\link[=read_inv]{read_inv()}} (see the
+corresponding documentation for details). If the input is a \code{forest_inv}
+or \code{target_inv} object, the column definitions and further arguments
+passed to \code{\link[=read_inv]{read_inv()}} will be ignored. For \code{target_inv} objects,  the
+function also ignores \code{target_source} and overrides further arguments
+passed to \code{\link[=define_target]{define_target()}}.}
 
 \item{target_source}{one of the following:
 \enumerate{
@@ -44,8 +52,8 @@ the corresponding tree is a target tree,
 \item another object of class \code{forest_inv} containing the coordinates of the
 target trees. In this case, the coordinates are matched against the
 coordinates in \code{inv} and IDs may differ (useful e.g. when target trees
-are defined based on GPS coordinates and matched against an airborne laser
-scanning dataset).
+are defined based on GPS coordinates and maWarumtched against an airborne
+laser scanning dataset).
 \item a character vector of length 1 defining the method by which the target
 trees should be determined. Allowed are \code{"buff_edge"} for excluding all
 trees that are at least one search radius from the forest edge,
@@ -59,11 +67,12 @@ unless all trees in the entire forest are in the dataset). The standard is
 tree. All neighboring trees within this radius are classified as
 competitors.}
 
-\item{method}{character string assigning the method for quantifying
-competition. dbh-distance-dependent methods are \code{"CI_Hegyi"}, \code{"CI_RK1"},
-and \code{"CI_RK2"}. Height-distance-dependent methods are \code{"CI_Braathe"},
-\code{"CI_RK3"}, and \code{"CI_RK4"}. \code{"all_methods"} can be specified to compute
-all the indices that can be calculated with the available data.}
+\item{method}{character string assigning the competition index functions to
+calculate. Can either be a vector with one or several of \code{"CI_Hegyi"},
+\code{"CI_RK1"},\code{"CI_RK2"}, \code{"CI_Braathe"}, \code{"CI_RK3"}, \code{"CI_RK4"},
+\code{"CI_size"} and/or the names of user-specified functions, or
+\code{"all_methods"} (the default).\code{"all_methods"} computes all built-in
+indices that can be calculated with the available data.}
 
 \item{x}{character of length 1 or name of the variable in \code{inv_source}
 containing the x coordinates of the tree in m. If \code{NULL} (default),
@@ -83,6 +92,10 @@ containing the height of the tree (by default in m, but   can be defined
 via \code{heigh_unit}). If \code{NULL} (default), the function tries to identify the
 height from the data.}
 
+\item{size}{character of length 1 or name of the variable in \code{inv_source}
+containing a generic size-related variable for \code{\link[=CI_size]{CI_size()}}. If \code{NULL}
+(default), the variable is not assigned.}
+
 \item{id}{character of length 1 or name of the variable in \code{inv_source}
 containing a unique tree ID. If \code{NULL} (default), the function tries to
 identify the ID from the data. If this is not possible, the trees are
@@ -94,8 +107,20 @@ assigned a unique number. All IDs are coerced to character.}
 \item{height_unit}{character of length 1. Unit for the diameter measurements
 (one of "m", "cm" or "mm". defaults to "m").}
 
+\item{keep_rest}{logical of length 1. Keep additional variables in the
+inventory table besides x, y, dbh, size and id for filtering or further
+computations? Defaults to FALSE.}
+
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
+
+\item{parallelize}{logical of length 1. Should the computation of the
+competition indices be split over several cores? Defaults to FALSE.}
+
+\item{cores}{numeric of length 1. If \code{parallelize = TRUE}, on how many cores
+should the computations be run on? Defaults to the value registered in
+\code{options("cores")[[1]]}, or, if this is not available, to
+\verb{parallel::detectCores())}.}
 
 \item{tol}{numeric of length 1. Tolerance for the match with the tree
 coordinates. If coordinates are measured in the field with GPS, but
@@ -107,33 +132,57 @@ calculated for this tree and the function will return a warning.
 \code{tol} defaults to 1 m, but should be chosen depending on the measurement
 accuracy of the GPS coordinates.}
 
+\item{kmax}{integer of length 1. maximum number of nearest neighbors to
+consider for determining the neighbor trees of each tree. Lower values
+speed up computation, which is likely not an issue unlike your inventory
+contains tens of thousands of trees, but is very relevant for big datasets.
+Defaults to 999, which should be reasonable in almost all forest settings,
+but has to be adjusted when there are warnings (especially for large search
+radii and/or stands with small trees). If \code{kmax} is larger than the number
+of trees in the plot, the latter is passed on as \code{k} to \code{\link[nabor:knn]{nabor::knn()}}.}
+
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }
 \value{
-\code{compete_inv} object: a modified data.frame with the forest
-invetory data, target tree specifications and or more competition indices
-depending on chosen method.
+object of class\code{compete_inv}: a modified data.table with the
+position and size of the designated target tree(s) and one or more
+competition indices depending on chosen method(s).
 }
 \description{
-'compete_inv()' returns a specific distance-height-dependent or distance-
-dbh-dependent competition index (or group of indices) for all trees within a
-forest plot or specified target trees.
+\code{compete_inv()} computes one or several distance-height- or
+distance-dbh-dependent competition indices based on forest inventory data.
 }
 \details{
-Using an inventory table to easily quantify distance-dependent tree
-competition for a list of trees within a plot or all the trees.
-The input data can either be taken directly from field measurements or
-derived beforehand from LiDAR point clouds.
-The function calculates 6 different Competition indices, based on tree
-heights or dbh and distance to competitors.
-}
-\section{Methods}{
+\code{compete_inv()} calculates one or several distance-dependent tree
+competition indices based on forest inventory data. These can be obtained
+either with classical forest inventory methods, or be derived from LiDAR
+point clouds (see below).
 
-The available competition indices are computed according to the following
+Inventory data can be either loaded from source, imported from an object
+inheriting from class \code{data.frame} (i.e., data.frames, tibbles,
+data.table objects etc.) or a \code{forest_inv} type object created with
+\code{\link[=read_inv]{read_inv()}}. \code{compete_inv()} takes the same arguments for reading
+inventory data and has the same flexibility as \code{\link[=read_inv]{read_inv()}}.
+
+To compute competition indices for trees from an inventory dataset, it is
+necessary to decide on the target trees for the analysis. While it is also
+possible to calculate competition indices for all trees in the inventory,
+this is almost never a good idea because unless the dataset covers all
+trees in the entire forest, there will be intense edge effects for the
+trees at the edge of the spatial extent of the dataset.
+\code{compete_inv()} allows to define target trees in a number of different
+ways based on the function \code{\link[=define_target]{define_target()}} that is called internally.
+\subsection{Available competition indices}{
+
+All competition indices are calculated based on the subset of trees that
+are within the search radius of the target tree.
+The competition indices are computed according to the following
 equations, where \eqn{d_i} and \eqn{h_i} are the dbh and height of neighbor
-tree \eqn{i}, \eqn{d} and \eqn{h} are dbh and height of the focal tree, and
-\eqn{dist_i} is the distance of neighbor tree \eqn{i}.
-\subsection{Diameter-based competition indices}{
+tree \eqn{i}, \eqn{d} and \eqn{h} are dbh and height of the target tree,
+and \eqn{dist_i} is the distance from neighbor tree \eqn{i} to the target
+tree.
+
+\emph{Diameter-based competition indices}
 \itemize{
 \item CI_Hegyi introduced by Hegyi (1974): \cr
 \eqn{CI_{Hegyi} = \sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})}
@@ -143,9 +192,8 @@ tree \eqn{i}, \eqn{d} and \eqn{h} are dbh and height of the focal tree, and
 \eqn{CI_{RK2} =\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i}
    / dist_{i})}
 }
-}
 
-\subsection{Height-based competition indices}{
+\emph{Height-based competition indices}
 \itemize{
 \item CI_Braathe according to Braathe (1980): \cr
 \eqn{CI_{Braathe} = \sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
@@ -157,27 +205,75 @@ Contreras et al. (2011): \cr
 \eqn{CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
    \mathrm{arctan}(h_{i} / dist_{i})}
 }
-}
+
+\emph{Generic size-based Hegyi-type competition index}
+\itemize{
+\item CI_size based on Hegyi (1974), but with a user-specified size-related
+variable (\eqn{s_i}: size for neighbor tree \eqn{i}, \eqn{s}: size of the
+target tree):
+\eqn{CI_{size} = \sum_{i=1}^{n} s_{i} / (s \cdot dist_{i})}
 }
 
-\section{Tree Segmentation}{
+Further indices can be user-specified by developing a corresponding
+function (see \link{competition_indices} for details).
+
+To efficiently deal with large inventory datasets (as can be expected from
+ALS sources), the neighbors within the search radius are computed with
+\code{\link[nabor:knn]{nabor::knn()}}, which is based on an efficient C++ implementation
+of the k-nearest neighbor algorithm from
+\href{https://github.com/norlab-ulaval/libnabo}{libnabo}. For this, it is
+required to specify a maximum number of neighbors to take into account
+(\code{kmax}, which is passed to \code{\link[nabor:knn]{nabor::knn()}} as \code{k}) that should be chosen as
+low as possible, but high enough to ensure that it is sufficiently larger
+than the maximum number of trees expected in the search radius. When
+working with small datasets (from classical forest inventories or MLS/TLS
+sources), this will likely not matter, but when working with large ALS
+datasets this implementation can speed up calculation by several orders of
+magnitude.
+For even larger datasets, it is possible to compute the indices in parallel
+using \code{\link[foreach:foreach]{foreach::foreach()}} via the \link{doParallel} backend. If
+\code{parallelize = TRUE}, the computation of the competition indices will be
+distributed onto \code{cores} parallel cores.
+
+As all these indices are distance-weighted sums of the relative size of all
+competitor trees within the search radius compared to the target tree (or a
+sum of transformations thereof), they are very sensitive to the choice of
+the search radius. It is not generally possible to meaningfully compare
+competition indices computed with different search radii. Over which
+distance competitors affect the growth of the central tree is certainly
+specific and likely also depends on the average size of trees of the same
+species as the target tree and how far its roots spread under the local
+conditions. Lorimer (1983) recommends to use 3.5 times the mean crown radius
+of the target trees, but it is likely that there is no single value that
+works well under all conditions, and possible that the same values of
+competition indices calculated with the same radius have different meanings
+for different species.
+}
+
+\subsection{Tree Segmentation}{
 
 Various approaches can be used to segment (airborne) laser scanning point
 clouds into single trees and to obtain inventory data based it. Existing R
 packages for this are for example:
 \itemize{
-\item TreeLS package for automated segmentation of terrestrial/mobile laser scans
-\item lidR package with different options to segment the point cloud or a Canopy
-Height Model (CHM)
-\item itcLiDARallo within the package itcSegment
+\item \code{TreeLS} package for automated segmentation of terrestrial/mobile laser
+scans
+\item \code{lidR} package with different options to segment the point cloud or a
+Canopy Height Model (CHM)
+\item \code{itcLiDARallo()} from the package \code{itcSegment}
 }
 
-Be careful with low resolution/low density point clouds, as oversegmentation
-of trees is usually an issue!
+Be careful with low resolution/low density point clouds, as
+oversegmentation of trees is usually an issue!
+
+For examples of workflows to obtain inventory dator from airborne
+laser scanning data or terrestrial/mobile laser scanning data, see
+\href{https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html}{ALS workflow}
+and \href{https://juliarieder.github.io/TreeCompR/articles/TLS_inventory.html}{TLS workflow},
+respectively.
 }
 
-\section{Literature}{
-
+\subsection{Literature}{
 \itemize{
 \item Hegyi, F., 1974. A simulation model for managing jackpine stands. In:
 Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models
@@ -191,28 +287,80 @@ forest. Can. J. For. Res. 27, 890–902.
 \item Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree
 competition indices as predictors of basal area increment in western
 Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
+\item Lorimer, C.G., 1983. Tests of age-independent competition indices for
+individual trees in natural hardwood stands. For. Ecol. Manage. 6,
+343–360.
 }
 }
-
+}
 \examples{
 \dontrun{
-# Quantify the Hegyi index for specified target trees with search radius 10m
-CI <- compete_inv("path/to/invtable.csv",
-  "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi")
+# get target trees
+targets4 <- readr::read_csv("data/inventory4.csv") \%>\%
+  dplyr::filter(plot_id == "Plot 1") \%>\%
+  read_inv(dbh = diam, verbose = FALSE) \%>\%
+  define_target(target_source = "buff_edge", radius = 8)
 
-# Quantify the Braathe index for specified target trees with search radius
-10m and adjust
-CI <- compete_inv("path/to/invtable.csv",
-  "path/to/target_trees.csv", radius = 10, method = "CI_Braathe")
+# compute Hegyi index based on existing target_inv object
+CI1 <- compete_inv(inv_source = targets4, radius = 8,
+                   method = "CI_Hegyi")
 
-# Specify the units of dbh or height of your input data
-CI <- compete_inv("path/to/invtable.csv",
-  "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi",
-  dbh_unit = "m", height_unit = "m")
+# compute Hegyi based on a file source
+CI2 <- compete_inv(
+  inv_source = "data/inventory5.csv",
+  target_source = "buff_edge",
+  radius = 12,
+  method = "CI_Hegyi",
+  x = Koord_x,
+  y = Koord_y,
+  id = Baumname,
+  dbh = Durchmesser,
+  sep = ";",
+  dec = ","
+)
 
-# Quantify all available indices for all trees within the plot that are one
-search radius away from plot edge
-CI <- compete_inv("path/to/invtable.csv", target_source = "buff_edge",
-        radius = 12, method = "all_methods")
+# compute all built-in indices that are possible with a dataset
+(CI3 <- compete_inv(inv_source = targets4,
+                    radius = 8, method = "all_methods"))
+
+# new implementation of Hegyi competition index
+CI_Hegyi_new <- function(target, neigh)
+  sum(neigh$dbh / (target$dbh * neigh$dist))
+
+# R1 index only for trees taller than the target tree
+CI_RK1_tall <- function(target, neigh)
+  CI_RK1(target, neigh[neigh$height > target$height, ])
+
+# get output for new indices
+compete_inv(inv_source = targets4, radius = 8,
+            method = c("CI_Hegyi", "CI_Hegyi_new", "CI_RK1_tall"))
+
+# partial Hegyi index for oak
+CI_Hegyi_QURO <- function(target, neigh)
+  CI_Hegyi(target, neigh[neigh$species == "Quercus robur", ])
+# partial Hegyi index for hornbeam
+CI_Hegyi_CABE <- function(target, neigh)
+  CI_Hegyi(target, neigh[neigh$species == "Carpinus betulus", ])
+# partial Hegyi index for ash
+CI_Hegyi_FREC <- function(target, neigh)
+  CI_Hegyi(target, neigh[neigh$species == "Fraxinus excelsior", ])
+
+# load dataset with species
+inv_species <- read_inv("data/inventory6.csv", keep_rest = TRUE)
+inv_species
+
+# compute species-decomposed Hegyi indices
+comp_species <- compete_inv(
+  inv_source = inv_species, target_source = "buff_edge", radius = 12,
+  method = c("CI_Hegyi_QURO", "CI_Hegyi_CABE", "CI_Hegyi_FREC", "CI_Hegyi")
+  )
+
 }
+}
+\seealso{
+\code{\link[=read_inv]{read_inv()}} to read forest inventory data,
+\code{\link[=define_target]{define_target()}} for designating target trees,
+\link{competition_indices} for a list of available indices,
+\code{\link[=plot_target]{plot_target()}} to plot target tree positions in \code{target_inv} and
+\code{compete_inv} objects.
 }

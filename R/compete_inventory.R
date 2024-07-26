@@ -1,16 +1,16 @@
 #' Quantify size- and distance-dependent competition using inventory data
-#' @description
-#' 'compete_inv()' returns a specific distance-height-dependent or distance-
-#' dbh-dependent competition index (or group of indices) for all trees within a
-#' forest plot or specified target trees.
+#' @description `compete_inv()` computes one or several distance-height- or
+#'  distance-dbh-dependent competition indices based on forest inventory data.
 #'
-#' @param inv_source either an object of class `target_inv`, or any object that
-#'   can be imported by [read_inv()] (in this case, `x`, `y`, `id`,
-#'   `dbh`, and/or `height` can be specified as in this function -- see the
-#'   corresponding documentation for details).
-#'   If provided with a `target_inv` object, the function ignores
-#'   `target_source` and overrides further arguments passed to [read_inv()] and
-#'   [define_target()].
+#' @param inv_source either an object of class `forest_inv` or `target_inv`, or
+#'   any object that can be imported by [read_inv()]. If the object is read in
+#'   from a source path or an unformatted data.frame,`x`, `y`, `id`, `dbh`,
+#'   `height` and/or `size` can be specified as in [read_inv()] (see the
+#'   corresponding documentation for details). If the input is a `forest_inv`
+#'   or `target_inv` object, the column definitions and further arguments
+#'   passed to [read_inv()] will be ignored. For `target_inv` objects,  the
+#'   function also ignores `target_source` and overrides further arguments
+#'   passed to [define_target()].
 #' @param target_source  one of the following:
 #'   1. a path to an any object that can be imported by [read_inv()] (in this
 #'   case, column specifications have to be the same as in `inv_source` - if
@@ -22,8 +22,8 @@
 #'   4. another object of class `forest_inv` containing the coordinates of the
 #'   target trees. In this case, the coordinates are matched against the
 #'   coordinates in `inv` and IDs may differ (useful e.g. when target trees
-#'   are defined based on GPS coordinates and matched against an airborne laser
-#'   scanning dataset).
+#'   are defined based on GPS coordinates and maWarumtched against an airborne
+#'   laser scanning dataset).
 #'   5. a character vector of length 1 defining the method by which the target
 #'   trees should be determined. Allowed are `"buff_edge"` for excluding all
 #'   trees that are at least one search radius from the forest edge,
@@ -34,11 +34,18 @@
 #' @param radius numeric of length 1. Search radius (in m) around the target
 #'   tree. All neighboring trees within this radius are classified as
 #'   competitors.
-#' @param method character string assigning the method for quantifying
-#'   competition. dbh-distance-dependent methods are `"CI_Hegyi"`, `"CI_RK1"`,
-#'   and `"CI_RK2"`. Height-distance-dependent methods are `"CI_Braathe"`,
-#'   `"CI_RK3"`, and `"CI_RK4"`. `"all_methods"` can be specified to compute
-#'   all the indices that can be calculated with the available data.
+#' @param method character string assigning the competition index functions to
+#' calculate. Can either be a vector with one or several of `"CI_Hegyi"`,
+#'    `"CI_RK1"`,`"CI_RK2"`, `"CI_Braathe"`, `"CI_RK3"`, `"CI_RK4"`,
+#'    `"CI_size"` and/or the names of user-specified functions, or
+#'    `"all_methods"` (the default).`"all_methods"` computes all built-in
+#'   indices that can be calculated with the available data.
+#' @param parallelize logical of length 1. Should the computation of the
+#'   competition indices be split over several cores? Defaults to FALSE.
+#' @param cores numeric of length 1. If `parallelize = TRUE`, on how many cores
+#'   should the computations be run on? Defaults to the value registered in
+#'   `options("cores")[[1]]`, or, if this is not available, to
+#'   `parallel::detectCores())`.
 #' @param tol numeric of length 1. Tolerance for the match with the tree
 #'   coordinates. If coordinates are measured in the field with GPS, but
 #'   `inv_source` contains x and y coordinates from a larger number of trees
@@ -48,24 +55,47 @@
 #'   calculated for this tree and the function will return a warning.
 #'   `tol` defaults to 1 m, but should be chosen depending on the measurement
 #'   accuracy of the GPS coordinates.
+#' @param kmax integer of length 1. maximum number of nearest neighbors to
+#'   consider for determining the neighbor trees of each tree. Lower values
+#'   speed up computation, which is likely not an issue unlike your inventory
+#'   contains tens of thousands of trees, but is very relevant for big datasets.
+#'   Defaults to 999, which should be reasonable in almost all forest settings,
+#'   but has to be adjusted when there are warnings (especially for large search
+#'   radii and/or stands with small trees). If `kmax` is larger than the number
+#'   of trees in the plot, the latter is passed on as `k` to [nabor::knn()].
 #' @param ... additional arguments passed on to [data.table::fread()].
 #' @inheritParams read_inv
 #'
-#' @details
-#' Using an inventory table to easily quantify distance-dependent tree
-#' competition for a list of trees within a plot or all the trees.
-#' The input data can either be taken directly from field measurements or
-#' derived beforehand from LiDAR point clouds.
-#' The function calculates 6 different Competition indices, based on tree
-#' heights or dbh and distance to competitors.
+#' @details `compete_inv()` calculates one or several distance-dependent tree
+#'   competition indices based on forest inventory data. These can be obtained
+#'   either with classical forest inventory methods, or be derived from LiDAR
+#'   point clouds (see below).
 #'
-#' @section Methods:
-#' The available competition indices are computed according to the following
-#' equations, where \eqn{d_i} and \eqn{h_i} are the dbh and height of neighbor
-#' tree \eqn{i}, \eqn{d} and \eqn{h} are dbh and height of the focal tree, and
-#' \eqn{dist_i} is the distance of neighbor tree \eqn{i}.
+#'   Inventory data can be either loaded from source, imported from an object
+#'   inheriting from class `data.frame` (i.e., data.frames, tibbles,
+#'   data.table objects etc.) or a `forest_inv` type object created with
+#'   [read_inv()]. `compete_inv()` takes the same arguments for reading
+#'   inventory data and has the same flexibility as [read_inv()].
 #'
-#' ### Diameter-based competition indices
+#'   To compute competition indices for trees from an inventory dataset, it is
+#'   necessary to decide on the target trees for the analysis. While it is also
+#'   possible to calculate competition indices for all trees in the inventory,
+#'   this is almost never a good idea because unless the dataset covers all
+#'   trees in the entire forest, there will be intense edge effects for the
+#'   trees at the edge of the spatial extent of the dataset.
+#'   `compete_inv()` allows to define target trees in a number of different
+#'   ways based on the function [define_target()] that is called internally.
+#'
+#'   ## Available competition indices
+#'   All competition indices are calculated based on the subset of trees that
+#'   are within the search radius of the target tree.
+#'   The competition indices are computed according to the following
+#'   equations, where \eqn{d_i} and \eqn{h_i} are the dbh and height of neighbor
+#'   tree \eqn{i}, \eqn{d} and \eqn{h} are dbh and height of the target tree,
+#'   and \eqn{dist_i} is the distance from neighbor tree \eqn{i} to the target
+#'   tree.
+#'
+#'  _Diameter-based competition indices_
 #'  * CI_Hegyi introduced by Hegyi (1974): \cr
 #'    \eqn{CI_{Hegyi} = \sum_{i=1}^{n} d_{i} / (d \cdot dist_{i})}
 #'  * CI_RK1 according to CI1 Rouvinen & Kuuluvainen (1997):\cr
@@ -74,7 +104,7 @@
 #'    \eqn{CI_{RK2} =\sum_{i=1}^{n} (d_{i} / d) \cdot \mathrm{arctan}(d_{i}
 #'    / dist_{i})}
 #'
-#'  ### Height-based competition indices
+#'  _Height-based competition indices_
 #'  * CI_Braathe according to Braathe (1980): \cr
 #'    \eqn{CI_{Braathe} = \sum_{i=1}^{n} h_{i} / (h \cdot dist_{i})}
 #'  * CI_RK3 according to CI5 in Rouvinen & Kuuluvainen (1997): \cr
@@ -85,19 +115,69 @@
 #'    \eqn{CI_{RK4} = \sum_{i=1}^{n} (h_{i} / h) \cdot
 #'    \mathrm{arctan}(h_{i} / dist_{i})}
 #'
-#' @section Tree Segmentation:
-#' Various approaches can be used to segment (airborne) laser scanning point
-#' clouds into single trees and to obtain inventory data based it. Existing R
-#' packages for this are for example:
-#' * TreeLS package for automated segmentation of terrestrial/mobile laser scans
-#' * lidR package with different options to segment the point cloud or a Canopy
-#'    Height Model (CHM)
-#' * itcLiDARallo within the package itcSegment
+#'  _Generic size-based Hegyi-type competition index_
+#'  * CI_size based on Hegyi (1974), but with a user-specified size-related
+#'   variable (\eqn{s_i}: size for neighbor tree \eqn{i}, \eqn{s}: size of the
+#'   target tree):
+#'   \eqn{CI_{size} = \sum_{i=1}^{n} s_{i} / (s \cdot dist_{i})}
 #'
-#' Be careful with low resolution/low density point clouds, as oversegmentation
-#' of trees is usually an issue!
+#'  Further indices can be user-specified by developing a corresponding
+#'  function (see [competition_indices] for details).
 #'
-#' @section Literature:
+#'  To efficiently deal with large inventory datasets (as can be expected from
+#'  ALS sources), the neighbors within the search radius are computed with
+#'  [nabor::knn()], which is based on an efficient C++ implementation
+#'  of the k-nearest neighbor algorithm from
+#'  [libnabo](https://github.com/norlab-ulaval/libnabo). For this, it is
+#'  required to specify a maximum number of neighbors to take into account
+#'  (`kmax`, which is passed to [nabor::knn()] as `k`) that should be chosen as
+#'  low as possible, but high enough to ensure that it is sufficiently larger
+#'  than the maximum number of trees expected in the search radius. When
+#'  working with small datasets (from classical forest inventories or MLS/TLS
+#'  sources), this will likely not matter, but when working with large ALS
+#'  datasets this implementation can speed up calculation by several orders of
+#'  magnitude.
+#'  For even larger datasets, it is possible to compute the indices in parallel
+#'  using [foreach::foreach()] via the [doParallel] backend. If
+#'  `parallelize = TRUE`, the computation of the competition indices will be
+#'  distributed onto `cores` parallel cores.
+#'
+#'  As all these indices are distance-weighted sums of the relative size of all
+#'  competitor trees within the search radius compared to the target tree (or a
+#'  sum of transformations thereof), they are very sensitive to the choice of
+#'  the search radius. It is not generally possible to meaningfully compare
+#'  competition indices computed with different search radii. Over which
+#'  distance competitors affect the growth of the central tree is certainly
+#'  specific and likely also depends on the average size of trees of the same
+#'  species as the target tree and how far its roots spread under the local
+#'  conditions. Lorimer (1983) recommends to use 3.5 times the mean crown radius
+#'  of the target trees, but it is likely that there is no single value that
+#'  works well under all conditions, and possible that the same values of
+#'  competition indices calculated with the same radius have different meanings
+#'  for different species.
+#'
+#'  ## Tree Segmentation
+#'   Various approaches can be used to segment (airborne) laser scanning point
+#'   clouds into single trees and to obtain inventory data based it. Existing R
+#'   packages for this are for example:
+#'   * `TreeLS` package for automated segmentation of terrestrial/mobile laser
+#'      scans
+#'   * `lidR` package with different options to segment the point cloud or a
+#'     Canopy Height Model (CHM)
+#'   * `itcLiDARallo()` from the package `itcSegment`
+#'
+#'   Be careful with low resolution/low density point clouds, as
+#'   oversegmentation of trees is usually an issue!
+#'
+#'   For examples of workflows to obtain inventory dator from airborne
+#'   laser scanning data or terrestrial/mobile laser scanning data, see
+#'   [ALS
+#'   workflow](https://juliarieder.github.io/TreeCompR/articles/ALS_inventory.html)
+#'   and [TLS
+#'   workflow](https://juliarieder.github.io/TreeCompR/articles/TLS_inventory.html),
+#'   respectively.
+#'
+#' ## Literature
 #'  * Hegyi, F., 1974. A simulation model for managing jackpine stands. In:
 #'    Fries, J. (Ed.), Proceedings of IUFRO meeting S4.01.04 on Growth models
 #'    for tree and stand simulation, Royal College of Forestry, Stockholm.
@@ -110,83 +190,118 @@
 #'  * Contreras, M.A., Affleck, D. & Chung, W., 2011. Evaluating tree
 #'    competition indices as predictors of basal area increment in western
 #'    Montana forests. Forest Ecology and Management, 262(11): 1939-1949.
+#'  * Lorimer, C.G., 1983. Tests of age-independent competition indices for
+#'    individual trees in natural hardwood stands. For. Ecol. Manage. 6,
+#'    343–360.
 #'
+#' @return object of class`compete_inv`: a modified data.table with the
+#'   position and size of the designated target tree(s) and one or more
+#'   competition indices depending on chosen method(s).
 #'
-#' @return `compete_inv` object: a modified data.frame with the forest
-#'   invetory data, target tree specifications and or more competition indices
-#'   depending on chosen method.
+#' @seealso [read_inv()] to read forest inventory data,
+#'   [define_target()] for designating target trees,
+#'   [competition_indices] for a list of available indices,
+#'   [plot_target()] to plot target tree positions in `target_inv` and
+#'   `compete_inv` objects.
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' # Quantify the Hegyi index for specified target trees with search radius 10m
-#' CI <- compete_inv("path/to/invtable.csv",
-#'   "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi")
+#' # get target trees
+#' targets4 <- readr::read_csv("data/inventory4.csv") %>%
+#'   dplyr::filter(plot_id == "Plot 1") %>%
+#'   read_inv(dbh = diam, verbose = FALSE) %>%
+#'   define_target(target_source = "buff_edge", radius = 8)
 #'
-#' # Quantify the Braathe index for specified target trees with search radius
-#' 10m and adjust
-#' CI <- compete_inv("path/to/invtable.csv",
-#'   "path/to/target_trees.csv", radius = 10, method = "CI_Braathe")
+#' # compute Hegyi index based on existing target_inv object
+#' CI1 <- compete_inv(inv_source = targets4, radius = 8,
+#'                    method = "CI_Hegyi")
 #'
-#' # Specify the units of dbh or height of your input data
-#' CI <- compete_inv("path/to/invtable.csv",
-#'   "path/to/target_trees.csv", radius = 10, method = "CI_Hegyi",
-#'   dbh_unit = "m", height_unit = "m")
+#' # compute Hegyi based on a file source
+#' CI2 <- compete_inv(
+#'   inv_source = "data/inventory5.csv",
+#'   target_source = "buff_edge",
+#'   radius = 12,
+#'   method = "CI_Hegyi",
+#'   x = Koord_x,
+#'   y = Koord_y,
+#'   id = Baumname,
+#'   dbh = Durchmesser,
+#'   sep = ";",
+#'   dec = ","
+#' )
 #'
-#' # Quantify all available indices for all trees within the plot that are one
-#' search radius away from plot edge
-#' CI <- compete_inv("path/to/invtable.csv", target_source = "buff_edge",
-#'         radius = 12, method = "all_methods")
+#' # compute all built-in indices that are possible with a dataset
+#' (CI3 <- compete_inv(inv_source = targets4,
+#'                     radius = 8, method = "all_methods"))
+#'
+#' # new implementation of Hegyi competition index
+#' CI_Hegyi_new <- function(target, neigh)
+#'   sum(neigh$dbh / (target$dbh * neigh$dist))
+#'
+#' # R1 index only for trees taller than the target tree
+#' CI_RK1_tall <- function(target, neigh)
+#'   CI_RK1(target, neigh[neigh$height > target$height, ])
+#'
+#' # get output for new indices
+#' compete_inv(inv_source = targets4, radius = 8,
+#'             method = c("CI_Hegyi", "CI_Hegyi_new", "CI_RK1_tall"))
+#'
+#' # partial Hegyi index for oak
+#' CI_Hegyi_QURO <- function(target, neigh)
+#'   CI_Hegyi(target, neigh[neigh$species == "Quercus robur", ])
+#' # partial Hegyi index for hornbeam
+#' CI_Hegyi_CABE <- function(target, neigh)
+#'   CI_Hegyi(target, neigh[neigh$species == "Carpinus betulus", ])
+#' # partial Hegyi index for ash
+#' CI_Hegyi_FREC <- function(target, neigh)
+#'   CI_Hegyi(target, neigh[neigh$species == "Fraxinus excelsior", ])
+#'
+#' # load dataset with species
+#' inv_species <- read_inv("data/inventory6.csv", keep_rest = TRUE)
+#' inv_species
+#'
+#' # compute species-decomposed Hegyi indices
+#' comp_species <- compete_inv(
+#'   inv_source = inv_species, target_source = "buff_edge", radius = 12,
+#'   method = c("CI_Hegyi_QURO", "CI_Hegyi_CABE", "CI_Hegyi_FREC", "CI_Hegyi")
+#'   )
+#'
 #' }
-compete_inv <- function(inv_source, target_source, radius,
-                        method = c("all_methods", "CI_Hegyi", "CI_Braathe",
-                                   "CI_RK1", "CI_RK2", "CI_RK3", "CI_RK4"),
+compete_inv <- function(inv_source, target_source = "buff_edge", radius,
+                        method = "all_methods",
                         x = NULL, y = NULL,
-                        dbh = NULL, height = NULL, id = NULL,
+                        dbh = NULL, height = NULL, size = NULL, id = NULL,
                         dbh_unit = c("cm", "m", "mm"),
                         height_unit = c("m", "cm", "mm"),
+                        keep_rest = FALSE,
                         verbose = TRUE,
-                        tol = 1,
+                        parallelize = FALSE,
+                        cores = ifelse(!is.null(options("cores")[[1]]),
+                                       options("cores")[[1]],
+                                       parallel::detectCores()),
+                        tol = 1, kmax = 999,
                         ...) {
-
-  # match arguments against the allowed values
-  method <- match.arg(method)
+  # validate vector of specified CI methods
+  method <- .validate_method(method)
 
   # if target trees are already defined in inv_source, bypass the following
   # steps and directly compute competition indices
   if(!inherits(inv_source, "target_inv")){
-    # catch and validate variable names (treated as character if not NULL,
-    # else, NULL is passed on to read_inv())
-    if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
-    if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
-    if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
-    if (!is.null(substitute(height))) height <- as.character(substitute(height))
-    if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
-
     # read and validate forest inventory dataset
     inv <- read_inv(
-      inv_source, x = x, y = y, dbh = dbh, height = height, id = id,
-      dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
-      names_as_is = TRUE, ...)
-
-    # check if data required to calculate indices are available
-    if (method %in%  c("CI_Hegyi", "CI_RK1", "CI_RK2") &&
-        !"dbh" %in% names(inv)) {
-      stop("Diameter at breast height is required for ", method, ".")
-    }
-    if (method %in%  c("CI_Braathe", "CI_RK3", "CI_RK4") &&
-        !"height" %in% names(inv)) {
-      stop("Tree height of all trees is required for ", method, ".")
-    }
+      inv_source,  x = !!enquo(x), y = !!enquo(y), dbh = !!enquo(dbh),
+      height = !!enquo(height), size = !!enquo(size), id = !!enquo(id),
+      dbh_unit = dbh_unit, height_unit = height_unit,
+      keep_rest = keep_rest, verbose = verbose, ...)
 
     # check if target_source is a length 1 character
     if(inherits(target_source, "character") && length(target_source) == 1){
       # if it is a valid file path, read and validate target tree dataset
       if (file.exists(target_source)){
         target_source <- read_inv(
-          target_source, x = x, y = y, dbh = dbh, height = height, id = id,
-          dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
-          names_as_is = TRUE, ...)
+          target_source, x = !!enquo(x), y = !!enquo(y), id = !!enquo(id),
+          verbose = verbose,  ...)
         # else it is passed to define_target as a character string
       }
     }
@@ -194,104 +309,95 @@ compete_inv <- function(inv_source, target_source, radius,
     if(inherits(target_source, "data.frame") &&
        !inherits(target_source, "forest_inv")){
       target_source <- read_inv(
-        target_source, x = x, y = y, dbh = dbh, height = height, id = id,
-        dbh_unit = dbh_unit, height_unit = height_unit, verbose = verbose,
-        names_as_is = TRUE, ...)
+        target_source,  x = !!enquo(x), y = !!enquo(y), id = !!enquo(id),
+        verbose = verbose, ...)
     }
     # define target trees
     inv <- define_target(inv = inv, target_source = target_source,
-                         radius = radius, tol = tol, verbose = verbose)
+                         radius = radius, tol = tol, verbose = verbose,
+                         crop_to_target = TRUE)
   } else {
-    # if inv_source is a target_inv object, use it as inv directly
-    inv <- inv_source
+    # if inv_source is a target_inv object, only check for NAs and use
+    # directly
+    inv <- .validate_inv(inv_source)
     # warn if radii are different
     if (attr(inv, "target_type") %in% c("buff_edge", "exclude_edge",
-                                          "inventory")){
+                                        "inventory")){
       if(attr(inv, "spatial_radius") != radius){
-        warning("Radius used to determine target trees / filter surrounding",
-                "trees differs from search radius for competition indices.")
+        warning(
+          .wr("Radius used to determine target trees / filter surrounding",
+              "trees differs from search radius for competition indices.")
+        )
       }
     }
   }
-  # test if there are any duplicated coordinates (resulting in 0 distance -->
-  # singularity in inverse distance weighting)
-  if (any(duplicated(inv[,c("x", "y")]))) {
-    stop("Dataset contains duplicate coordinates. ",
-         "Please revise tree positions.")
-  }
-  # define methods to calculate if method == "all_methods"
-  if (method == "all_methods"){
-    # preallocate empty vector
-    method <- vector("character")
-    # get names with available data
-    if("dbh" %in% names(inv))
-      method <- c("CI_Hegyi", "CI_RK1", "CI_RK2")
-    if("height" %in% names(inv))
-      method <- c(method, c("CI_Braathe", "CI_RK3", "CI_RK4"))
-  }
-  # compute matrices required for calculation
-  # Euclidean distance matrix
-  distance <- with(inv, sqrt(outer(x[target], x, "-") ^ 2 +
-                               outer(y[target], y, "-") ^ 2))
-  # get inverse distance matrix
-  inv_distance  <- 1 / distance # careful: diagonal becomes infinite
-  inv_distance[with(inv, outer(id[target], id, "=="))] <- 0
-  # singularity resolved by setting to zero for identical values
-  # get trees within critical distance
-  trees_in_radius <- distance <= radius
-  # trees outside radius are taken out of the summation by setting to zero
 
-  # get matrix with focal trees (for row-wise summation of indices)
-  if (any(method %in%  c("CI_Hegyi", "CI_RK1", "CI_RK2"))) {
-    # get matrix with focal tree dbh
-    focal_dbh <- matrix(rep(inv$dbh[inv$target], nrow(inv)), ncol = nrow(inv))
-    # get matrix with neighbor tree dbh
-    neighbor_dbh <-  matrix(rep(inv$dbh, sum(inv$target)), ncol = nrow(inv),
-                            byrow = TRUE)
-    # calculation per tree is row-wise so neighbor matrix has to be column-wise
-  }
-  if (any(method %in%  c("CI_Braathe", "CI_RK3", "CI_RK4"))) {
-    # get matrix with focal tree height
-    focal_height <-matrix(rep(inv$height[inv$target], nrow(inv)),
-                          ncol = nrow(inv))
-    # get matrix with neighbor tree height
-    neighbor_height <- matrix(rep(inv$height, sum(inv$target)),
-                              ncol = nrow(inv),
-                              byrow = TRUE)
-    # caculation per tree is row-wise so neighbor matrix has to be column-wise
-  }
-  # prepare output file (remove edge trees and target column)
-  out <- inv[inv$target, ]
-  out$target <- NULL
+  # check if method requirements are met
+  method <- .validate_reqs(method, names(inv))
 
-  # compute Hegyi index for all target trees
-  if("CI_Hegyi" %in% method){
-    out$CI_Hegyi <- rowSums(trees_in_radius * inv_distance *
-                              neighbor_dbh / focal_dbh)
+  # get subset of target trees
+  targets <- inv[inv$target, -"target"]
+  # compute radius
+  nn <- nabor::knn(inv[, c("x", "y")], targets[, c("x", "y")],
+                   k = min(kmax, nrow(inv)), radius = radius)
+  # warn if kmax is too low
+  if (kmax < nrow(inv)){
+    # only makes sense if kmax is more than the total number of trees
+    if (any(nn$nn.idx[,kmax] > 0)){
+      warning(
+        .wr("Maximum number of target trees reached for",
+            sum(nn$nn.idx[,kmax] > 0), "out of", nrow(targets),
+            "target trees. Computed Competition indexes are not reliable.",
+            "Please increase kmax.")
+      )
+    }
   }
-  # compute Braathe index for all target trees
-  if("CI_Braathe" %in% method){
-    out$CI_Braathe <- rowSums(trees_in_radius * inv_distance *
-                                neighbor_height / focal_height)
+  # prepare output
+  out <- targets
+  # create empty vectors for results
+  for (meth in method){
+    out[[meth]] <- NA_real_
   }
-  # compute RK1 index for all target trees
-  if("CI_RK1" %in% method){
-    out$CI_RK1 <- rowSums(trees_in_radius * atan(inv_distance * neighbor_dbh))
-  }
-  # compute RK2 index for all target trees
-  if("CI_RK2" %in% method){
-    out$CI_RK2 <- rowSums(trees_in_radius * atan(inv_distance * neighbor_dbh)
-                          * neighbor_dbh / focal_dbh)
-  }
-  # compute RK3 index for all target trees
-  if("CI_RK3" %in% method){
-    out$CI_RK3 <- rowSums(trees_in_radius * (neighbor_height > focal_height) *
-                            atan(inv_distance * neighbor_height))
-  }
-  # compute RK4 index for all target trees
-  if("CI_RK4" %in% method){
-    out$CI_RK4 <- rowSums(trees_in_radius * atan(inv_distance * neighbor_height)
-                          * neighbor_height / focal_height)
+
+  if (parallelize){
+    # register cluster
+    clust <-  parallel::makeCluster(cores)
+    doParallel::registerDoParallel(clust, cores = cores)
+    # loop over all target trees
+    tryCatch({
+      foreach::foreach(i = 1:nrow(targets), .combine = "rbind") %dopar% {
+        # get target tree
+        target <- targets[i, ]
+        # get neighborhood
+        ids <- nn$nn.idx[i,-1] # remove first tree: target tree
+        neigh   <- inv[ids[ids>0],]
+        neigh$dist <-  nn$nn.dists[i, 1:nrow(neigh) + 1]
+
+        # loop over methods to compute indices
+        for(meth in method){
+          out[[meth]][i] <- do.call(meth, args = list(target, neigh))
+        }
+      }
+    },finally = {
+      tryCatch({
+        parallel::stopCluster(clust)
+      }, error = function (e) print(e))
+    })
+  } else{
+    # loop over all target trees
+    for (i in 1:nrow(targets)){
+      # get target tree
+      target <- targets[i, ]
+      # get neighborhood
+      ids <- nn$nn.idx[i,-1] # remove first tree: target tree
+      neigh   <- inv[ids[ids>0],]
+      neigh$dist <-  nn$nn.dists[i, 1:nrow(neigh) + 1]
+
+      # loop over methods to compute indices
+      for(meth in method){
+        out[[meth]][i] <- do.call(meth, args = list(target, neigh))
+      }
+    }
   }
   # add radius and method as attributes
   attr(out, "radius") <- radius
@@ -302,11 +408,112 @@ compete_inv <- function(inv_source, target_source, radius,
   attr(out, "target_trees") <- as.matrix(inv[inv$target, c("x", "y")])
   attr(out, "edge_trees") <- as.matrix(inv[!inv$target, c("x", "y")])
   # define class
-  class(out) <- c("compete_inv", class(inv))
+  class(out) <- c("compete_inv", "forest_inv", "data.table", "data.frame")
+
+  # update column order
+  # standard columns
+  first <- base::intersect(
+    c("id", "x", "y", "target_id", "dbh", "height", "size"), names(out))
+  # competition index columns
+  CIs <- grep("CI_", names(out), value = TRUE)
+  # all other columns
+  rest <- base::setdiff(names(out), c(first, CIs))
+  # reorder output
+  out <- subset(out, select = c(first, CIs, rest))
+
   # return output
   return(out)
 }
 
+
+#' @keywords internal
+#' internal function for validating a list of CI methods
+.validate_method <- function(method){
+  # list built-in methods
+  meths <-c("all_methods", "CI_Hegyi", "CI_RK1", "CI_RK2",
+            "CI_Braathe", "CI_RK3", "CI_RK4", "CI_size")
+
+  # validate user-specified methods
+  user_spec <- method[!method %in%  meths]
+  if (length(user_spec) > 0){
+    for (meth in user_spec){
+      # check if it is a function
+      if (!exists(meth, mode = "function", where = .GlobalEnv)) stop(
+        .wr("Invalid competition index function detected:", meth,
+            "is not a  function.")
+      )
+      # check if it has the correct formal arguments
+      if (!identical(names(formals(meth)), c("target", "neigh"))){
+        stop(
+          .wr("Invalid competition index function detected:",
+              paste0(meth, "()."),
+              "Competition index functions take 'target' and 'neigh' as",
+              "arguments and return a single value: 'function(target, neigh)'")
+        )
+      }
+    }
+  }
+  # if all_methods is in the selection, just return all_methods and
+  # user specified methods
+  if ("all_methods" %in% method) method <- c("all_methods", user_spec)
+
+  # return vector with methods
+  method
+}
+
+#' @keywords internal
+#' internal function for validating a list of CI methods
+.validate_reqs <- function(method, vars){
+  # test if explicitly specified methods can be used
+  if (!"all_methods" %in% method){
+    # define method requirements for built-in indices
+    reqs <- c(CI_Hegyi = "dbh", CI_RK1 = "dbh", CI_RK2 = "dbh",
+              CI_Braathe = "height", CI_RK3 = "height", CI_RK4  = "height",
+              CI_size = "size")
+
+    # get user-specified and built-in methods
+    user_spec <- method[!method %in% names(reqs)]
+    built_in <- method[method %in% names(reqs)]
+
+    # find methods with met requirements
+    met <- reqs[reqs %in% vars]
+
+    # find built-in methods in specifications whose requirements are not met
+    unmet <- built_in[!built_in %in% names(met)]
+
+    # stop if there are unmet requirements
+    if (length(unmet) > 0){
+      # check for problems with size
+      sizewarn <- ifelse (
+        "size" %in% reqs[unmet],
+        "\nIs 'inv_source' a forest inventory object without a 'size' column?",
+        "")
+      stop(
+        "The following competition indices require variables ",
+        "not in the inventory: \n",
+        paste(paste0(unmet, " (requires '", reqs[unmet], "')"),
+              collapse = ", "),
+        sizewarn
+      )
+    }
+  }else { # define methods to calculate if method == "all_methods"
+    # get user-specified methods
+    user_spec <- method[method != "all_methods"]
+    # list all built-in methods
+    names <- list(
+      c("CI_Hegyi", "CI_RK1", "CI_RK2"),
+      c("CI_Braathe", "CI_RK3", "CI_RK4"),
+      c("CI_size")
+    )
+    # get the methods that can be calculated with the available inventory
+    # user specified methods
+    method <- c(
+      unlist(names[c("dbh", "height", "size") %in% vars]),
+      user_spec)
+  }
+  # return validated methods vector
+  return(method)
+}
 
 
 # Define printing method for target_pc objects:
@@ -314,47 +521,44 @@ compete_inv <- function(inv_source, target_source, radius,
 #' @format NULL
 #' @usage NULL
 #' @export
-print.compete_inv <- function(x, ...){
+print.compete_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
   # get description of target source from lookup table
   target <- as.character(
-    c(inventory = "second inventory",
-      character = "character vector",
-      logical   = "logical vector",
-      exclude_edge = "excluding edge",
-      buff_edge = "buffer around edge"
+    c(inventory = "tree coordinates",
+      character = "tree IDs",
+      logical   = "logical selection",
+      exclude_edge = "'exclude_edge'",
+      buff_edge = "'buff_edge'",
+      all_trees = "'all_trees'"
     )[ attr(x, "target_type")]
   )
-  # print header
-  cat("---------------------------------------------------------------------",
-      "\n'compete_inv' class inventory with distance-based competition indices",
-      "\nCollection of data for", nrow(x),"target and",
-      nrow(attr(x, "edge_trees")), "edge trees.",
-      "\nSource of target trees:",target, "\t Search radius:", attr(x, "radius"),
-      "\n---------------------------------------------------------------------\n"
-  )
-  if (ncol(x) >= 10) {
-    x[, 2] <- "..."
-    names(x)[2] <- "..."
-    x[, 3] <- NULL
+  if (target == "'buff_edge'")
+    target <- paste0(target, " (", attr(x, "spatial_radius"), " m)")
 
-  }
-  if (nrow(x) < 6) {
-    # if there are almost no observations, print the entire dataset
-    print(as.data.frame(x), digits = 3)
-  } else {
-    # else print beginning and end of the data.frame
-    temp <- x[1,]
-    row.names(temp) <- " "
-    for(i in 1:ncol(temp)) temp[, i] <- "..."
-    x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
-    print(
-      rbind(utils::head(as.data.frame(x), 3),
-            temp,
-            utils::tail(as.data.frame(x), n = 3)
-      )
-    )
-  }
+  # prepare header
+  header <- paste0(
+    "'compete_inv' class distance-based competition index dataset\n",
+    "No. of target trees: ", nrow(x),"\t Source inventory size: ",
+    nrow(x) + nrow(attr(x, "edge_trees")),
+    " trees\nTarget source: ", target,
+    "\t Search radius: ", attr(x, "radius"), " m")
+
+  # print data.table with trees
+  .print_as_dt(x, digits = digits, topn = topn,
+               nrows = nrows, header = header, ...)
+  # return object invisibly
+  invisible(x)
 }
 
+
+# Define rbind method for forest_inv objects:
+#' @rdname compete_inv
+#' @format NULL
+#' @usage NULL
+#' @export
+rbind.compete_inv <- function(
+    ..., use.names = TRUE, fill = FALSE, idcol = NULL){
+  .rbind_with_class(..., use.names = use.names, fill = fill, idcol = idcol)
+}
 
 

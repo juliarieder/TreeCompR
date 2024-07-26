@@ -1,5 +1,6 @@
 # testthat-based unit tests for the functionality of the functions for
 # inventory-based competition indices
+require(testthat)
 
 test_that("Indices work for two different forest_inv datasets", {
   # read plot dataset
@@ -107,28 +108,49 @@ test_that("Indices work for two different forest_inv datasets", {
       verbose = FALSE)
   })
 
-  # check if the correct indices are returned
+  # compute subset of indices indices
+  expect_no_error({
+    test9 <- compete_inv(
+      inv_source = plot,
+      target_source = target,
+      radius = 10,
+      method = c("CI_Hegyi", "CI_RK3", "CI_RK4"),
+      dbh_unit = "m",
+      height_unit = "m",
+      verbose = FALSE)
+  })
+
+  # correct indices are returned
   expect_equal(test1$CI_Hegyi, test8$CI_Hegyi)
   expect_equal(test2$CI_RK1, test8$CI_RK1)
   expect_equal(test3$CI_RK2, test8$CI_RK2)
   expect_equal(test5$CI_Braathe, test8$CI_Braathe)
   expect_equal(test6$CI_RK3, test8$CI_RK3)
   expect_equal(test7$CI_RK4, test8$CI_RK4)
+  expect_equal(grep("CI_", names(test9), value = TRUE),
+               c("CI_Hegyi", "CI_RK3", "CI_RK4"))
 
-  # test plot output
+  # class is maintained after rbind
+  expect_true(
+    inherits(rbind(test1, test1), "compete_inv")
+  )
+
+  # plot output works
   expect_no_error(plot_target(test8))
 })
 
 
 test_that("Indices work for two file paths", {
-  expect_no_error(
+  expect_warning(
     compete_inv(
       inv_source = test_path("testdata", "inventory.csv"),
       target_source = test_path("testdata", "inventory.csv"),
       radius = 10,
       method = "all_methods",
       dbh_unit = "m",
-      verbose = FALSE)
+      tol = 0.01, # set to low value to avoid warning b/c close coordinates
+      verbose = FALSE),
+    regexp = "Defining all trees as target trees"
   )
 })
 
@@ -181,7 +203,7 @@ test_that("Indices work for other types of target determination", {
     method = "all_methods",
     dbh_unit = "m",
     verbose = FALSE)
-    )
+  )
   expect_no_error(compete_inv(
     inv_source = plot,
     target_source = "buff_edge",
@@ -209,6 +231,77 @@ test_that("Function works on target_inv objects", {
   })
 })
 
+
+test_that("Printing works", {
+  expect_output(
+    print(
+      compete_inv(
+        inv_source = test_path("testdata", "inventory.csv"), radius = 10,
+        method = "CI_Hegyi", verbose = FALSE)
+    ),
+    "'compete_inv' class distance-based competition index dataset"
+  )
+})
+
+test_that("Handling of kmax works", {
+  # warning a kmax that is too low
+  expect_warning({
+    plot <- read_inv(test_path("testdata", "inventory.csv"), verbose = FALSE)
+    targets <- define_target(plot,target_source = "buff_edge", radius = 5)
+    CI <- compete_inv(inv_source = targets, radius = 5, kmax = 5,
+                      method = "all_methods")
+  },
+  "Maximum number of target trees reached"
+  )
+})
+
+
+test_that("NA handling works", {
+  plot <- read_inv(test_path("testdata", "inventory.csv"), verbose = FALSE)
+  targets <- define_target(plot,target_source = "buff_edge", radius = 5)
+
+  # NA in dbh results in NA values for CIs
+  expect_no_error({
+    tt <-targets
+    tt$dbh[7:17] <- NA
+    CI1 <- compete_inv(inv_source = tt, radius = 5, kmax = 100,
+                      method = "CI_Hegyi")
+  }
+  )
+  expect_true(any(is.na(CI1$CI_Hegyi)))
+
+  # NA in id results in error
+  expect_error({
+    tt <-targets
+    tt$id[1] <- NA
+    CI2 <- compete_inv(inv_source = tt, radius = 5, kmax = 100,
+                       method = "CI_Hegyi")
+  },
+  regexp = "No missing values allowed in column id"
+  )
+
+  # NA in coordinates results in error
+  expect_error({
+    tt <-targets
+    tt$x[1] <- tt$y[5] <- NA
+    CI2 <- compete_inv(inv_source = tt, radius = 5, kmax = 100,
+                       method = "CI_Hegyi")
+  },
+  regexp = "No missing values allowed in column x and y"
+  )
+})
+
+test_that("Parallel processing is possible", {
+  # run on 2 cores
+  expect_no_error({
+    plot <- read_inv(test_path("testdata", "inventory.csv"), verbose = FALSE)
+    targets <- define_target(plot, target_source = "exclude_edge", radius = 5)
+    CI <- compete_inv(inv_source = targets, radius = 5,
+                      method = "all_methods",
+                      parallelize = TRUE, cores = 2)
+  }
+  )
+})
 
 test_that("Function works with manual column specifications", {
   # specification with quoted names
@@ -269,3 +362,107 @@ test_that("Function works with manual column specifications", {
       verbose = FALSE)
   )
 })
+
+test_that("Function works for nonstandard indices", {
+  plot0 <- read.csv(test_path("testdata", "inventory.csv"), sep = ";")
+  plot0$test <- plot0$DBH * abs(plot0$X - plot0$Y)
+
+  # dataset with size can be loaded
+  expect_contains({
+    # read plot dataset
+    plot <- read_inv(plot0, size = test, verbose = FALSE)
+    names(plot)},
+    "size"
+  )
+
+  # "all_methods" contains "size"
+  expect_contains({
+    # read plot dataset
+    comp <- compete_inv(plot, verbose = FALSE, radius = 5)
+    names(comp)},
+    "CI_size"
+  )
+  # not all values are zero
+  expect_true(sum(comp[, "CI_size"]) > 0)
+
+  # Meaningful error if size is not specified correctly
+  expect_error({
+    plot1 <- read_inv(plot0, keep_rest = TRUE, verbose = FALSE)
+    compete_inv(plot1, verbose = FALSE, radius = 5, method = "CI_size")},
+    "Is 'inv_source' a forest inventory object without a 'size' column?"
+  )
+
+  # a function can be defined
+  expect_no_error({
+    assign("CI_inv_Hegyi",
+           function(target, neigh) sum(target$dbh * neigh$dist / neigh$dbh),
+           envir = .GlobalEnv)
+    out <-  compete_inv(plot, verbose = FALSE, radius = 5,
+                        method = c("CI_Hegyi", "CI_inv_Hegyi"))
+  })
+
+  # size specification works in compete_inv
+  expect_no_error(
+    compete_inv(test_path("testdata", "inventory.csv"), size = TreeID,
+                        radius = 10, verbose = FALSE)
+  )
+
+  # correct name is shown in table
+  expect_contains(names(out), "CI_inv_Hegyi")
+
+  # custom functions can be mixed with all methods
+  expect_no_error({
+    out <-  compete_inv(plot, verbose = FALSE, radius = 5,
+                        method = c("all_methods", "CI_inv_Hegyi"))
+  })
+
+  # correct names are shown in table
+  expect_contains(names(out), c("CI_Hegyi", "CI_RK1", "CI_RK2",
+                                "CI_inv_Hegyi", "CI_size"))
+
+  # custom functions can be used for extra columns
+  expect_no_error({
+    test <- read.csv(
+      test_path("testdata", "inventory.csv"),
+      sep = ";", dec = "."
+    )
+    test$extra <- grepl("1", test$TreeID)
+
+    # assign function
+    assign("CI_test",
+           function(target, neigh) {
+             sum(target$dbh * (neigh$dist / neigh$dbh)[neigh$extra])
+           },
+           envir = .GlobalEnv)
+
+    # create output
+    out1 <-  compete_inv(test, keep_rest = TRUE, verbose = FALSE,
+                         radius = 5, method = c("CI_test"))
+  })
+
+  # output makes sense
+  expect_gt(sum(out1$CI_test), 0)
+
+  # columns are returned in the correct order (extra columns at the end)
+  expect_equal(names(out1), c("id", "x", "y", "dbh", "CI_test", "extra"))
+
+  # a function with the wrong arguments fails
+  expect_error({
+    compete_inv(plot, verbose = FALSE, radius = 5,
+                method = c("CI_Hegyi", "plot"))
+  }, "Invalid competition index function")
+
+  # not a function fails
+  expect_error({
+    compete_inv(plot, verbose = FALSE, radius = 5,
+                method = c("CI_Hegyi", "CI_Heygi"))
+  },  "Invalid competition index function")
+
+  # duplicate indices are removed
+  expect_length({
+    compete_inv(plot, verbose = FALSE, radius = 5,
+                method = c("CI_Hegyi", "CI_Hegyi"))
+  }, 6)
+
+})
+

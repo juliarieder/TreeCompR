@@ -3,36 +3,81 @@
 \name{read_pc}
 \alias{read_pc}
 \alias{print.forest_pc}
+\alias{rbind.forest_pc}
 \title{Read trees and neighborhoods from point cloud data.}
 \usage{
-read_pc(pc_source, verbose = TRUE, ...)
+read_pc(
+  pc_source,
+  verbose = TRUE,
+  xlim = NULL,
+  ylim = NULL,
+  zlim = NULL,
+  acc_digits = 2,
+  ...
+)
 }
 \arguments{
-\item{pc_source}{object that inherits from class data.frame, or character
-path to point cloud of individual tree or a whole plot eitherin las/laz
-format or any file format readable with \code{\link[data.table:fread]{data.table::fread()}}. If provided
-with a point cloud object in a data.frame, the structure and column names
-are validated and homogenized; else, the function tries to read the point
-cloud in the specified path}
+\item{pc_source}{object that inherits from class data.frame,  or LAS object,
+or character string with path to point cloud of individual tree or a whole
+plot either in .las/.laz or .ply format, or any file format readable with
+\code{\link[data.table:fread]{data.table::fread()}}.
+If provided with a point cloud object in a data.frame, the structure and
+column names are validated and homogenized; else, the function tries to
+read the point cloud in the specified path.}
 
 \item{verbose}{logical of length 1. Should information about progress be
 printed? Defaults to TRUE.}
 
+\item{xlim}{(optional) numeric vector of defining the range of x coordinates.
+Can be a vector of length 2 with the minimum and maximum x value, or a
+vector of arbitrary length (in this case \code{\link[base:range]{base::range()}} is used to
+constrain the x values to its range). This can be useful to for the
+memory-efficient handling of very large point cloud objects. Defaults to
+NULL (use full range of x coordinates).}
+
+\item{ylim}{(optional) numeric vector of defining the range of y coordinates.
+Can be a vector of length 2 with the minimum and maximum y value, or a
+vector of arbitrary length (in this case \code{\link[base:range]{base::range()}} is used to
+constrain the y values to its range). This can be useful to for the
+memory-efficient handling of very large point cloud objects. Defaults to
+NULL (use full range of y coordinates).}
+
+\item{zlim}{(optional) numeric vector of defining the range of z coordinates.
+Can be a vector of length 2 with the minimum and maximum z value, or a
+vector of arbitrary length (in this case \code{\link[base:range]{base::range()}} is used to
+constrain the z values to its range). This can be useful to for the
+memory-efficient handling of very large point cloud objects. Defaults to
+NULL (use full range of z coordinates).}
+
+\item{acc_digits}{integer of length 1 defining the accuracy of the point
+cloud measurements. The data will be aggregated to this number of digits
+to speed up calculations and avoid problems with joining tree and
+neighborhood data resulting from numeric accuracy. The resolution of the
+coordinates defined by \code{acc_digits} should alway be at least one order of
+magnitude higher than the resolution \code{res} used  to compute the voxel
+counts in later steps. Defaults to \code{acc_digits = 2} (round to 2 digits
+after the decimal point).}
+
 \item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
 }
 \value{
-object of class c("forest_pc", "data.frame") with x, y and z
-coordinates of the tree or forest point cloud
+object of class \code{forest_pc} (inherits from \code{data.table}) with x, y
+and z coordinates of the tree or forest point cloud. \code{acc_digits} is
+additionally stored as an attribute to avoid matching point clouds with
+inconsistent resolutions.
 }
 \description{
-Read point cloud sourced from a file path or an object that
-inherits from class data.frame.
+Read and validate a point cloud sourced from a file stored on
+disk, or from an object that inherits from class data.frame, or a LAS
+object from the lidR package (\link[lidR:LAS-class]{lidR::LAS}).
+Supported file formats are .las, .laz, .ply as well as all formats
+accepted by \code{\link[data.table:fread]{data.table::fread()}} (.csv, .txt, and others).
 }
 \details{
-Function for reading and validating point cloud data. Currently, the
-supported formats are las/laz and any formats readable with
-\code{\link[data.table:fread]{data.table::fread()}}. For other formats, please load the point cloud data
-separately and enter the coordinates as a data.frame.
+Function for reading and validating point cloud data. Currently,
+the supported file formats are .las, .laz, .ply, as well as all formats
+accepted by \code{\link[data.table:fread]{data.table::fread()}}. For other formats, please load the
+point cloud data separately and enter the coordinates as a data.frame.
 
 If provided with tabular data (either as a data.frame or via a path to an
 \code{\link[data.table:fread]{data.table::fread()}} readable source), the function by default takes the
@@ -42,14 +87,57 @@ If no columns with matching names are available, it takes the first three
 numeric columns and returns a message. If the dataset does not contain
 three numeric columns or one of the columns labeled x, y, and z is not
 numeric, the function fails with an error.
+
+The xlim, ylim and zlim arguments are used internally in \code{\link[=compete_pc]{compete_pc()}} to
+filter the neighborhood dataset to a relevant range around the target tree
+to speed up calculations.
+
+Unless the input is already a \code{forest_inv} object, the coordinates will be
+downsampled by rounding to \code{acc_digits}; duplicates will be discarded to
+speed up  computations. The consistent rounding/voxelisation with the same
+algorithm ensures that coordinates of neighbor and target trees are matched
+correctly in \code{compete_pc()}, as we observed especially for the .las format
+that numeric differences can result in a mismatch even with data from the
+same source when using raw coordinates. By default is done to 2 digits (cm accuracy)
+which in most settings should be sufficient. This value should always been
+chosen at least one order of magnitude more accurate than the voxel
+resolution in \code{compete_pc()}.
+\subsection{Note: support of .las, .laz and .ply formats}{
+
+The the \code{lidR} package has to be installed to be able to read in .las/.laz
+files, which are internally processed by \code{\link[lidR:readLAS]{lidR::readTLSLAS()}}.
+Analogously, for point clouds in the .ply format, the \code{Rvcg} package is
+required as these are loaded with \code{\link[Rvcg:vcgPlyRead]{Rvcg::vcgPlyRead()}}.
+}
 }
 \examples{
 \dontrun{
-# Read a tree point cloud in txt format
-tree <- read_pc(pc_source = "path/to/tree_point_cloud.txt")
 # Read a tree point cloud in las or laz format
 tree <- read_pc(pc_source = "path/to/tree_point_cloud.las")
-#if point cloud is already loaded as dataframe tree_df
+
+# Read a tree point cloud in ply format
+tree <- read_pc(pc_source = "path/to/tree_point_cloud.ply")
+
+# Read a tree point cloud in txt format
+tree <- read_pc(pc_source = "path/to/tree_point_cloud.txt")
+
+# Read a tree point cloud in csv format with non-standard separators
+tree <- read_pc(pc_source = "path/to/tree_point_cloud.txt",
+  dec = ",", sep = ";")
+
+# Read a forest point cloud in a specified range around a target tree of
+# known position (+- 5 m around the origin)
+neighborhood <- read_pc(pc_source = "path/to/forest_point_cloud.las",
+  xlim = c(-5, 5), ylim = c(-5, 5))
+
+# Convert a point cloud already loaded as a data.frame into forest_pc format
 tree <- read_pc(tree_df)
+
 }
+}
+\seealso{
+\code{\link[=compete_pc]{compete_pc()}} for computing tree competition and \code{\link[=tree_pos]{tree_pos()}} for
+computing tree position from point cloud objects. For more details on the
+pre-processing of the point clouds before using this function, have a look
+at our \href{https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html}{tutorial}
 }

@@ -3,7 +3,8 @@
 \name{compete_pc}
 \alias{compete_pc}
 \alias{print.compete_pc}
-\title{Quantify Tree Competition from Point Clouds (Cone or cylinder method)}
+\alias{rbind.compete_pc}
+\title{Quantify tree competition from point clouds}
 \usage{
 compete_pc(
   forest_source,
@@ -15,21 +16,33 @@ compete_pc(
   h_cone = 0.6,
   z_min = 100,
   h_xy = 0.3,
-  print_progress = c("full", "some", "none"),
+  acc_digits = 2,
+  res = 0.1,
+  print_progress = c("some", "full", "none"),
+  override_pos_check = FALSE,
   ...
 )
 }
 \arguments{
-\item{forest_source}{data.frame with neighborhood point cloud or path to file
-of neighborhood point cloud in tabular or las/laz format which is passed on
-to \code{\link[=read_pc]{read_pc()}}. The neighborhood has to include the target tree and its
-neighbors, not height normalized, and can include ground points).
-Coordinates have to be in a Cartesian coordinate system in m!}
+\item{forest_source}{path to file of neighborhood point cloud or data.frame
+or LAS object (see \link[lidR:LAS-class]{lidR::LAS}) with point cloud data which are
+passed on to \code{\link[=read_pc]{read_pc()}}, or object of class \code{forest_pc} as created with
+\code{\link[=read_pc]{read_pc()}}. The neighborhood can, but does not have to include the target
+tree itself, should not be height normalized, and can include ground
+points. Coordinates have to be in a Cartesian coordinate system in m.
+For paths to source files, the supported formats are are .las, .laz, .ply
+as well as all formats accepted by \code{\link[data.table:fread]{data.table::fread()}} (.csv, .txt, and
+others). If supplied as an object of class \code{forest_pc}, arguments passed
+to \code{read_inv()} are ignored.}
 
-\item{tree_source}{data.frame with target tree point cloud or path to file of
-target tree point cloud in tabular or las/laz format which is passed on to
-\code{\link[=read_pc]{read_pc()}}. Coordinates have to be in a Cartesian coordinate system in m
-and with the same number of decimal places as the neighborhood point cloud.}
+\item{tree_source}{path to file of the point cloud of the segmented target,
+tree or data.frame or LAS object (see \link[lidR:LAS-class]{lidR::LAS}) with point cloud
+data which are passed on to \code{\link[=read_pc]{read_pc()}}, or object of class \code{forest_pc}
+as created with \code{\link[=read_pc]{read_pc()}}.
+Coordinates have to be in the same coordinate system as \code{forest_source}.
+For paths to source files, the supported formats are are .las, .laz,
+.ply and formats accepted by \code{\link[data.table:fread]{data.table::fread()}}.  If supplied as an
+object of class \code{forest_pc}, arguments passed to \code{read_inv()} are ignored.}
 
 \item{comp_method}{character string of length 1 with competition method.
 Allowed values are "cone" for the cone method, "cylinder" for the cylinder
@@ -38,25 +51,28 @@ See details for computation.}
 
 \item{center_position}{character string of length 1 with the position used
 as the center of the search cone/cylinder. Allowed values are "crown_pos"
-for the metroid of the crown projected area and "base_pos" for the stem
-base position as computed by \code{\link[=tree_pos]{tree_pos()}}. Default value is "crown_pos".}
+for the central point of the crown projected area and "base_pos" for the
+stem base position as computed by \code{\link[=tree_pos]{tree_pos()}}. Default value is
+"crown_pos".}
 
 \item{tree_name}{(optional) ID for the tree. If no argument is put, defaults
 to the name of the argument provided as \code{tree_source}.}
 
-\item{cyl_r}{(optional) only needed when using comp_method "cylinder";
-numeric value of cylinder radius in m. Default is 5 m.}
+\item{cyl_r}{numeric of length one. Size of the cylinder radius in m. Default
+is 5 m. Only used when \code{comp_method = "cylinder"}.}
 
-\item{h_cone}{(optional) only when using comp_method "cone"; numeric value
-describing the fraction of the height of the tree where the tip of the
-search cone is located. For example, values of 0.5 or 0.6 specify that the
-cone opens in 50 or 60 \% of target tree's height, respectively. Default is
-0.6 as proposed by Seidel et al. (2015).}
+\item{h_cone}{numeric of length one. Faction of the height of the tree where
+the tip of the search cone is located. For example, values of 0.5 or 0.6
+specify that the cone opens in 50 or 60 \% of the height of the target tree,
+respectively. Default is 0.6 (see Seidel et al., 2015). Only used when
+\code{comp_method = "cone"}.}
 
 \item{z_min}{integer of length 1 describing the minimum number of points
-needed in the lowermost 0.1 m Z layer to consider it part of the target
-tree. Default is 100. Used to calculate the stem base position of the
-target tree. For details see \code{\link[=tree_pos]{tree_pos()}}.}
+needed in the lowermost 1 voxel depth Z layer to consider it part of the
+target tree. Default is 100. If changing the voxel resolution (\code{res}) from
+the default value of 0.1, different settings may be necessary.  Used to
+calculate the stem base position of the target tree. For details see
+\code{\link[=tree_pos]{tree_pos()}}.}
 
 \item{h_xy}{numeric of length 1 describing the height range in m over the
 stem base over which the x and y positions are used to calculate the x and
@@ -64,16 +80,36 @@ y coordinates of the stem base of the target tree. Default is 0.3 m. Used
 to calculate the stem base position of the target tree. For details see
 \code{\link[=tree_pos]{tree_pos()}}.}
 
-\item{print_progress}{character of length 1. Allowed values are "full" (print
-all progress), "some" (only print name of tree object) and "none (do not
-print any progress). Defaults to "full".}
+\item{acc_digits}{integer of length 1 defining the accuracy of the point
+cloud measurements. The data will be aggregated to this number of digits
+to speed up calculations and avoid problems with joining tree and
+neighborhood data resulting from numeric accuracy. The resolution of the
+coordinates defined by \code{acc_digits} should alway be at least one order of
+magnitude higher than the resolution \code{res} used  to compute the voxel
+counts in later steps. Defaults to \code{acc_digits = 2} (round to 2 digits
+after the decimal point).}
 
-\item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}}
+\item{res}{numeric of length 1 defining the resolution of a voxel as passed
+on to \code{\link[VoxR:vox]{VoxR::vox()}}. Defaults to 0.1 (10 cm voxel size). Only change if
+there are good reasons to do so as this is the standard used in Seidel et
+al. (2015) and other papers and the results are strongly scale dependent!}
+
+\item{print_progress}{character of length 1. Allowed values are "full"
+(print all progress and full output), "some" (only print main details) and
+"none" (do not print any progress). Defaults to "some".}
+
+\item{override_pos_check}{logical: should the function test if the target
+tree is actually situated within the neighborhood? Defaults to FALSE. Only
+change if you have very good reasons to do so, e.g., when computing the
+competition for a tree situated at the edge of a forest stand.}
+
+\item{...}{additional arguments passed on to \code{\link[data.table:fread]{data.table::fread()}}.}
 }
 \value{
-data frame with tree ID and counted voxels of neighborhood
-point cloud that reach into the cone/cylinder spanned over/around target
-tree.
+object of type \code{compete_pc}: modified \code{data.frame} with tree ID,
+tree height, the type of center position used for computation as well as
+counts of the number of voxels of the neighborhood point cloud that reach
+into the cone/cylinder spanned over/around the target tree.
 }
 \description{
 Counts the voxels of neighboring trees that intersect a
@@ -83,14 +119,22 @@ et al. (2015) and Metz et al. (2013).
 \details{
 \code{compete_pc()} computes competition indices based on voxel counts of
 neighbor trees that intersect a search cone or search cylinder around
-the target tree.
+the target tree. In most cases, the function \code{\link[=read_pc]{read_pc()}} that is called
+internally should be able to automatically identify the columns with the
+coordinates of the point clouds when provided with non-standard file types.
+If this is not the case, it is possible to provide arguments to pass on to
+that function, to load the datasets separately with custom settings with
+\code{\link[=read_pc]{read_pc()}} or loading them with external functions and pass them to
+\code{\link[=compete_pc]{compete_pc()}} as any kind of object inheriting from \code{data.frame} (such as
+base R data.frames, tibbles, data.tables etc).
 \subsection{Cone Method}{
 
 Based on a search cone with an opening angle of 60 degrees,
 by default opening from a basal point situated at 60 \% of the
 height of the target tree. The competition index is defined as the number
-of voxels (0.1 m res.) of neighboring trees situated within the cone
-spanned around the target tree (cf. Metz et al 2013; Seidel et al., 2015).
+of voxels of neighboring trees  (by default, with a 0.1 m res.) situated
+within the cone spanned around the target tree (cf. Metz et al 2013;
+Seidel et al., 2015).
 The standard value of \code{h_cone = 0.6} can be adjusted, for instance if no
 neighbor trees at all intersect the cone of the target tree. However, be
 careful with adjusting this parameter, as competition indices computed with
@@ -101,14 +145,42 @@ different \code{h_cone} cannot easily be compared among each other.
 
 Based on a  search cylinder with a pre-defined radius \code{cyl_r} around the
 target tree (5 m by default). The competition index is defined as the
-number of the voxels (0.1 m res.) of neighboring trees situated within the
-cylinder around the target tree (cf. Seidel et al., 2015). The index is
-sensitive to the choice of the cylinder radius, so be careful when
-comparing competition indices computed with different values of \code{cyl_r}.
-}
-}
-\section{Literature}{
+number of the voxels of neighboring trees  (by default, with a 0.1 m res.)
+situated within the cylinder around the target tree (cf. Seidel et al.,
+2015). The index is sensitive to the choice of the cylinder radius, so be
+careful when comparing competition indices computed with different values
+of \code{cyl_r}.
 
+Both indices are highly sensitive to the voxel resolution, and it is not
+recommended to change \code{res} from its default value of 0.1 (i.e., 10 cm
+voxel size) unless you have very good reasons to do so.
+
+If calculating competition indices for single trees that each have an
+accompanying point cloud of their immediate neighborhood, using the file
+paths to these datasets as a \code{tree_source} / \code{neighbor_source} will be
+computationally efficient. However, when calculating indices for several
+trees belonging to the same neighborhood, it may be faster to load the
+neighborhood outside \code{\link[=compete_pc]{compete_pc()}} a single time using \code{\link[=read_pc]{read_pc()}} and
+then passing it to \code{\link[=compete_pc]{compete_pc()}} as a \code{forest_pc} object as this reduces
+the computational overhead due to loading the point cloud into the memory.
+In such cases, it may also make sense to load and process the forest point
+cloud as an LAS object (see \link[lidR:LAS-class]{lidR::LAS}) and process it outside of
+\code{TreeCompR} before analysis.
+If the source files are very large, this may still lead to memory problems
+especially on machines with low RAM capacity. In such cases, it may make
+more sense to split up the data set into smaller chunks outside R that
+each cover only a subset of the target trees to reduce the memory load.
+}
+
+\subsection{Note: support of .las, .laz and .ply formats}{
+
+The \code{lidR} package has to be installed to be able to read in .las/.laz
+files, which are internally processed by \code{\link[lidR:readLAS]{lidR::readTLSLAS()}}.
+Analogously, for point clouds in the .ply format, the \code{Rvcg} package is
+required as these are loaded with \code{\link[Rvcg:vcgPlyRead]{Rvcg::vcgPlyRead()}}.
+}
+
+\subsection{Literature}{
 \itemize{
 \item Metz, J., Seidel, D., Schall, P., Scheffer, D., Schulze, E.-D. & Ammer,
 C. (2013). Crown modeling by terrestrial laser scanning
@@ -125,17 +197,49 @@ Ecology and Management, 336: 119-128.
 http://dx.doi.org/10.1016/j.foreco.2014.10.020
 }
 }
-
+}
 \examples{
 \dontrun{
-# Quantify crown competition for a single tree within a plot using cone
-# method
-CI_cone <- compete_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
+# Due to the large required datasets it is not possible to provide running
+# examples, but we hope that these example uses are helpful
+
+# Quantifying crown competition for a single tree using the cone method
+CI_cone <- compete_pc("path/to/forest_pc.las", "path/to/tree_pc.las",
                           "cone", h_cone = 0.5)
 
-# Quantify competition for a single tree within a plot using cylinder
-# method with radius 4 m
-CI_cyl <- compete_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
+# Competition for a single tree using the cylinder method with 4 m radius
+CI_cyl <- compete_pc("path/to/forest_pc.ply", "path/to/tree_pc.ply",
 "cylinder", cyl_r = 4)
+
+# Quantifying competition for a single tree using both methods
+CI_cyl <- compete_pc("path/to/forest_pc.txt", "path/to/tree_pc.txt",
+"cylinder", cyl_r = 4, h_cone = 0.6)
+
+# Loading a large neighborhood outside compete_pc() to reuse the data for
+# several target trees
+
+# load neighborhood
+neigh <- read_pc("path/to/forest_pc.las")
+
+# get paths to trees
+tree_paths <- list.files("folder_with_trees/")
+
+# map over paths to get competition indices for all trees
+library(tidyverse) # for purrr() and bind_rows()
+CI_data <- map(
+  tree_paths,
+  ~compete_pc(
+      forest_source = neigh,
+      tree_source = file.path("folder_with_trees", .x),
+      tree_name = .x,
+      comp_method = "cone"
+      )
+    ) \%>\%
+    bind_rows()
 }
+}
+\seealso{
+\code{\link[=read_pc]{read_pc()}} for details on reading point clouds, \code{\link[=tree_pos]{tree_pos()}} for
+computing tree position from point cloud objects. See \href{https://juliarieder.github.io/TreeCompR/articles/competition-pointcloud.html}{pc approach}
+for  details on how to pre-process the point clouds for this function.
 }

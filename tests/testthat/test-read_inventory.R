@@ -1,4 +1,5 @@
 # testthat-based unit tests for the functionality of the read_inv function
+require(testthat)
 
 test_that("read_inv works for data.frame objects", {
   # reading in works
@@ -14,6 +15,11 @@ test_that("read_inv works for data.frame objects", {
   expect_true(inherits(test_inv, "forest_inv"))
   expect_equal(dim(test_inv), c(48, 4))
   expect_equal(names(test_inv), c("id", "x", "y", "dbh"))
+
+  # class is maintained after rbind
+  expect_true(
+    inherits(rbind(test_inv, test_inv), "forest_inv")
+  )
 
   # reading in works with explicitly specified names
   expect_no_error({
@@ -45,6 +51,13 @@ test_that("read_inv works for data.frame objects", {
   })
   expect_equal(test_inv, test_inv4, ignore_attr = TRUE)
 
+  # reading in works with size
+  expect_no_error({
+    test_inv5 <- read_inv(test, size = DBH, verbose = FALSE)
+  })
+  expect_equal(test_inv$dbh, test_inv5$size, ignore_attr = TRUE)
+
+
   # reading in fails with an error if class of a vector is incorrect
   expect_error({
     test3 <- test
@@ -61,12 +74,47 @@ test_that("read_inv works for data.frame objects", {
   "No variable found with a name"
   )
 
-  # reading in without diamete nor height is possible
+  # reading in fails with an error if forbidden IDs are used
+  expect_error({
+    test4 <- test
+    test4$TreeID[c(2,3)] <- c("buff_edge", "all_trees")
+    read_inv(test4, verbose = FALSE)
+  },
+  "Found the following tree ids:"
+  )
+
+  # reading in without diameter or height is possible
   expect_length(read_inv(test[, -4], verbose = FALSE), 3)
+
+  # reading in works with extra columns
+  expect_no_error({
+    test5 <- test
+    test5$extra <- 1:nrow(test5)
+
+    # no parsing of extra column
+    test_inv5 <- read_inv(test5, verbose = FALSE)
+    # keeping the extra column
+    test_inv6 <- read_inv(test5, keep_rest = TRUE, verbose = FALSE)
+  })
+
+  # extra column exists and has the right name
+  expect_equal(
+    names(test_inv6)[!names(test_inv6) %in% names(test_inv5)], "extra")
+
+  # it is possible to create a forest_inv with different column types
+  expect_length({
+    test5$char <- "C"
+    test5$log  <- TRUE
+    test5$fact <- factor(test5$extra)
+    test5$list <- as.list(test5$extra)
+    test_inv7 <- read_inv(test5, keep_rest = TRUE, verbose = FALSE)
+  }, 9)
+
+  # printing the inventory with different column types is possible
+  expect_output(print(test_inv7), "'forest_inv' class inventory dataset")
 
   # reading in works if there are no ids - but standard is assigned
   expect_message(read_inv(test[, -1]), "automatically generated")
-
 })
 
 
@@ -128,11 +176,82 @@ test_that("read_inv works for file paths", {
 
 
 test_that("print method for forest_pc objects works", {
-  # simple csv with named xyz columns is read without message
+  # print is possible without error
   expect_output(
     print(read_inv(test_path("testdata", "smallinv1.csv"),
                    verbose = FALSE)),
-    "'forest_inv' class inventory dataset:"
+    "'forest_inv' class inventory dataset"
+  )
+})
+
+
+
+
+test_that("NA handling for forest_pc objects works", {
+  # read as test ata
+  test <- read.csv(test_path("testdata", "smallinv1.csv"),
+                   sep = ",", dec = ".")
+
+  # NA in x coordinates triggers error
+  expect_error({
+    tt <- test
+    tt$X[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  },
+  "No missing values allowed"
+  )
+
+  # NA in y coordinates triggers error
+  expect_error({
+    tt <- test
+    tt$Y[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  },
+  "No missing values allowed"
+  )
+
+  # NA in tree ID triggers error
+  expect_error({
+    tt <- test
+    tt$TreeID[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  },
+  "No missing values allowed"
+  )
+
+  # NA in DBH triggers no error
+  expect_no_error({
+    tt <- test
+    tt$DBH[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  }
+  )
+
+  # NA in height triggers no error
+  expect_no_error({
+    tt <- test
+    tt$height <- 1
+    tt$height[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  }
+  )
+
+  # NA in size triggers no error
+  expect_no_error({
+    tt <- test
+    tt$size <- 1
+    tt$size[1] <- NA
+    read_inv(tt, verbose = FALSE)
+  }
+  )
+
+  # NA in other variables triggers no error
+  expect_no_error({
+    tt <- test
+    tt$brp <- 1
+    tt$brp[1] <- NA
+    read_inv(tt, verbose = FALSE, keep_rest = TRUE)
+  }
   )
 })
 

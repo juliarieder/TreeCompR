@@ -22,6 +22,9 @@
 #'   containing the height of the tree (by default in m, but   can be defined
 #'   via `heigh_unit`). If `NULL` (default), the function tries to identify the
 #'   height from the data.
+#' @param size character of length 1 or name of the variable in `inv_source`
+#'   containing a generic size-related variable for [CI_size()]. If `NULL`
+#'   (default), the variable is not assigned.
 #' @param id character of length 1 or name of the variable in `inv_source`
 #'   containing a unique tree ID. If `NULL` (default), the function tries to
 #'   identify the ID from the data. If this is not possible, the trees are
@@ -30,101 +33,146 @@
 #'   (one of "cm", "m" or "mm". defaults to "cm").
 #' @param height_unit character of length 1. Unit for the diameter measurements
 #'   (one of "m", "cm" or "mm". defaults to "m").
+#' @param keep_rest logical of length 1. Keep additional variables in the
+#'   inventory table besides x, y, dbh, size and id for filtering or further
+#'   computations? Defaults to FALSE.
 #' @param verbose logical of length 1. Should information about progress be
 #'   printed? Defaults to TRUE.
-#' @param names_as_is logical of length 1. If TRUE, only NULL or characters
-#'   are excepted as column names in `x`, `y`, `dbh`, `height` and `id`, and
-#'   the column names are not internally substituted. Defaults to FALSE, which
-#'   should normally be the right choice for interactive use (TRUE is only
-#'   needed for use within functions).
 #' @param ... additional arguments passed on to [data.table::fread()]
 #'
 #' @details Function for reading and validating forest inventory data.
-#'    Supports any formats readable with [data.table::fread()].
+#'  Supports any formats readable with [data.table::fread()].
 #'
-#'   If provided with tabular data without explicitly specified variable names,
-#'   the function by default takes the columns named "X" and "Y" (or "x" and
-#'   "y") to be the tree coordinates, and looks for columns named "height",
-#'   "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any
-#'   capitalization) as size-related variables. The tree ids are taken from
-#'   columns named "id", "tree_id", "treeID" or "tree.id" (in any
-#'   capitalization). All special characters besides "." and "_" are stripped
-#'   from the column names before matching.
+#'  If provided with tabular data without explicitly specified variable names,
+#'  the function by default takes the columns named "X" and "Y" (or "x" and
+#'  "y") to be the tree coordinates, and looks for columns named "height",
+#'  "height_m" or "h" as well as "dbh", "diameter","diam", or "d" (in any
+#'  capitalization) as size-related variables. The tree ids are taken from
+#'  columns named "id", "tree_id", "treeID" or "tree.id" (in any
+#'  capitalization). All special characters besides "." and "_" are stripped
+#'  from the column names before matching. For "size", the variable has to be
+#'  specified explicitly; if not specified no generic size-related variable
+#'  will be selected.
+#'  All other columns in the source dataset are appended to the inventory when
+#'  `keep_rest = TRUE`, but they are not validated, type-checked or sanitized.
 #'
-#'   If no columns with coordinates can be identified, the function fails with
-#'   an error. If no ID column is available, the function assigns a unique
-#'   number to each tree (but note that this will make specifying custom target
-#'   trees difficult). It is possible to read in datasets without dbh and
-#'   height, but usually only sensible if these are used as accessory datasets
-#'   for identifying target trees (e.g. if target trees where identified by
-#'   taking their GPS coordinates manually in the field).
+#'  If no columns with coordinates can be identified, the function fails with
+#'  an error. If no ID column is available, the function assigns a unique
+#'  number to each tree (but note that this will make specifying custom target
+#'  trees difficult). It is possible to read in datasets without dbh and
+#'  height, but usually only sensible if these are used as accessory datasets
+#'  for identifying target trees (e.g. if target trees where identified by
+#'  taking their GPS coordinates manually in the field).
 #'
-#' @return object of class `c("forest_inv", "data.frame")` with x and y
-#'  coordinates of the tree, a unique tree identifier (`id`) and tree diameter
+#' @return object of class `forest_inv`: a modified data.table with x and
+#'  y coordinates of the tree, a unique tree identifier (`id`) and tree diameter
 #'  at breast height (`dbh`, in cm) and tree height (`height`, in m) if
 #'  available.
+#'
+#' @seealso [define_target()] for designating target trees,
+#'  [compete_inv()] for computing tree competition from inventory data,
+#'  [competition_indices] for a list of available indices,
+#'  [plot_target()] to plot target tree positions in `target_inv` and
+#'  `compete_inv` objects. Find more examples in our [tutorial](https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#reading-in-forest-inventory-data-with-read_inv).
 #' @export
 #'
 #' @examples
 #' \dontrun{
-#' # prepare inventory table for compete_inv()
-#' inv <- fread(path = "path/to/table.csv")
-#' #specify the units of parameters within your input
-#' inv_table <- read_inv(inv, dbh_unit = "cm", height_unit = "m")
-#' # Read inventory table directly from directory
-#' inv_table <- read_inv(inv_source = "path/to/table.csv", dbh_unit = "cm",
-#' height_unit = "m")
+#' # read inventory with diameter and height units set to m
+#' inventory1 <- read_inv(
+#'   inv_source = "data/inventory1.csv",
+#'   dbh_unit = "m")
+#'
+#' # read inventory with custom (Spanish) column titles
+#' inventory2 <- read_inv(
+#'   inv_source = "data/inventory2.csv",
+#'   x = utmx,
+#'   y = utmy,
+#'   dbh = dap_cm,
+#'   height = altura,
+#'   dbh_unit = "cm",
+#'   height_unit = "m")
+#'
+#'
+#' # read inventory with custom decimal and column separators
+#' inventory3 <- read_inv(
+#'   inv_source = "data/inventory3.csv",
+#'   dec = ",",
+#'   sep = ";",
+#'   verbose = FALSE)
+#'
+#' # read dataset outside read_inv and filter to a single plot
+#' dat <- readr::read_csv("data/inventory4.csv") %>%
+#'   dplyr::filter(plot_id == "Plot 1")
+#'
+#' # use read_inv to convert to a forest_inv object that works with
+#' TreeCompR functions
+#' inventory4 <- read_inv(
+#'   inv_source = dat,
+#'   dbh = diam,
+#'   dbh_unit = "cm",
+#'   height_unit = "m",
+#'   verbose = FALSE)
+#'
+#' # read same inventory without dropping columns
+#' inventory4a <- read_inv(
+#'   inv_source = dat,
+#'   dbh = diam,
+#'   dbh_unit = "cm",
+#'   height_unit = "m",
+#'   keep_rest = TRUE,
+#'   verbose = FALSE)
 #' }
 read_inv <- function(inv_source, x = NULL, y = NULL,
-                     dbh = NULL, height = NULL, id = NULL,
+                     dbh = NULL, height = NULL, size = NULL, id = NULL,
                      dbh_unit = c("cm", "m", "mm"),
                      height_unit = c("m", "cm", "mm"),
-                     verbose = TRUE, names_as_is = FALSE, ...) {
+                     keep_rest = FALSE,
+                     verbose = TRUE, ...) {
 
   # match function arguments for units and get multipliers
   dbh_unit    <- match.arg(dbh_unit)
   height_unit <- match.arg(height_unit)
 
-  # parse names if !names_as_is
-  if (!names_as_is){
-    # catch and validate variable names (treated as character if not NULL,
-    # else, NULL is passed on to .validate_inv())
-    if (!is.null(substitute(x)))      x      <- as.character(substitute(x))
-    if (!is.null(substitute(y)))      y      <- as.character(substitute(y))
-    if (!is.null(substitute(dbh)))    dbh    <- as.character(substitute(dbh))
-    if (!is.null(substitute(height))) height <- as.character(substitute(height))
-    if (!is.null(substitute(id)))     id     <- as.character(substitute(id))
-  }
-
   # check class of source tree
   if (inherits(inv_source, "data.frame")){
-    inv <- .validate_inv(inv_source, x = x, y = y,
-                         dbh = dbh, height = height, id = id,
-                         dbh_unit = dbh_unit, height_unit = height_unit,
-                         verbose = verbose)
+    inv <- .validate_inv(
+      inv_source, x = !!enquo(x), y = !!enquo(y), dbh = !!enquo(dbh),
+      height = !!enquo(height), size = !!enquo(size), id = !!enquo(id),
+      dbh_unit = dbh_unit, height_unit = height_unit,
+      keep_rest = keep_rest,
+      verbose = verbose)
   } else if (!(is.character(inv_source) && length(inv_source) == 1)){
-    stop("Format of inv_source not recognized.\n",
-         " Please provide a data.frame or a path to a source file.\n")
+    stop(.wr(
+      "Format of inv_source not recognized.",
+      " Please provide a data.frame or a path to a source file.")
+    )
   } else if(!file.exists(inv_source)){
-    stop("File", inv_source,
-         "does not exist. \nPlease check path to point cloud file.")
+    stop(.wr(
+      "File", inv_source,
+      "does not exist. Please check path to source file.")
+    )
   } else {
     # treat tree_source as path to file
     path <- inv_source
-    # try loading in point cloud with fread
+    # try loading inventory with fread
     inv <- try(
-      data.table::fread(file = path, data.table = FALSE, ...)
+      data.table::fread(file = path, data.table = TRUE, ...)
     )
     if (inherits(inv, "try-error")) {
       # if the file cannot be read, return error message about accepted formats.
-      stop("File format cannot be read. Please use a format readable ",
-           "by data.table::fread() or provide the necessary decimal separators,",
-           " field separators etc. for reading.")
+      stop(.wr(
+        "File format cannot be read. Please use a format readable",
+        "by data.table::fread() or provide the necessary decimal separators,",
+        "field separators etc. for reading.")
+      )
     } else{ # else validate and return
-      inv <- .validate_inv(inv, x = x, y = y,
-                           dbh = dbh, height = height, id = id,
-                           dbh_unit = dbh_unit, height_unit = height_unit,
-                           verbose = verbose)
+      inv <- .validate_inv(
+        inv, x = !!enquo(x), y = !!enquo(y), dbh = !!enquo(dbh),
+        height = !!enquo(height), size = !!enquo(size), id = !!enquo(id),
+        dbh_unit = dbh_unit, height_unit = height_unit,
+        keep_rest = keep_rest,
+        verbose = verbose)
     }
   }
   # return forst_inv object with correct column number, names and types
@@ -133,33 +181,50 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 
 
 #' @keywords internal
-#' internal function for the validation of point cloud data
+#' internal function for the validation of forest inventory data
 .validate_inv <- function(inv_source, x = NULL, y = NULL,
-                          dbh = NULL, height = NULL, id = NULL,
+                          dbh = NULL, height = NULL, size = NULL, id = NULL,
                           dbh_unit, height_unit,
+                          keep_rest = FALSE,
                           verbose = TRUE){
   # check if inventory data is already formatted correctly and return if true
   if (inherits(inv_source, "forest_inv")){
+    # test for missing data in columns where it is not permitted
+    NAs <- sapply(inv_source[, c("id", "x", "y")], function(x) any(is.na(x)))
+    if (any(NAs)) stop("No missing values allowed in column ",
+                       paste(c("id", "x", "y")[NAs], collapse = " and "))
     return(inv_source)
   } else { #else check for consistency
     # get multipliers for units
     dbh_mult    <- c(cm = 1, mm = 0.1, m = 100)[dbh_unit]
     height_mult <- c(m = 1, cm = 0.01, mm = 0.001)[height_unit]
     # define empty dataset
-    inv_out <- as.data.frame(matrix(NA, nrow = nrow(inv_source), ncol = 5))
-    names(inv_out) <- c("id", "x", "y", "dbh", "height")
+    inv_out <- data.table::as.data.table(
+      matrix(NA, nrow = nrow(inv_source), ncol = 6)
+    )
+    names(inv_out) <- c("id", "x", "y", "dbh", "height", "size")
     # validate ID
     inv_out$id <- .get_cols(
       data = inv_source,
-      which = id,
+      which = !!enquo(id),
       names = c("id", "treeid", "tree_id", "tree.id"),
       class_out = "character",
-      alternative = 1:nrow(inv_source)
+      alternative = as.character(1:nrow(inv_source))
     )
+    # test for forbidden IDs
+    forbidden <- inv_out$id %in% c("buff_edge", "exclude_edge", "all_trees")
+    if (any(forbidden)){
+      stop("Found the following tree ids: ",
+           paste(inv_out$id[forbidden], collapse = ", "),
+           "\n\n",
+           .wr("Trees named 'buff_edge', 'exclude_edge' and 'all_trees'",
+               "are not allowed as they interfere with define_target().")
+      )
+    }
     # validate x coordinate
     inv_out$x <- .get_cols(
       data = inv_source,
-      which = x,
+      which = !!enquo(x),
       names = "x",
       class_in = c("integer", "numeric"),
       class_out = "numeric"
@@ -167,7 +232,7 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     #validate y coordinate
     inv_out$y <- .get_cols(
       data = inv_source,
-      which = y,
+      which =  !!enquo(y),
       names = "y",
       class_in = c("integer", "numeric"),
       class_out = "numeric"
@@ -175,41 +240,62 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     # validate dbh
     inv_out$dbh <- .get_cols(
       data = inv_source,
-      which = dbh,
+      which =  !!enquo(dbh),
       names = c("dbh", "diameter", "diam", "d"),
       class_in = c("integer", "numeric"),
       class_out = "numeric",
       mult = dbh_mult,
+      na_allowed = TRUE, # missing values allowed in size-related vars
       fail_if_missing = FALSE # scrap column if not available
     )
     # validate tree height
     inv_out$height <- .get_cols(
       data = inv_source,
-      which = height,
+      which = !!enquo(height),
       names = c("height", "h", "height_m"),
       class_in = c("integer", "numeric"),
       class_out = "numeric",
       mult = height_mult,
-      alternative = NULL,
+      na_allowed = TRUE, # missing values allowed in size-related vars
       fail_if_missing = FALSE # scrap column if not available
     )
+    # validate tree height
+    inv_out$size <- .get_cols(
+      data = inv_source,
+      which = !!enquo(size),
+      names = NULL,
+      class_in = c("integer", "numeric"),
+      class_out = "numeric",
+      mult = height_mult,
+      na_allowed = TRUE, # missing values allowed in size-related vars
+      fail_if_missing = FALSE # scrap column if not available
+    )
+    # get original column names
+    orig <- sapply(inv_out, function(x) ifelse(
+      is.null(attr(x, "original_column")),
+      "automatically generated", attr(x, "original_column")))
     # message about used coordinate vectors
     if(verbose){
-      # get original column names
-      orig <- sapply(inv_out, function(x) ifelse(
-        is.null(attr(x, "original_column")),
-        "automatically generated", attr(x, "original_column")))
-
       message(
         "The following columns were used to create the inventory dataset:\n",
         paste0(names(inv_out), "\t---\t", orig, "\n"))
     }
-  }
 
-  # set class to forest_inv object
-  class(inv_out) <- c("forest_inv", class(inv_out))
-  # return the validated inventory object
-  return(inv_out)
+    # get additional columns
+    if (keep_rest){
+      # get names of variables to keep
+      rest <- setdiff(names(inv_source),
+                      orig[orig != "automatically generated"])
+      # update output dataset
+      inv_out <- cbind(
+        inv_out, subset(data.table::as.data.table(inv_source), select = rest)
+      )
+    }
+    # set class to forest_inv object
+    class(inv_out) <- c("forest_inv", class(inv_out))
+    # return the validated inventory object
+    return(inv_out)
+  }
 }
 
 
@@ -223,10 +309,16 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
     class_out = NULL,      # output class
     mult = NULL,           # multiplier for unit conversion (NULL: no change)
     alternative = NULL,    # alternative value if column not available
+    na_allowed = FALSE,    # are missing values allowed
     fail_if_missing = TRUE # if column it missing, fail (TRUE) or remove
 ){                     # column (FALSE)
+  # quote column specification
+  which <- enquo(which)
   # if column name is specified, take this column
-  if (!is.null(which)) {
+  if (!rlang::quo_is_null(which)) {
+    #conver to character
+    which <- rlang::as_name(which)
+    # check if exists
     if (!which %in% names(data)) stop("No variable named ", which,
                                       " in dataset.")
     out <- data[[which]]
@@ -259,6 +351,9 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
       }
     }
   }
+  # test for NAs if necessary
+  if (!na_allowed) if(any(is.na(out))) stop(
+    "No missing values allowed in column", which)
   # validate class and break if needed
   if(!is.null(class_in)){
     if (!inherits(out, class_in)) {
@@ -281,32 +376,35 @@ read_inv <- function(inv_source, x = NULL, y = NULL,
 }
 
 
-# Define printing method for forest_pc objects:
+# Define printing method for forest_inv objects:
 #' @rdname read_inv
 #' @format NULL
 #' @usage NULL
 #' @export
-print.forest_inv <- function(x, ...){
-  cat("---------------------------------------",
-      " \n'forest_inv' class inventory dataset: \ncollection of", nrow(x),"observations",
-      "\n---------------------------------------\n"
+print.forest_inv <- function(x, digits = 3, topn = 3, nrows = 8, ...){
+  # get number of data columns
+  if (ncol(x) > 4){
+    cols <- paste0("No. of data cols.: ", ncol(x) - 3)
+  } else cols <- ""
+  # prepare header
+  header <- paste0(
+    "'forest_inv' class inventory dataset\n",
+    "No. of obs.: ", nrow(x), "\t ", cols
   )
-
-  if (nrow(x) < 6) {
-    # if there are almost no observations, print the entire dataset
-    print(as.data.frame(x), digits = 3)
-  } else {
-    # else print beginning and end of the data.frame
-    temp <- x[1,]
-    row.names(temp) <- " "
-    for(i in 1:ncol(temp)) temp[, i] <- "..."
-    x[, sapply(x, is.numeric)] <- round(x[, sapply(x, is.numeric)], 3)
-    print(
-      rbind(utils::head(as.data.frame(x), 3),
-            temp,
-            utils::tail(as.data.frame(x), n = 3)
-      )
-    )
-  }
+  # print data.table with trees
+  .print_as_dt(x, digits = digits, topn = topn,
+               nrows = nrows, header = header, ...)
+  # return object invisibly
+  invisible(x)
 }
 
+
+# Define rbind method for forest_inv objects:
+#' @rdname read_inv
+#' @format NULL
+#' @usage NULL
+#' @export
+rbind.forest_inv <- function(
+    ..., use.names = TRUE, fill = FALSE, idcol = NULL){
+  .rbind_with_class(..., use.names = use.names, fill = fill, idcol = idcol)
+}

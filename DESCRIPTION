@@ -16,19 +16,29 @@ Depends:
     R (>= 3.5.0)
 Imports: 
     data.table,
-    dplyr,
     stats,
     VoxR,
-    magrittr,
     rlang,
     Rfast,
     sf,
-    concaveman
+    utils,
+    concaveman,
+    nabor,
+    parallel,
+    doParallel,
+    foreach
 Suggests: 
     lidR,
+    dplyr,
+    magrittr,
+    ggplot2,
+    Rvcg,
     knitr (>= 1.43),
     rmarkdown (>= 2.24),
     testthat (>= 3.0.0)
+Remotes:
+    tiagodc/TreeLS
 BugReports: https://github.com/juliarieder/TreeCompR/issues
 VignetteBuilder: knitr
 Config/testthat/edition: 3
+URL: https://juliarieder.github.io/TreeCompR/
