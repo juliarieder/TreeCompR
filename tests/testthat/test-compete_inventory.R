@@ -364,13 +364,13 @@ test_that("Function works with manual column specifications", {
 })
 
 test_that("Function works for nonstandard indices", {
-  plot <- read.csv(test_path("testdata", "inventory.csv"), sep = ";")
-  plot$test <- plot$DBH * abs(plot$X - plot$Y)
+  plot0 <- read.csv(test_path("testdata", "inventory.csv"), sep = ";")
+  plot0$test <- plot0$DBH * abs(plot0$X - plot0$Y)
 
   # dataset with size can be loaded
   expect_contains({
     # read plot dataset
-    plot <- read_inv(plot, size = test, verbose = FALSE)
+    plot <- read_inv(plot0, size = test, verbose = FALSE)
     names(plot)},
     "size"
   )
@@ -385,6 +385,13 @@ test_that("Function works for nonstandard indices", {
   # not all values are zero
   expect_true(sum(comp[, "CI_size"]) > 0)
 
+  # Meaningful error if size is not specified correctly
+  expect_error({
+    plot1 <- read_inv(plot0, keep_rest = TRUE, verbose = FALSE)
+    compete_inv(plot1, verbose = FALSE, radius = 5, method = "CI_size")},
+    "Is 'inv_source' a forest inventory object without a 'size' column?"
+  )
+
   # a function can be defined
   expect_no_error({
     assign("CI_inv_Hegyi",
@@ -393,6 +400,12 @@ test_that("Function works for nonstandard indices", {
     out <-  compete_inv(plot, verbose = FALSE, radius = 5,
                         method = c("CI_Hegyi", "CI_inv_Hegyi"))
   })
+
+  # size specification works in compete_inv
+  expect_no_error(
+    compete_inv(test_path("testdata", "inventory.csv"), size = TreeID,
+                        radius = 10, verbose = FALSE)
+  )
 
   # correct name is shown in table
   expect_contains(names(out), "CI_inv_Hegyi")

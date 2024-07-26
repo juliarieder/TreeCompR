@@ -30,13 +30,15 @@ compete_inv(
 )
 }
 \arguments{
-\item{inv_source}{either an object of class \code{target_inv}, or any object that
-can be imported by \code{\link[=read_inv]{read_inv()}} (in this case, \code{x}, \code{y}, \code{id},
-\code{dbh}, and/or \code{height} can be specified as in this function -- see the
-corresponding documentation for details).
-If provided with a \code{target_inv} object, the function ignores
-\code{target_source} and overrides further arguments passed to \code{\link[=read_inv]{read_inv()}} and
-\code{\link[=define_target]{define_target()}}.}
+\item{inv_source}{either an object of class \code{forest_inv} or \code{target_inv}, or
+any object that can be imported by \code{\link[=read_inv]{read_inv()}}. If the object is read in
+from a source path or an unformatted data.frame,\code{x}, \code{y}, \code{id}, \code{dbh},
+\code{height} and/or \code{size} can be specified as in \code{\link[=read_inv]{read_inv()}} (see the
+corresponding documentation for details). If the input is a \code{forest_inv}
+or \code{target_inv} object, the column definitions and further arguments
+passed to \code{\link[=read_inv]{read_inv()}} will be ignored. For \code{target_inv} objects,  the
+function also ignores \code{target_source} and overrides further arguments
+passed to \code{\link[=define_target]{define_target()}}.}
 
 \item{target_source}{one of the following:
 \enumerate{
@@ -50,8 +52,8 @@ the corresponding tree is a target tree,
 \item another object of class \code{forest_inv} containing the coordinates of the
 target trees. In this case, the coordinates are matched against the
 coordinates in \code{inv} and IDs may differ (useful e.g. when target trees
-are defined based on GPS coordinates and matched against an airborne laser
-scanning dataset).
+are defined based on GPS coordinates and maWarumtched against an airborne
+laser scanning dataset).
 \item a character vector of length 1 defining the method by which the target
 trees should be determined. Allowed are \code{"buff_edge"} for excluding all
 trees that are at least one search radius from the forest edge,
@@ -350,6 +352,8 @@ inv_species
 # compute species-decomposed Hegyi indices
 comp_species <- compete_inv(
   inv_source = inv_species, target_source = "buff_edge", radius = 12,
+  method = c("CI_Hegyi_QURO", "CI_Hegyi_CABE", "CI_Hegyi_FREC", "CI_Hegyi")
+  )
 
 }
 }

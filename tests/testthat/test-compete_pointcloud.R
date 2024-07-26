@@ -11,12 +11,15 @@ test_that("compete_pc works for .txt file point clouds", {
       print_progress = "none")
   )
 
+  # after first example, use acc_digits = 1 for faster computation
+
   # test basic functionality for cylinder method
   expect_no_error(
     test2 <- compete_pc(
       forest_source = test_path("testdata", "neighborhood.txt"),
       tree_source = test_path("testdata", "tree.txt"),
       comp_method = "cylinder", center_position = "base_pos",
+      acc_digits = 1,
       print_progress = "none")
   )
 
@@ -26,6 +29,7 @@ test_that("compete_pc works for .txt file point clouds", {
       forest_source = test_path("testdata", "neighborhood.txt"),
       tree_source = test_path("testdata", "tree.txt"),
       comp_method = "both", center_position = "base_pos",
+      acc_digits = 1,
       print_progress = "none")
   )
 

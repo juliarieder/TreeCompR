@@ -2,13 +2,15 @@
 #' @description `compete_inv()` computes one or several distance-height- or
 #'  distance-dbh-dependent competition indices based on forest inventory data.
 #'
-#' @param inv_source either an object of class `target_inv`, or any object that
-#'   can be imported by [read_inv()] (in this case, `x`, `y`, `id`,
-#'   `dbh`, and/or `height` can be specified as in this function -- see the
-#'   corresponding documentation for details).
-#'   If provided with a `target_inv` object, the function ignores
-#'   `target_source` and overrides further arguments passed to [read_inv()] and
-#'   [define_target()].
+#' @param inv_source either an object of class `forest_inv` or `target_inv`, or
+#'   any object that can be imported by [read_inv()]. If the object is read in
+#'   from a source path or an unformatted data.frame,`x`, `y`, `id`, `dbh`,
+#'   `height` and/or `size` can be specified as in [read_inv()] (see the
+#'   corresponding documentation for details). If the input is a `forest_inv`
+#'   or `target_inv` object, the column definitions and further arguments
+#'   passed to [read_inv()] will be ignored. For `target_inv` objects,  the
+#'   function also ignores `target_source` and overrides further arguments
+#'   passed to [define_target()].
 #' @param target_source  one of the following:
 #'   1. a path to an any object that can be imported by [read_inv()] (in this
 #'   case, column specifications have to be the same as in `inv_source` - if
@@ -20,8 +22,8 @@
 #'   4. another object of class `forest_inv` containing the coordinates of the
 #'   target trees. In this case, the coordinates are matched against the
 #'   coordinates in `inv` and IDs may differ (useful e.g. when target trees
-#'   are defined based on GPS coordinates and matched against an airborne laser
-#'   scanning dataset).
+#'   are defined based on GPS coordinates and maWarumtched against an airborne
+#'   laser scanning dataset).
 #'   5. a character vector of length 1 defining the method by which the target
 #'   trees should be determined. Allowed are `"buff_edge"` for excluding all
 #'   trees that are at least one search radius from the forest edge,
@@ -262,6 +264,8 @@
 #' # compute species-decomposed Hegyi indices
 #' comp_species <- compete_inv(
 #'   inv_source = inv_species, target_source = "buff_edge", radius = 12,
+#'   method = c("CI_Hegyi_QURO", "CI_Hegyi_CABE", "CI_Hegyi_FREC", "CI_Hegyi")
+#'   )
 #'
 #' }
 compete_inv <- function(inv_source, target_source = "buff_edge", radius,
@@ -479,10 +483,17 @@ compete_inv <- function(inv_source, target_source = "buff_edge", radius,
 
     # stop if there are unmet requirements
     if (length(unmet) > 0){
+      # check for problems with size
+      sizewarn <- ifelse (
+        "size" %in% reqs[unmet],
+        "\nIs 'inv_source' a forest inventory object without a 'size' column?",
+        "")
       stop(
         "The following competition indices require variables ",
         "not in the inventory: \n",
-        paste(paste0(unmet, " (requires '", reqs[unmet], "')"), collapse = ", ")
+        paste(paste0(unmet, " (requires '", reqs[unmet], "')"),
+              collapse = ", "),
+        sizewarn
       )
     }
   }else { # define methods to calculate if method == "all_methods"
