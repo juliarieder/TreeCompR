@@ -180,7 +180,7 @@
 #'       forest_source = neigh,
 #'       tree_source = file.path("folder_with_trees", .x),
 #'       tree_name = .x,
-#'       method = "cone"
+#'       comp_method = "cone"
 #'       )
 #'     ) %>%
 #'     bind_rows()
