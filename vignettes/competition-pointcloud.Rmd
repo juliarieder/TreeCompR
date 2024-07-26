@@ -266,21 +266,13 @@ results1 <- map(
 
 If there is overlap in the studied areas, this may be faster than loading local subsets separately for each tree even for relatively large neighborhoods because loading the data tends to be slower than processing them once they are in memory. 
 
-## Dealing with large files (high point density)
+## Dealing with high point densities
 
-Point clouds obtained from static ground-based scanners (TLS) can have very high point densities, sometimes making it impossible to load the raw point cloud into memory in R. Whenever possible, the point cloud should be clipped beforehand. If this is not sufficient, the point cloud can theoretically be reduced in size, e.g. by voxelizing the point cloud. Depending on the method, however, this may slightly affect the results. For a better comparison, all point clouds should be voxelized with the same resolution. If the target tree was previously segmented manually, the individual tree point cloud should not be voxelized, as otherwise some voxels could be incorrectly assigned when distinguishing between the target tree and the competing neighborhood.
+Point clouds obtained from static ground-based scanners (TLS) can have very high point densities, sometimes resulting in file sizes that make it impossible to load the raw point cloud into memory in R. Whenever possible, the point cloud should be clipped beforehand, ideally as a pre-processing step in dedicated software for these methods such as [CloudCompare](https://www.danielgm.net/cc/).
 
-```{r tls1, echo = TRUE, eval=FALSE}
-library(lidR)
-library(VoxR)
-tree <- lidR::readTLSLAS("data/tree.las")
-las <- lidR::readTLSLAS("data/neighborhood.las")
-voxrvox <- VoxR::vox(las@data, res = 0.01)
-lidrvox <- lidR::voxelize_points(las, res = 0.01)
+If this is not sufficient, the point cloud can be reduced in size, e.g. by downsampling or by voxelizing the point cloud. Depending on the method, however, this may affect the results. In `read_inv()`, we implemented a simple and fast reduction of data size by rounding all coordinates to a coordinate accuracy specified by `acc_digits` using `Rfast::Round()`. While the same can also be achieved in R outside `TreeCompR`, different solutions such as `lidR::voxelize_points()` or `VoxR::vox()` may result in different results depending on the chosen origin of the voxel grid. For these reasons, we prefer to do this step in our package in a consistent fashion that permits internal checks of coordinate accuracy and allows to match the target tree and neighborhood pointclouds based on integer coordinates to speed up calculations and avoid falling into The Floating Point Trap ([See chapter 1 of the R Inferno by Burns, 2001](https://www.burns-stat.com/pages/Tutor/R_inferno.pdf)). 
 
-CI <- compete_pc(las, tree_source = tree, method = "both", center_position = "crown_pos", cyl_r = 4.5, h_cone = 0.5, acc_digits = 2)
-CI <- compete_pc(voxrvox, tree_source = tree, method = "both", center_position = "crown_pos", cyl_r = 4.5, h_cone = 0.5, acc_digits = 2)
-CI <- compete_pc(lidrvox, tree_source = tree, method = "both", center_position = "crown_pos", cyl_r = 4.5, h_cone = 0.5, acc_digits = 2)
-```
+This combination of pre-processingt and built-in data aggregation should be sufficient for a majority of datasets. If the raw data are too large to be read into memory even after clipping to the surroundings of the target tree, it makes sense to further reduce their size by voxelizing/rounding _before_ loading, e.g. in CloudCompare. Here, ideally round to 1-2 decimal places more than desired `acc_digits`, because hat the storage format may result in slight numeric differences (especially for .las/.laz) that can affect coordinate matching.
 
-Downsampling can lead to variations in results compared to using the original, high-density point clouds. This makes it challenging to ensure comparability and consistency across different datasets. If downsampling is necessary, it is crucial to apply it uniformly to all point clouds that you intend to compare or use within a single study. Otherwise, results may be misinterpreted due to inconsistencies in point densities.
+Downsampling along a voxel-based grid such as in `TreeLS::smp_voxelize()` is strongly discouraged for this purpose, as the subsampled points will not match between neighborhood and target tree point cloud, and may not even have the same coordinates after converting them into voxels depending on the origin of the voxel grid.
+
