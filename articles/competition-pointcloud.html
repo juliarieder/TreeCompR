@@ -461,14 +461,14 @@ checks of coordinate accuracy and allows to match the target tree and
 neighborhood pointclouds based on integer coordinates to speed up
 calculations and avoid falling into The Floating Point Trap (<a href="https://www.burns-stat.com/pages/Tutor/R_inferno.pdf" class="external-link">See chapter
 1 of the R Inferno by Burns, 2001</a>).</p>
-<p>This combination of pre-processingt and built-in data aggregation
+<p>This combination of pre-processing and built-in data aggregation
 should be sufficient for a majority of datasets. If the raw data are too
 large to be read into memory even after clipping to the surroundings of
 the target tree, it makes sense to further reduce their size by
 voxelizing/rounding <em>before</em> loading, e.g. in CloudCompare. Here,
 ideally round to 1-2 decimal places more than desired
-<code>acc_digits</code>, because hat the storage format may result in
-slight numeric differences (especially for .las/.laz) that can affect
+<code>acc_digits</code>, because the storage format may result in slight
+numeric differences (especially for .las/.laz) that can affect
 coordinate matching.</p>
 <p>Downsampling along a voxel-based grid such as in
 <code>TreeLS::smp_voxelize()</code> is strongly discouraged for this
