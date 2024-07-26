@@ -171,14 +171,50 @@ $$CI_{size} = \sum_{i=1}^{n} \frac{s_{i}}{s \cdot dist_{i}}$$
 To use the crown projection area, just specify the parameter `size` and the `method` "CI_size":
 
 ```{r integrate4, message=FALSE, warning=FALSE, eval=FALSE}
+# if the inventory data is read in outside of compete_inv() with read_inv(), 
+# the size column needs to be specified already in read_inv() !
+inv_trees <- read_inv(inventory, height = Z, height_unit = "m", 
+                      size = convhull_area, keep_rest = TRUE)
 CI_size <- compete_inv(inv_source = inv_trees, target_source = "buff_edge", 
                   radius = 10, method = "CI_size", size = convhull_area)
+#> 19 trees outside the competitive zone around the target trees were removed. 872 trees remain.
 CI_size
+#> ------------------------------------------------------------
+#> 'compete_inv' class distance-based competition index dataset
+#> No. of target trees: 671    Source inventory size: 872 trees
+#> Target source: 'buff_edge' (10 m)        Search radius: 10 m
+#> ------------------------------------------------------------
+#>       id        x       y height   size CI_size npoints
+#>   1:  61 684895.1 5017995  17.44 34.948   0.618      88
+#>   2:  67 684812.9 5017995  24.26 34.349   0.600      67
+#>   3:  74 684806.2 5017991  25.68 34.424   1.322      69
+#>  ---                                                   
+#> 669: 900 684966.9 5017807  18.44 55.249   0.384      76
+#> 670: 903 684975.8 5017803  19.00 53.822   0.696      75
+#> 671: 910 684959.2 5017798  16.03 32.731   1.019      62
+
+# Alternative: instead of two steps, the same can be done in one step
+CI_size <- compete_inv(inv_source = inventory, target_source = "buff_edge", 
+                   radius = 10, method = "CI_size", size = "convhull_area")
+CI_size
+#> ------------------------------------------------------------
+#> 'compete_inv' class distance-based competition index dataset
+#> No. of target trees: 671    Source inventory size: 872 trees
+#> Target source: 'buff_edge' (10 m)        Search radius: 10 m
+#> ------------------------------------------------------------
+#>       id        x       y height   size CI_size npoints
+#>   1:  61 684895.1 5017995  17.44 34.948   0.618      88
+#>   2:  67 684812.9 5017995  24.26 34.349   0.600      67
+#>   3:  74 684806.2 5017991  25.68 34.424   1.322      69
+#>  ---                                                   
+#> 669: 900 684966.9 5017807  18.44 55.249   0.384      76
+#> 670: 903 684975.8 5017803  19.00 53.822   0.696      75
+#> 671: 910 684959.2 5017798  16.03 32.731   1.019      62
 ```
 
 ## Other options to pre-process the ALS point clouds
 There are other packages available, e.g. the [`itcSegment`](https://rdrr.io/cran/itcSegment/) package. Within their function `itcLiDARallo()`, 
-trees are being segmented based on typical allometric relations that can be defined beforehand. We also used this approach with the settings below to pre-process the MLS data in our manuscript "TreeCompR: Tree competition indices for inventory data and 3D point clouds". We used publicly available laser scanning datasets from the [Bavarian Agency for Digitisation, High-Speed Internet and Surveying](https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=laserdaten).
+trees are being segmented based on typical allometric relations that can be defined beforehand. We also used this approach with the settings below to pre-process the MLS data in our manuscript "TreeCompR: Tree competition indices for inventory data and 3D point clouds". We used publicly available laser scanning datasets from the [Bavarian Agency for Digitisation, High-Speed Internet and Surveying](https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=laserdaten). For the example below we show it with the lidR example data from above.
 
 ```{r itclidar, echo = TRUE, eval=FALSE}
 library(itcSegment)
@@ -199,11 +235,44 @@ nlas <- las - dtm
 # segment the trees (adjust epsg according to your coordinate reference system)
 se<-itcLiDARallo(nlas$X,nlas$Y,nlas$Z,epsg=32632,lut=lut)
 summary(se)
+#>        X                Y              Height_m         CA_m2       
+#>  Min.   :684767   Min.   :5017787   Min.   : 2.51   Min.   : 0.020  
+#>  1st Qu.:684832   1st Qu.:5017859   1st Qu.:18.21   1st Qu.: 3.240  
+#>  Median :684888   Median :5017916   Median :20.52   Median : 6.120  
+#>  Mean   :684886   Mean   :5017910   Mean   :20.15   Mean   : 9.092  
+#>  3rd Qu.:684940   3rd Qu.:5017961   3rd Qu.:22.44   3rd Qu.:11.740  
+#>  Max.   :684993   Max.   :5018006   Max.   :29.97   Max.   :75.260  
 plot(se,axes=T)
+```
 
+<img src="../man/figures/itclidar.jpeg" alt="CIB" width="500">
+
+```{r itclidar2, echo = TRUE, eval=FALSE}
+# convert the SpatVector class object to a data table
+inventory <- as.data.table(se)
 #validate the output in TreeCompR
-inv_trees <- read_inv(se, height = Height_m, height_unit = "m")
+inv_trees <- read_inv(inventory, height = Height_m, height_unit = "m")
+#>  The following columns were used to create the inventory dataset:
+#>  id	---	automatically generated
+#>  x	---	X
+#>  y	---	Y
+#>  height	---	Height_m
+
 #quantify tree competition (adjust radius)
 compete_inv(inv_source = inv_trees, target_source = "buff_edge", 
             radius = 13.5, method = "all_methods")
+#>  4 trees outside the competitive zone around the target trees were removed. 2661 trees remain.
+#>  ------------------------------------------------------------
+#>  'compete_inv' class distance-based competition index dataset
+#>  No. of target trees: 1973  Source inventory size: 2661 trees
+#>  Target source: 'buff_edge' (13.5 m)    Search radius: 13.5 m
+#>  ------------------------------------------------------------
+#>          id        x       y height CI_Braathe CI_RK3 CI_RK4
+#>     1:   51 684972.7 5017807  17.80      2.647 13.765 24.290
+#>     2:   58 684851.0 5017807  16.37      2.718 16.880 25.298
+#>     3:   59 684961.1 5017807  18.09      2.870 14.162 23.024
+#>    ---                                                      
+#>  1971: 2464 684849.5 5017992  12.48      7.512 45.653 75.752
+#>  1972: 2468 684922.8 5017992  20.12      5.681 28.961 49.241
+#>  1973: 2495 684839.2 5017992  21.96      5.172 21.985 44.906
 ```
