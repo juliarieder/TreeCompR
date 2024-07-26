@@ -108,24 +108,66 @@ compete_inv(inventory, target_source = "buff_edge", radius = 7,
 ## you can choose it within methods = "CI_Hegyi".
 compete_inv(inventory, target_source = "buff_edge", radius = 7, 
              method = "CI_Hegyi")
-
+#> ------------------------------------------------------------
+#> 'compete_inv' class distance-based competition index dataset
+#> No. of target trees: 1       Source inventory size: 24 trees
+#> Target source: 'buff_edge' (7 m)          Search radius: 7 m
+#> ------------------------------------------------------------
+#>    id     x      y    dbh height CI_Hegyi
+#> 1: 20 0.105 -0.492 24.961 23.871    1.986
 
 ## If you have a tree height column that is not automatically recognized within 
 ## our validation of input data, you can set it manually:
-# in read_inv():
+## in read_inv():
 inventory <- read_inv(inv_source = inventory, height = "h_column_name")
+#> The following columns were used to create the inventory dataset:
+#> id	---	TreeID
+#> x	---	X
+#> y	---	Y
+#> dbh	---	dbh
+#> height	---	h_column_name
 
-# in compete_inv():
-compete_inv(inventory, target_source = "buff_edge", radius = 10, 
+## or directly in compete_inv():
+compete_inv(inventory2, target_source = "buff_edge", radius = 7, 
               height = "h_column_name", method = "CI_Hegyi")
+#> The following columns were used to create the inventory dataset:
+#> id	---	TreeID
+#> x	---	X
+#> y	---	Y
+#> dbh	---	dbh
+#> height	---	h_column_name
+#> 
+#> 7 trees outside the competitive zone around the target trees were removed. 24 trees remain.
+#> ------------------------------------------------------------
+#> 'compete_inv' class distance-based competition index dataset
+#> No. of target trees: 1       Source inventory size: 24 trees
+#> Target source: 'buff_edge' (7 m)          Search radius: 7 m
+#> ------------------------------------------------------------
+#>    id     x      y  dbh height CI_Hegyi
+#> 1: 20 0.105 -0.492 0.25 23.871    1.986
 
 ## If your dbh is specified in cm, just change the dbh_unit to "cm"
-compete_inv(inventory, target_source = "buff_edge", radius = 10, 
+compete_inv(inventory3, target_source = "buff_edge", radius = 7, 
               dbh_unit = "cm", method = "CI_Hegyi")
+
+#> 7 trees outside the competitive zone around the target trees were removed. 24 trees remain.
+#> ------------------------------------------------------------
+#> 'compete_inv' class distance-based competition index dataset
+#> No. of target trees: 1       Source inventory size: 24 trees
+#> Target source: 'buff_edge' (7 m)          Search radius: 7 m
+#> ------------------------------------------------------------
+#>    id     x      y    dbh height CI_Hegyi
+#> 1: 20 0.105 -0.492 24.961 23.871    1.986
 
 ## If you want to keep a column with certain user defined IDs for the trees, 
 ## and it is not recognized, specify it with id = "name_column"
-inventory <- read_inv(inv_source = inventory, id = "ID_user")
+inventory <- read_inv(inv_source = inv4, id = "Tree_ID_User")
+#> The following columns were used to create the inventory dataset:
+#> id	---	Tree_ID_User
+#> x	---	X
+#> y	---	Y
+#> dbh	---	dbh
+#> height	---	H
 ```
 
 If you use other options to derive the tree parameters from TLS or MLS data, you can customize `read_inv()` and `compete_inv()` accordingly. For more examples, have a look at some more [examples](https://juliarieder.github.io/TreeCompR/articles/competition-inventory.html#reading-in-forest-inventory-data-with-with-read_inv).
