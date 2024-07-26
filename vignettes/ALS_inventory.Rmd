@@ -53,12 +53,14 @@ Please note, there are various options on individual tree segmentations (e.g. ba
 For a segmentation based on CHM, first the CHM needs to be generated:
 
 ```{r CHM, message=FALSE, warning=FALSE, eval=FALSE}
-# create CHM raster from point cloud with 0.5 m resolution (adjust values if needed)
+# create CHM raster from point cloud with 0.5 m resolution 
+#(adjust values if needed)
 chm_p2r_05 <- rasterize_canopy(las, 0.5, p2r(subcircle = 0.2), pkg = "terra")
 
 # Post-processing median filter
 kernel <- matrix(1,3,3)
-chm_p2r_05_smoothed <- terra::focal(chm_p2r_05, w = kernel, fun = median, na.rm = TRUE)
+chm_p2r_05_smoothed <- terra::focal(chm_p2r_05, w = kernel, 
+                                    fun = median, na.rm = TRUE)
 
 #locate tree tops
 ttops_chm_p2r_05_smoothed <- locate_trees(chm_p2r_05_smoothed, lmf(5))
@@ -177,7 +179,8 @@ inv_trees <- read_inv(inventory, height = Z, height_unit = "m",
                       size = convhull_area, keep_rest = TRUE)
 CI_size <- compete_inv(inv_source = inv_trees, target_source = "buff_edge", 
                   radius = 10, method = "CI_size", size = convhull_area)
-#> 19 trees outside the competitive zone around the target trees were removed. 872 trees remain.
+#> 19 trees outside the competitive zone around the target trees were removed. 
+#> 872 trees remain.
 CI_size
 #> ------------------------------------------------------------
 #> 'compete_inv' class distance-based competition index dataset
@@ -261,7 +264,8 @@ inv_trees <- read_inv(inventory, height = Height_m, height_unit = "m")
 #quantify tree competition (adjust radius)
 compete_inv(inv_source = inv_trees, target_source = "buff_edge", 
             radius = 13.5, method = "all_methods")
-#>  4 trees outside the competitive zone around the target trees were removed. 2661 trees remain.
+#>  4 trees outside the competitive zone around the target trees were removed. 
+#>  2661 trees remain.
 #>  ------------------------------------------------------------
 #>  'compete_inv' class distance-based competition index dataset
 #>  No. of target trees: 1973  Source inventory size: 2661 trees

@@ -64,7 +64,7 @@
 #'  for identifying target trees (e.g. if target trees where identified by
 #'  taking their GPS coordinates manually in the field).
 #'
-#' @return object of class `forest_inv`: a modified data.table with with x and
+#' @return object of class `forest_inv`: a modified data.table with x and
 #'  y coordinates of the tree, a unique tree identifier (`id`) and tree diameter
 #'  at breast height (`dbh`, in cm) and tree height (`height`, in m) if
 #'  available.
