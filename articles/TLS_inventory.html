@@ -176,24 +176,66 @@ target tree.</p>
 <span><span class="co">## you can choose it within methods = "CI_Hegyi".</span></span>
 <span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">7</span>, </span>
 <span>             method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
-<span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; 'compete_inv' class distance-based competition index dataset</span></span>
+<span><span class="co">#&gt; No. of target trees: 1       Source inventory size: 24 trees</span></span>
+<span><span class="co">#&gt; Target source: 'buff_edge' (7 m)          Search radius: 7 m</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;    id     x      y    dbh height CI_Hegyi</span></span>
+<span><span class="co">#&gt; 1: 20 0.105 -0.492 24.961 23.871    1.986</span></span>
 <span></span>
 <span><span class="co">## If you have a tree height column that is not automatically recognized within </span></span>
 <span><span class="co">## our validation of input data, you can set it manually:</span></span>
-<span><span class="co"># in read_inv():</span></span>
+<span><span class="co">## in read_inv():</span></span>
 <span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inventory</span>, height <span class="op">=</span> <span class="st">"h_column_name"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; The following columns were used to create the inventory dataset:</span></span>
+<span><span class="co">#&gt; id   --- TreeID</span></span>
+<span><span class="co">#&gt; x    --- X</span></span>
+<span><span class="co">#&gt; y    --- Y</span></span>
+<span><span class="co">#&gt; dbh  --- dbh</span></span>
+<span><span class="co">#&gt; height   --- h_column_name</span></span>
 <span></span>
-<span><span class="co"># in compete_inv():</span></span>
-<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
+<span><span class="co">## or directly in compete_inv():</span></span>
+<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory2</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">7</span>, </span>
 <span>              height <span class="op">=</span> <span class="st">"h_column_name"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; The following columns were used to create the inventory dataset:</span></span>
+<span><span class="co">#&gt; id   --- TreeID</span></span>
+<span><span class="co">#&gt; x    --- X</span></span>
+<span><span class="co">#&gt; y    --- Y</span></span>
+<span><span class="co">#&gt; dbh  --- dbh</span></span>
+<span><span class="co">#&gt; height   --- h_column_name</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; 7 trees outside the competitive zone around the target trees were removed. 24 trees remain.</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; 'compete_inv' class distance-based competition index dataset</span></span>
+<span><span class="co">#&gt; No. of target trees: 1       Source inventory size: 24 trees</span></span>
+<span><span class="co">#&gt; Target source: 'buff_edge' (7 m)          Search radius: 7 m</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;    id     x      y  dbh height CI_Hegyi</span></span>
+<span><span class="co">#&gt; 1: 20 0.105 -0.492 0.25 23.871    1.986</span></span>
 <span></span>
 <span><span class="co">## If your dbh is specified in cm, just change the dbh_unit to "cm"</span></span>
-<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span>, </span>
+<span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory3</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">7</span>, </span>
 <span>              dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#&gt; 7 trees outside the competitive zone around the target trees were removed. 24 trees remain.</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; 'compete_inv' class distance-based competition index dataset</span></span>
+<span><span class="co">#&gt; No. of target trees: 1       Source inventory size: 24 trees</span></span>
+<span><span class="co">#&gt; Target source: 'buff_edge' (7 m)          Search radius: 7 m</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;    id     x      y    dbh height CI_Hegyi</span></span>
+<span><span class="co">#&gt; 1: 20 0.105 -0.492 24.961 23.871    1.986</span></span>
 <span></span>
 <span><span class="co">## If you want to keep a column with certain user defined IDs for the trees, </span></span>
 <span><span class="co">## and it is not recognized, specify it with id = "name_column"</span></span>
-<span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inventory</span>, id <span class="op">=</span> <span class="st">"ID_user"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv4</span>, id <span class="op">=</span> <span class="st">"Tree_ID_User"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; The following columns were used to create the inventory dataset:</span></span>
+<span><span class="co">#&gt; id   --- Tree_ID_User</span></span>
+<span><span class="co">#&gt; x    --- X</span></span>
+<span><span class="co">#&gt; y    --- Y</span></span>
+<span><span class="co">#&gt; dbh  --- dbh</span></span>
+<span><span class="co">#&gt; height   --- H</span></span></code></pre></div>
 <p>If you use other options to derive the tree parameters from TLS or
 MLS data, you can customize <code><a href="../reference/read_inv.html">read_inv()</a></code> and
 <code><a href="../reference/compete_inv.html">compete_inv()</a></code> accordingly. For more examples, have a look
