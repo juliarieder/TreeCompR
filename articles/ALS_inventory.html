@@ -125,12 +125,14 @@ results are realistic.</p>
 <p>For a segmentation based on CHM, first the CHM needs to be
 generated:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># create CHM raster from point cloud with 0.5 m resolution (adjust values if needed)</span></span>
+<code class="sourceCode R"><span><span class="co"># create CHM raster from point cloud with 0.5 m resolution </span></span>
+<span><span class="co">#(adjust values if needed)</span></span>
 <span><span class="va">chm_p2r_05</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lidR/man/rasterize.html" class="external-link">rasterize_canopy</a></span><span class="op">(</span><span class="va">las</span>, <span class="fl">0.5</span>, <span class="fu"><a href="https://rdrr.io/pkg/lidR/man/dsm_point2raster.html" class="external-link">p2r</a></span><span class="op">(</span>subcircle <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span>, pkg <span class="op">=</span> <span class="st">"terra"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Post-processing median filter</span></span>
 <span><span class="va">kernel</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">3</span>,<span class="fl">3</span><span class="op">)</span></span>
-<span><span class="va">chm_p2r_05_smoothed</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/focal.html" class="external-link">focal</a></span><span class="op">(</span><span class="va">chm_p2r_05</span>, w <span class="op">=</span> <span class="va">kernel</span>, fun <span class="op">=</span> <span class="va">median</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">chm_p2r_05_smoothed</span> <span class="op">&lt;-</span> <span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/focal.html" class="external-link">focal</a></span><span class="op">(</span><span class="va">chm_p2r_05</span>, w <span class="op">=</span> <span class="va">kernel</span>, </span>
+<span>                                    fun <span class="op">=</span> <span class="va">median</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#locate tree tops</span></span>
 <span><span class="va">ttops_chm_p2r_05_smoothed</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lidR/man/locate_trees.html" class="external-link">locate_trees</a></span><span class="op">(</span><span class="va">chm_p2r_05_smoothed</span>, <span class="fu"><a href="https://rdrr.io/pkg/lidR/man/itd_lmf.html" class="external-link">lmf</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -256,7 +258,8 @@ To use the crown projection area, just specify the parameter
 <span>                      size <span class="op">=</span> <span class="va">convhull_area</span>, keep_rest <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">CI_size</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv_trees</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
 <span>                  radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"CI_size"</span>, size <span class="op">=</span> <span class="va">convhull_area</span><span class="op">)</span></span>
-<span><span class="co">#&gt; 19 trees outside the competitive zone around the target trees were removed. 872 trees remain.</span></span>
+<span><span class="co">#&gt; 19 trees outside the competitive zone around the target trees were removed. </span></span>
+<span><span class="co">#&gt; 872 trees remain.</span></span>
 <span><span class="va">CI_size</span></span>
 <span><span class="co">#&gt; ------------------------------------------------------------</span></span>
 <span><span class="co">#&gt; 'compete_inv' class distance-based competition index dataset</span></span>
@@ -344,7 +347,8 @@ example below we show it with the lidR example data from above.</p>
 <span><span class="co">#quantify tree competition (adjust radius)</span></span>
 <span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv_trees</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
 <span>            radius <span class="op">=</span> <span class="fl">13.5</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  4 trees outside the competitive zone around the target trees were removed. 2661 trees remain.</span></span>
+<span><span class="co">#&gt;  4 trees outside the competitive zone around the target trees were removed. </span></span>
+<span><span class="co">#&gt;  2661 trees remain.</span></span>
 <span><span class="co">#&gt;  ------------------------------------------------------------</span></span>
 <span><span class="co">#&gt;  'compete_inv' class distance-based competition index dataset</span></span>
 <span><span class="co">#&gt;  No. of target trees: 1973  Source inventory size: 2661 trees</span></span>

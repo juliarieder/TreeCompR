@@ -98,15 +98,15 @@ estimate the diameter and height of each individual tree.</p>
 <span>    <span class="va">tls_stem</span> <span class="op">&lt;-</span> <span class="fu">stemPoints</span><span class="op">(</span><span class="va">tls_t</span>, <span class="fu">stm.hough</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">inv</span> <span class="op">&lt;-</span> <span class="fu">tlsInventory</span><span class="op">(</span><span class="va">tls_stem</span>, d_method<span class="op">=</span><span class="fu">shapeFit</span><span class="op">(</span>shape<span class="op">=</span><span class="st">'circle'</span>, </span>
 <span>                                                    algorithm <span class="op">=</span> <span class="st">'ransac'</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">inv</span><span class="op">$</span><span class="va">dbh</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">inv</span><span class="op">$</span><span class="va">Radius</span> <span class="op">*</span> <span class="fl">2</span><span class="op">)</span></span>
+<span>    <span class="va">inv</span><span class="op">$</span><span class="va">dbh</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">inv</span><span class="op">$</span><span class="va">Radius</span> <span class="op">*</span> <span class="fl">2</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">TreeID</span>, <span class="va">X</span>, <span class="va">Y</span>, <span class="va">H</span>, <span class="va">dbh</span><span class="op">)</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">inv</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    TreeID         X          Y     Radius        Error        H h_radius        dbh</span></span>
-<span><span class="co">#&gt; 1:      1 12.039168  3.3932670 0.44487714 0.0008539910 24.72817      1.3 0.88975428</span></span>
-<span><span class="co">#&gt; 2:      2 11.930523  2.3763304 0.13060774 0.0005245504 24.98053      1.3 0.26121547</span></span>
-<span><span class="co">#&gt; 3:      3  7.424479 -4.9563841 0.09487961 0.0003207291 23.75091      1.3 0.18975922</span></span>
-<span><span class="co">#&gt; 4:      4  7.144895  5.8221160 0.49786606 0.0004321285 24.05617      1.3 0.99573212</span></span>
-<span><span class="co">#&gt; 5:      5  7.085920  0.8309956 0.08171301 0.0002994584 24.07538      1.3 0.16342603</span></span>
-<span><span class="co">#&gt; 6:      6  7.183327  5.2498770 0.04965389 0.0004974247 23.94043      1.3 0.09930777    </span></span></code></pre></div>
+<span><span class="co">#&gt;    TreeID         X          Y        H        dbh</span></span>
+<span><span class="co">#&gt; 1:      1 11.709633  3.0399174 24.72817 1.06845322</span></span>
+<span><span class="co">#&gt; 2:      2 11.953612  2.3900734 24.98053 0.32118377</span></span>
+<span><span class="co">#&gt; 3:      3  7.429792 -4.9559437 23.75091 0.18467989</span></span>
+<span><span class="co">#&gt; 4:      4  7.150391  5.7965706 24.05617 0.94364591</span></span>
+<span><span class="co">#&gt; 5:      5  7.088778  0.8337127 24.07538 0.16088486</span></span>
+<span><span class="co">#&gt; 6:      6  7.184398  5.2539175 23.94043 0.07801985 </span></span></code></pre></div>
 <p><img src="../reference/figures/TLS_plot3d.JPG" alt="plot_trees3d" width="500"></p>
 </div>
 <div class="section level2">
@@ -130,7 +130,8 @@ target tree.</p>
 <code class="sourceCode R"><span><span class="co">#validate the inventory dataset "inv"</span></span>
 <span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv</span>, dbh_unit <span class="op">=</span> <span class="st">"m"</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
 <span><span class="co">#define the target tree(s) depending on the search radius</span></span>
-<span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span>inv <span class="op">=</span> <span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/define_target.html">define_target</a></span><span class="op">(</span>inv <span class="op">=</span> <span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
+<span>                         radius <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
 <span><span class="co">#&gt;--------------------------------------------------------------- </span></span>
 <span><span class="co">#&gt; 'target_inv' class inventory dataset with defined target trees: </span></span>
 <span><span class="co">#&gt; collection of 31 observations </span></span>
@@ -205,7 +206,8 @@ target tree.</p>
 <span><span class="co">#&gt; dbh  --- dbh</span></span>
 <span><span class="co">#&gt; height   --- h_column_name</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; 7 trees outside the competitive zone around the target trees were removed. 24 trees remain.</span></span>
+<span><span class="co">#&gt; 7 trees outside the competitive zone around the target trees were removed. </span></span>
+<span><span class="co">#&gt; 24 trees remain.</span></span>
 <span><span class="co">#&gt; ------------------------------------------------------------</span></span>
 <span><span class="co">#&gt; 'compete_inv' class distance-based competition index dataset</span></span>
 <span><span class="co">#&gt; No. of target trees: 1       Source inventory size: 24 trees</span></span>
@@ -218,7 +220,8 @@ target tree.</p>
 <span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span><span class="va">inventory3</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, radius <span class="op">=</span> <span class="fl">7</span>, </span>
 <span>              dbh_unit <span class="op">=</span> <span class="st">"cm"</span>, method <span class="op">=</span> <span class="st">"CI_Hegyi"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">#&gt; 7 trees outside the competitive zone around the target trees were removed. 24 trees remain.</span></span>
+<span><span class="co">#&gt; 7 trees outside the competitive zone around the target trees were removed. </span></span>
+<span><span class="co">#&gt; 24 trees remain.</span></span>
 <span><span class="co">#&gt; ------------------------------------------------------------</span></span>
 <span><span class="co">#&gt; 'compete_inv' class distance-based competition index dataset</span></span>
 <span><span class="co">#&gt; No. of target trees: 1       Source inventory size: 24 trees</span></span>
