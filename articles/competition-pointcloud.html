@@ -438,37 +438,44 @@ processing them once they are in memory.</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="dealing-with-large-files-high-point-density">Dealing with large files (high point density)<a class="anchor" aria-label="anchor" href="#dealing-with-large-files-high-point-density"></a>
+<h2 id="dealing-with-high-point-densities">Dealing with high point densities<a class="anchor" aria-label="anchor" href="#dealing-with-high-point-densities"></a>
 </h2>
 <p>Point clouds obtained from static ground-based scanners (TLS) can
-have very high point densities, sometimes making it impossible to load
-the raw point cloud into memory in R. Whenever possible, the point cloud
-should be clipped beforehand. If this is not sufficient, the point cloud
-can theoretically be reduced in size, e.g. by voxelizing the point
-cloud. Depending on the method, however, this may slightly affect the
-results. For a better comparison, all point clouds should be voxelized
-with the same resolution. If the target tree was previously segmented
-manually, the individual tree point cloud should not be voxelized, as
-otherwise some voxels could be incorrectly assigned when distinguishing
-between the target tree and the competing neighborhood.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/r-lidar/lidR" class="external-link">lidR</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/Blecigne/VoxR" class="external-link">VoxR</a></span><span class="op">)</span></span>
-<span><span class="va">tree</span> <span class="op">&lt;-</span> <span class="fu">lidR</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lidR/man/readLAS.html" class="external-link">readTLSLAS</a></span><span class="op">(</span><span class="st">"data/tree.las"</span><span class="op">)</span></span>
-<span><span class="va">las</span> <span class="op">&lt;-</span> <span class="fu">lidR</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lidR/man/readLAS.html" class="external-link">readTLSLAS</a></span><span class="op">(</span><span class="st">"data/neighborhood.las"</span><span class="op">)</span></span>
-<span><span class="va">voxrvox</span> <span class="op">&lt;-</span> <span class="fu">VoxR</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/VoxR/man/vox.html" class="external-link">vox</a></span><span class="op">(</span><span class="va">las</span><span class="op">@</span><span class="va">data</span>, res <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
-<span><span class="va">lidrvox</span> <span class="op">&lt;-</span> <span class="fu">lidR</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lidR/man/voxelize_points.html" class="external-link">voxelize_points</a></span><span class="op">(</span><span class="va">las</span>, res <span class="op">=</span> <span class="fl">0.01</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">CI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span><span class="va">las</span>, tree_source <span class="op">=</span> <span class="va">tree</span>, method <span class="op">=</span> <span class="st">"both"</span>, center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, cyl_r <span class="op">=</span> <span class="fl">4.5</span>, h_cone <span class="op">=</span> <span class="fl">0.5</span>, acc_digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="va">CI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span><span class="va">voxrvox</span>, tree_source <span class="op">=</span> <span class="va">tree</span>, method <span class="op">=</span> <span class="st">"both"</span>, center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, cyl_r <span class="op">=</span> <span class="fl">4.5</span>, h_cone <span class="op">=</span> <span class="fl">0.5</span>, acc_digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="va">CI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_pc.html">compete_pc</a></span><span class="op">(</span><span class="va">lidrvox</span>, tree_source <span class="op">=</span> <span class="va">tree</span>, method <span class="op">=</span> <span class="st">"both"</span>, center_position <span class="op">=</span> <span class="st">"crown_pos"</span>, cyl_r <span class="op">=</span> <span class="fl">4.5</span>, h_cone <span class="op">=</span> <span class="fl">0.5</span>, acc_digits <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
-<p>Downsampling can lead to variations in results compared to using the
-original, high-density point clouds. This makes it challenging to ensure
-comparability and consistency across different datasets. If downsampling
-is necessary, it is crucial to apply it uniformly to all point clouds
-that you intend to compare or use within a single study. Otherwise,
-results may be misinterpreted due to inconsistencies in point
-densities.</p>
+have very high point densities, sometimes resulting in file sizes that
+make it impossible to load the raw point cloud into memory in R.
+Whenever possible, the point cloud should be clipped beforehand, ideally
+as a pre-processing step in dedicated software for these methods such as
+<a href="https://www.danielgm.net/cc/" class="external-link">CloudCompare</a>.</p>
+<p>If this is not sufficient, the point cloud can be reduced in size,
+e.g. by downsampling or by voxelizing the point cloud. Depending on the
+method, however, this may affect the results. In
+<code><a href="../reference/read_inv.html">read_inv()</a></code>, we implemented a simple and fast reduction of
+data size by rounding all coordinates to a coordinate accuracy specified
+by <code>acc_digits</code> using <code><a href="https://rdrr.io/pkg/Rfast/man/Round.html" class="external-link">Rfast::Round()</a></code>. While the
+same can also be achieved in R outside <code>TreeCompR</code>, different
+solutions such as <code><a href="https://rdrr.io/pkg/lidR/man/voxelize_points.html" class="external-link">lidR::voxelize_points()</a></code> or
+<code><a href="https://rdrr.io/pkg/VoxR/man/vox.html" class="external-link">VoxR::vox()</a></code> may result in different results depending on
+the chosen origin of the voxel grid. For these reasons, we prefer to do
+this step in our package in a consistent fashion that permits internal
+checks of coordinate accuracy and allows to match the target tree and
+neighborhood pointclouds based on integer coordinates to speed up
+calculations and avoid falling into The Floating Point Trap (<a href="https://www.burns-stat.com/pages/Tutor/R_inferno.pdf" class="external-link">See chapter
+1 of the R Inferno by Burns, 2001</a>).</p>
+<p>This combination of pre-processingt and built-in data aggregation
+should be sufficient for a majority of datasets. If the raw data are too
+large to be read into memory even after clipping to the surroundings of
+the target tree, it makes sense to further reduce their size by
+voxelizing/rounding <em>before</em> loading, e.g. in CloudCompare. Here,
+ideally round to 1-2 decimal places more than desired
+<code>acc_digits</code>, because hat the storage format may result in
+slight numeric differences (especially for .las/.laz) that can affect
+coordinate matching.</p>
+<p>Downsampling along a voxel-based grid such as in
+<code>TreeLS::smp_voxelize()</code> is strongly discouraged for this
+purpose, as the subsampled points will not match between neighborhood
+and target tree point cloud, and may not even have the same coordinates
+after converting them into voxels depending on the origin of the voxel
+grid.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
