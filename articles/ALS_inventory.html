@@ -250,9 +250,45 @@ size of the target tree):
 To use the crown projection area, just specify the parameter
 <code>size</code> and the <code>method</code> “CI_size”:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">CI_size</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv_trees</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
+<code class="sourceCode R"><span><span class="co"># if the inventory data is read in outside of compete_inv() with read_inv(), </span></span>
+<span><span class="co"># the size column needs to be specified already in read_inv() !</span></span>
+<span><span class="va">inv_trees</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="va">inventory</span>, height <span class="op">=</span> <span class="va">Z</span>, height_unit <span class="op">=</span> <span class="st">"m"</span>, </span>
+<span>                      size <span class="op">=</span> <span class="va">convhull_area</span>, keep_rest <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">CI_size</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv_trees</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
 <span>                  radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"CI_size"</span>, size <span class="op">=</span> <span class="va">convhull_area</span><span class="op">)</span></span>
-<span><span class="va">CI_size</span></span></code></pre></div>
+<span><span class="co">#&gt; 19 trees outside the competitive zone around the target trees were removed. 872 trees remain.</span></span>
+<span><span class="va">CI_size</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; 'compete_inv' class distance-based competition index dataset</span></span>
+<span><span class="co">#&gt; No. of target trees: 671    Source inventory size: 872 trees</span></span>
+<span><span class="co">#&gt; Target source: 'buff_edge' (10 m)        Search radius: 10 m</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;       id        x       y height   size CI_size npoints</span></span>
+<span><span class="co">#&gt;   1:  61 684895.1 5017995  17.44 34.948   0.618      88</span></span>
+<span><span class="co">#&gt;   2:  67 684812.9 5017995  24.26 34.349   0.600      67</span></span>
+<span><span class="co">#&gt;   3:  74 684806.2 5017991  25.68 34.424   1.322      69</span></span>
+<span><span class="co">#&gt;  ---                                                   </span></span>
+<span><span class="co">#&gt; 669: 900 684966.9 5017807  18.44 55.249   0.384      76</span></span>
+<span><span class="co">#&gt; 670: 903 684975.8 5017803  19.00 53.822   0.696      75</span></span>
+<span><span class="co">#&gt; 671: 910 684959.2 5017798  16.03 32.731   1.019      62</span></span>
+<span></span>
+<span><span class="co"># Alternative: instead of two steps, the same can be done in one step</span></span>
+<span><span class="va">CI_size</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inventory</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
+<span>                   radius <span class="op">=</span> <span class="fl">10</span>, method <span class="op">=</span> <span class="st">"CI_size"</span>, size <span class="op">=</span> <span class="st">"convhull_area"</span><span class="op">)</span></span>
+<span><span class="va">CI_size</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt; 'compete_inv' class distance-based competition index dataset</span></span>
+<span><span class="co">#&gt; No. of target trees: 671    Source inventory size: 872 trees</span></span>
+<span><span class="co">#&gt; Target source: 'buff_edge' (10 m)        Search radius: 10 m</span></span>
+<span><span class="co">#&gt; ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;       id        x       y height   size CI_size npoints</span></span>
+<span><span class="co">#&gt;   1:  61 684895.1 5017995  17.44 34.948   0.618      88</span></span>
+<span><span class="co">#&gt;   2:  67 684812.9 5017995  24.26 34.349   0.600      67</span></span>
+<span><span class="co">#&gt;   3:  74 684806.2 5017991  25.68 34.424   1.322      69</span></span>
+<span><span class="co">#&gt;  ---                                                   </span></span>
+<span><span class="co">#&gt; 669: 900 684966.9 5017807  18.44 55.249   0.384      76</span></span>
+<span><span class="co">#&gt; 670: 903 684975.8 5017803  19.00 53.822   0.696      75</span></span>
+<span><span class="co">#&gt; 671: 910 684959.2 5017798  16.03 32.731   1.019      62</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="other-options-to-pre-process-the-als-point-clouds">Other options to pre-process the ALS point clouds<a class="anchor" aria-label="anchor" href="#other-options-to-pre-process-the-als-point-clouds"></a>
@@ -264,7 +300,8 @@ defined beforehand. We also used this approach with the settings below
 to pre-process the MLS data in our manuscript “TreeCompR: Tree
 competition indices for inventory data and 3D point clouds”. We used
 publicly available laser scanning datasets from the <a href="https://geodaten.bayern.de/opengeodata/OpenDataDetail.html?pn=laserdaten" class="external-link">Bavarian
-Agency for Digitisation, High-Speed Internet and Surveying</a>.</p>
+Agency for Digitisation, High-Speed Internet and Surveying</a>. For the
+example below we show it with the lidR example data from above.</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">itcSegment</span><span class="op">)</span></span>
 <span></span>
@@ -284,13 +321,43 @@ Agency for Digitisation, High-Speed Internet and Surveying</a>.</p>
 <span><span class="co"># segment the trees (adjust epsg according to your coordinate reference system)</span></span>
 <span><span class="va">se</span><span class="op">&lt;-</span><span class="fu">itcLiDARallo</span><span class="op">(</span><span class="va">nlas</span><span class="op">$</span><span class="va">X</span>,<span class="va">nlas</span><span class="op">$</span><span class="va">Y</span>,<span class="va">nlas</span><span class="op">$</span><span class="va">Z</span>,epsg<span class="op">=</span><span class="fl">32632</span>,lut<span class="op">=</span><span class="va">lut</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">se</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/lidR/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">se</span>,axes<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span>
-<span></span>
+<span><span class="co">#&gt;        X                Y              Height_m         CA_m2       </span></span>
+<span><span class="co">#&gt;  Min.   :684767   Min.   :5017787   Min.   : 2.51   Min.   : 0.020  </span></span>
+<span><span class="co">#&gt;  1st Qu.:684832   1st Qu.:5017859   1st Qu.:18.21   1st Qu.: 3.240  </span></span>
+<span><span class="co">#&gt;  Median :684888   Median :5017916   Median :20.52   Median : 6.120  </span></span>
+<span><span class="co">#&gt;  Mean   :684886   Mean   :5017910   Mean   :20.15   Mean   : 9.092  </span></span>
+<span><span class="co">#&gt;  3rd Qu.:684940   3rd Qu.:5017961   3rd Qu.:22.44   3rd Qu.:11.740  </span></span>
+<span><span class="co">#&gt;  Max.   :684993   Max.   :5018006   Max.   :29.97   Max.   :75.260  </span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/lidR/man/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">se</span>,axes<span class="op">=</span><span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<p><img src="../reference/figures/itclidar.jpeg" alt="CIB" width="500"></p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># convert the SpatVector class object to a data table</span></span>
+<span><span class="va">inventory</span> <span class="op">&lt;-</span> <span class="fu">as.data.table</span><span class="op">(</span><span class="va">se</span><span class="op">)</span></span>
 <span><span class="co">#validate the output in TreeCompR</span></span>
-<span><span class="va">inv_trees</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="va">se</span>, height <span class="op">=</span> <span class="va">Height_m</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
+<span><span class="va">inv_trees</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_inv.html">read_inv</a></span><span class="op">(</span><span class="va">inventory</span>, height <span class="op">=</span> <span class="va">Height_m</span>, height_unit <span class="op">=</span> <span class="st">"m"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  The following columns were used to create the inventory dataset:</span></span>
+<span><span class="co">#&gt;  id  --- automatically generated</span></span>
+<span><span class="co">#&gt;  x   --- X</span></span>
+<span><span class="co">#&gt;  y   --- Y</span></span>
+<span><span class="co">#&gt;  height  --- Height_m</span></span>
+<span></span>
 <span><span class="co">#quantify tree competition (adjust radius)</span></span>
 <span><span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span>inv_source <span class="op">=</span> <span class="va">inv_trees</span>, target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
-<span>            radius <span class="op">=</span> <span class="fl">13.5</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span></code></pre></div>
+<span>            radius <span class="op">=</span> <span class="fl">13.5</span>, method <span class="op">=</span> <span class="st">"all_methods"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  4 trees outside the competitive zone around the target trees were removed. 2661 trees remain.</span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;  'compete_inv' class distance-based competition index dataset</span></span>
+<span><span class="co">#&gt;  No. of target trees: 1973  Source inventory size: 2661 trees</span></span>
+<span><span class="co">#&gt;  Target source: 'buff_edge' (13.5 m)    Search radius: 13.5 m</span></span>
+<span><span class="co">#&gt;  ------------------------------------------------------------</span></span>
+<span><span class="co">#&gt;          id        x       y height CI_Braathe CI_RK3 CI_RK4</span></span>
+<span><span class="co">#&gt;     1:   51 684972.7 5017807  17.80      2.647 13.765 24.290</span></span>
+<span><span class="co">#&gt;     2:   58 684851.0 5017807  16.37      2.718 16.880 25.298</span></span>
+<span><span class="co">#&gt;     3:   59 684961.1 5017807  18.09      2.870 14.162 23.024</span></span>
+<span><span class="co">#&gt;    ---                                                      </span></span>
+<span><span class="co">#&gt;  1971: 2464 684849.5 5017992  12.48      7.512 45.653 75.752</span></span>
+<span><span class="co">#&gt;  1972: 2468 684922.8 5017992  20.12      5.681 28.961 49.241</span></span>
+<span><span class="co">#&gt;  1973: 2495 684839.2 5017992  21.96      5.172 21.985 44.906</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
