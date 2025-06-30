@@ -525,18 +525,9 @@ CI_RK1_tall <- function(target, neigh)
   CI_RK1(target, neigh[neigh$height > target$height, ])
 ```
 
-In many cases, it can e.g. be interesting to split up the contribution to the total competition by different competitor species (see [Hajek et al., 2022](https://doi.org/10.1111/gcb.16146) for an example). This can be done analogously, for example for a mixed stand of hornbeam, oak and ash:
+In many cases, it can e.g. be interesting to split up the contribution to the total competition by different competitor species (see [Hajek et al., 2022](https://doi.org/10.1111/gcb.16146) for an example). This can be done analogously, for example for a mixed stand of hornbeam, oak and ash. Please compute the species-specific competition separately after each other and not all at once (otherwise filtering problems may occur - will be fixed in the future!)
 
 ```{r index3, message=FALSE, warning=FALSE, eval=FALSE}
-# define partial index for oak
-CI_Hegyi_QURO <- function(target, neigh) 
-  CI_Hegyi(target, neigh[neigh$species == "Quercus robur", ])
-# define partial index for hornbeam
-CI_Hegyi_CABE <- function(target, neigh) 
-  CI_Hegyi(target, neigh[neigh$species == "Carpinus betulus", ])
-# define partial index for ash
-CI_Hegyi_FREC <- function(target, neigh) 
-  CI_Hegyi(target, neigh[neigh$species == "Fraxinus excelsior", ])
 
 # load complete dataset (keep rest: information about species etc is maintained)
 inv_species <- read_inv("data/inventory6.csv", keep_rest = TRUE)
@@ -555,36 +546,43 @@ form(inv_species)
 #> 596:  29388 47.928 100.059 57.913 33.186      Quercus robur
 #> 597:  29429 35.799 100.089 37.972 29.876      Quercus robur
 
+# define partial index for oak
+CI_Hegyi_QURO <- function(target, neigh) 
+  CI_Hegyi(target, neigh[neigh$species == "Quercus robur", ])
+
 
 # compute species-decomposed Hegyi
 comp_species <- compete_inv(
   inv_source = inv_species, target_source = "buff_edge", radius = 12, 
-  method = c("CI_Hegyi_QURO", "CI_Hegyi_CABE", "CI_Hegyi_FREC", "CI_Hegyi"))
-> comp_species[, c(1, 6:9)] # only show ID and indices
-#> --------------------------------------------------------------
+  method = c("CI_Hegyi", "CI_Hegyi_QURO"))
+> comp_species[, c(1, 6:7)] # only show ID and indices
+
+#> #> --------------------------------------------------------------
 #> 'compete_inv' class distance-based competition index dataset
 #> No. of target trees: 350      Source inventory size: 597 trees
 #> Target source: 'buff_edge' (12 m)          Search radius: 12 m
 #> --------------------------------------------------------------
-#>          id CI_Hegyi_QURO CI_Hegyi_CABE CI_Hegyi_FREC CI_Hegyi
-#>      <char>         <num>         <num>         <num>    <num>
-#>   1:  23028         2.604         1.164         1.005    4.773
-#>   2:  23029         2.685         1.805         1.659    6.149
-#>   3:  23030         3.319         1.213         1.961    6.493
-#>  ---                                                          
-#> 348:  28457         1.947         0.601         0.431    2.979
-#> 349:  28485         4.910         5.807         1.817   12.534
-#> 350:  28534         8.705         6.316         0.904   15.925
+#>		id	              CI_Hegyi	                  CI_Hegyi_QURO
+#>		<char>	            <num>	                      <num>
+#>	1:	23028	            4.773	                      2.604
+#>	2:	23029	            6.149	                      2.685
+#>	3:	23030	            6.493	                      3.319
+#>	---			
+#>	348: 28457	          2.979	                      1.947
+#>	349: 28485	          12.534	                    4.91
+#>	350: 28534	          15.925	                    8.705
+
+#> 
+# define partial index for other species if needed, e.g. hornbeam
+CI_Hegyi_CABE <- function(target, neigh) 
+  CI_Hegyi(target, neigh[neigh$species == "Carpinus betulus", ])
+# define partial index for ash
+CI_Hegyi_FREC <- function(target, neigh) 
+  CI_Hegyi(target, neigh[neigh$species == "Fraxinus excelsior", ])
 ```
 
-As in the plot the three species are the only species that occur, this constitutes a full decomposition of the Hegyi index into the contributions of different competitor species:
 
-```{r index3a, message=FALSE, warning=FALSE, eval=FALSE}
-# test if the decomposition worked
-with(comp_species, 
-     all.equal(CI_Hegyi_QURO + CI_Hegyi_CABE + CI_Hegyi_FREC, CI_Hegyi))
-#> [1] TRUE
-```
+
 
 As species-specific directed interaction are likely very common among competing tree species, such a decomposition may often be more beneficial for understanding competition between trees than looking at the overall effect of competition. 
 
