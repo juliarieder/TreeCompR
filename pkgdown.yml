@@ -1,5 +1,5 @@
 pandoc: 3.1.11
-pkgdown: 2.1.1
+pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   ALS_inventory: ALS_inventory.html
@@ -7,7 +7,7 @@ articles:
   competition-pointcloud: competition-pointcloud.html
   TLS_inventory: TLS_inventory.html
   TreeCompR: TreeCompR.html
-last_built: 2024-10-23T14:25Z
+last_built: 2025-06-30T11:15Z
 urls:
   reference: https://juliarieder.github.io/TreeCompR/reference
   article: https://juliarieder.github.io/TreeCompR/articles

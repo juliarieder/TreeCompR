@@ -6,16 +6,15 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Quantifying competition from inventory data • TreeCompR</title>
-<!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
-<link rel="apple-touch-icon" type="image/png" sizes="180x180" href="../apple-touch-icon.png">
-<link rel="apple-touch-icon" type="image/png" sizes="120x120" href="../apple-touch-icon-120x120.png">
-<link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
-<link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
+<link rel="icon" sizes="any" href="../favicon.ico">
+<link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Quantifying competition from inventory data">
 </head>
 <body>
@@ -577,7 +576,7 @@ is desired <em>before</em> computing the results (which is certainly a
 good idea for large datasets).</p>
 <p>To identify the neighbor trees within the search radius of each
 target tree, <code><a href="../reference/compete_inv.html">compete_inv()</a></code>uses the function
-<code>knn()</code> from package <a href="https://github.com/jefferis/nabor" class="external-link">nabor</a> that is based on a
+<code><a href="https://rdrr.io/pkg/lidR/man/knn.html" class="external-link">knn()</a></code> from package <a href="https://github.com/jefferis/nabor" class="external-link">nabor</a> that is based on a
 very efficient C++ implementation of the k-nearest neighbor algorithm
 from <a href="https://github.com/norlab-ulaval/libnabo" class="external-link">libnabo</a>.
 This makes it possible to deal with very large inventory datasets in a
@@ -818,62 +817,60 @@ tree:</p>
 contribution to the total competition by different competitor species
 (see <a href="https://doi.org/10.1111/gcb.16146" class="external-link">Hajek et al., 2022</a>
 for an example). This can be done analogously, for example for a mixed
-stand of hornbeam, oak and ash:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="co"># define partial index for oak</span></span>
-<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a>CI_Hegyi_QURO <span class="ot">&lt;-</span> <span class="cf">function</span>(target, neigh) </span>
-<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>  <span class="fu">CI_Hegyi</span>(target, neigh[neigh<span class="sc">$</span>species <span class="sc">==</span> <span class="st">"Quercus robur"</span>, ])</span>
-<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a><span class="co"># define partial index for hornbeam</span></span>
-<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a>CI_Hegyi_CABE <span class="ot">&lt;-</span> <span class="cf">function</span>(target, neigh) </span>
-<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a>  <span class="fu">CI_Hegyi</span>(target, neigh[neigh<span class="sc">$</span>species <span class="sc">==</span> <span class="st">"Carpinus betulus"</span>, ])</span>
-<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a><span class="co"># define partial index for ash</span></span>
-<span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a>CI_Hegyi_FREC <span class="ot">&lt;-</span> <span class="cf">function</span>(target, neigh) </span>
-<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a>  <span class="fu">CI_Hegyi</span>(target, neigh[neigh<span class="sc">$</span>species <span class="sc">==</span> <span class="st">"Fraxinus excelsior"</span>, ])</span>
-<span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a></span>
-<span id="cb23-11"><a href="#cb23-11" tabindex="-1"></a><span class="co"># load complete dataset (keep rest: information about species etc is maintained)</span></span>
-<span id="cb23-12"><a href="#cb23-12" tabindex="-1"></a>inv_species <span class="ot">&lt;-</span> <span class="fu">read_inv</span>(<span class="st">"data/inventory6.csv"</span>, <span class="at">keep_rest =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb23-13"><a href="#cb23-13" tabindex="-1"></a><span class="fu">form</span>(inv_species)</span>
-<span id="cb23-14"><a href="#cb23-14" tabindex="-1"></a><span class="co">#&gt; -----------------------------------------------------------</span></span>
-<span id="cb23-15"><a href="#cb23-15" tabindex="-1"></a><span class="co">#&gt; 'forest_inv' class inventory dataset</span></span>
-<span id="cb23-16"><a href="#cb23-16" tabindex="-1"></a><span class="co">#&gt; No. of obs.: 597                       No. of data cols.: 3</span></span>
-<span id="cb23-17"><a href="#cb23-17" tabindex="-1"></a><span class="co">#&gt; -----------------------------------------------------------</span></span>
-<span id="cb23-18"><a href="#cb23-18" tabindex="-1"></a><span class="co">#&gt;          id      x       y    dbh height            species</span></span>
-<span id="cb23-19"><a href="#cb23-19" tabindex="-1"></a><span class="co">#&gt;      &lt;char&gt;  &lt;num&gt;   &lt;num&gt;  &lt;num&gt;  &lt;num&gt;             &lt;char&gt;</span></span>
-<span id="cb23-20"><a href="#cb23-20" tabindex="-1"></a><span class="co">#&gt;   1:  22059  7.077   0.187 39.001 31.559      Quercus robur</span></span>
-<span id="cb23-21"><a href="#cb23-21" tabindex="-1"></a><span class="co">#&gt;   2:  22061 18.967   0.518 42.586 32.799 Fraxinus excelsior</span></span>
-<span id="cb23-22"><a href="#cb23-22" tabindex="-1"></a><span class="co">#&gt;   3:  22062 27.169   0.647  3.440  6.623      Quercus robur</span></span>
-<span id="cb23-23"><a href="#cb23-23" tabindex="-1"></a><span class="co">#&gt;  ---                                                       </span></span>
-<span id="cb23-24"><a href="#cb23-24" tabindex="-1"></a><span class="co">#&gt; 595:  29263  8.327  98.759 41.372 36.088      Quercus robur</span></span>
-<span id="cb23-25"><a href="#cb23-25" tabindex="-1"></a><span class="co">#&gt; 596:  29388 47.928 100.059 57.913 33.186      Quercus robur</span></span>
-<span id="cb23-26"><a href="#cb23-26" tabindex="-1"></a><span class="co">#&gt; 597:  29429 35.799 100.089 37.972 29.876      Quercus robur</span></span>
-<span id="cb23-27"><a href="#cb23-27" tabindex="-1"></a></span>
-<span id="cb23-28"><a href="#cb23-28" tabindex="-1"></a></span>
-<span id="cb23-29"><a href="#cb23-29" tabindex="-1"></a><span class="co"># compute species-decomposed Hegyi</span></span>
-<span id="cb23-30"><a href="#cb23-30" tabindex="-1"></a>comp_species <span class="ot">&lt;-</span> <span class="fu">compete_inv</span>(</span>
-<span id="cb23-31"><a href="#cb23-31" tabindex="-1"></a>  <span class="at">inv_source =</span> inv_species, <span class="at">target_source =</span> <span class="st">"buff_edge"</span>, <span class="at">radius =</span> <span class="dv">12</span>, </span>
-<span id="cb23-32"><a href="#cb23-32" tabindex="-1"></a>  <span class="at">method =</span> <span class="fu">c</span>(<span class="st">"CI_Hegyi_QURO"</span>, <span class="st">"CI_Hegyi_CABE"</span>, <span class="st">"CI_Hegyi_FREC"</span>, <span class="st">"CI_Hegyi"</span>))</span>
-<span id="cb23-33"><a href="#cb23-33" tabindex="-1"></a><span class="sc">&gt;</span> comp_species[, <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">6</span><span class="sc">:</span><span class="dv">9</span>)] <span class="co"># only show ID and indices</span></span>
+stand of hornbeam, oak and ash. Please compute the species-specific
+competition separately after each other and not all at once (otherwise
+filtering problems may occur - will be fixed in the future!)</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a></span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a><span class="co"># load complete dataset (keep rest: information about species etc is maintained)</span></span>
+<span id="cb23-3"><a href="#cb23-3" tabindex="-1"></a>inv_species <span class="ot">&lt;-</span> <span class="fu">read_inv</span>(<span class="st">"data/inventory6.csv"</span>, <span class="at">keep_rest =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-4"><a href="#cb23-4" tabindex="-1"></a><span class="fu">form</span>(inv_species)</span>
+<span id="cb23-5"><a href="#cb23-5" tabindex="-1"></a><span class="co">#&gt; -----------------------------------------------------------</span></span>
+<span id="cb23-6"><a href="#cb23-6" tabindex="-1"></a><span class="co">#&gt; 'forest_inv' class inventory dataset</span></span>
+<span id="cb23-7"><a href="#cb23-7" tabindex="-1"></a><span class="co">#&gt; No. of obs.: 597                       No. of data cols.: 3</span></span>
+<span id="cb23-8"><a href="#cb23-8" tabindex="-1"></a><span class="co">#&gt; -----------------------------------------------------------</span></span>
+<span id="cb23-9"><a href="#cb23-9" tabindex="-1"></a><span class="co">#&gt;          id      x       y    dbh height            species</span></span>
+<span id="cb23-10"><a href="#cb23-10" tabindex="-1"></a><span class="co">#&gt;      &lt;char&gt;  &lt;num&gt;   &lt;num&gt;  &lt;num&gt;  &lt;num&gt;             &lt;char&gt;</span></span>
+<span id="cb23-11"><a href="#cb23-11" tabindex="-1"></a><span class="co">#&gt;   1:  22059  7.077   0.187 39.001 31.559      Quercus robur</span></span>
+<span id="cb23-12"><a href="#cb23-12" tabindex="-1"></a><span class="co">#&gt;   2:  22061 18.967   0.518 42.586 32.799 Fraxinus excelsior</span></span>
+<span id="cb23-13"><a href="#cb23-13" tabindex="-1"></a><span class="co">#&gt;   3:  22062 27.169   0.647  3.440  6.623      Quercus robur</span></span>
+<span id="cb23-14"><a href="#cb23-14" tabindex="-1"></a><span class="co">#&gt;  ---                                                       </span></span>
+<span id="cb23-15"><a href="#cb23-15" tabindex="-1"></a><span class="co">#&gt; 595:  29263  8.327  98.759 41.372 36.088      Quercus robur</span></span>
+<span id="cb23-16"><a href="#cb23-16" tabindex="-1"></a><span class="co">#&gt; 596:  29388 47.928 100.059 57.913 33.186      Quercus robur</span></span>
+<span id="cb23-17"><a href="#cb23-17" tabindex="-1"></a><span class="co">#&gt; 597:  29429 35.799 100.089 37.972 29.876      Quercus robur</span></span>
+<span id="cb23-18"><a href="#cb23-18" tabindex="-1"></a></span>
+<span id="cb23-19"><a href="#cb23-19" tabindex="-1"></a><span class="co"># define partial index for oak</span></span>
+<span id="cb23-20"><a href="#cb23-20" tabindex="-1"></a>CI_Hegyi_QURO <span class="ot">&lt;-</span> <span class="cf">function</span>(target, neigh) </span>
+<span id="cb23-21"><a href="#cb23-21" tabindex="-1"></a>  <span class="fu">CI_Hegyi</span>(target, neigh[neigh<span class="sc">$</span>species <span class="sc">==</span> <span class="st">"Quercus robur"</span>, ])</span>
+<span id="cb23-22"><a href="#cb23-22" tabindex="-1"></a></span>
+<span id="cb23-23"><a href="#cb23-23" tabindex="-1"></a></span>
+<span id="cb23-24"><a href="#cb23-24" tabindex="-1"></a><span class="co"># compute species-decomposed Hegyi</span></span>
+<span id="cb23-25"><a href="#cb23-25" tabindex="-1"></a>comp_species <span class="ot">&lt;-</span> <span class="fu">compete_inv</span>(</span>
+<span id="cb23-26"><a href="#cb23-26" tabindex="-1"></a>  <span class="at">inv_source =</span> inv_species, <span class="at">target_source =</span> <span class="st">"buff_edge"</span>, <span class="at">radius =</span> <span class="dv">12</span>, </span>
+<span id="cb23-27"><a href="#cb23-27" tabindex="-1"></a>  <span class="at">method =</span> <span class="fu">c</span>(<span class="st">"CI_Hegyi"</span>, <span class="st">"CI_Hegyi_QURO"</span>))</span>
+<span id="cb23-28"><a href="#cb23-28" tabindex="-1"></a><span class="sc">&gt;</span> comp_species[, <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">6</span><span class="sc">:</span><span class="dv">7</span>)] <span class="co"># only show ID and indices</span></span>
+<span id="cb23-29"><a href="#cb23-29" tabindex="-1"></a></span>
+<span id="cb23-30"><a href="#cb23-30" tabindex="-1"></a><span class="co">#&gt; #&gt; --------------------------------------------------------------</span></span>
+<span id="cb23-31"><a href="#cb23-31" tabindex="-1"></a><span class="co">#&gt; 'compete_inv' class distance-based competition index dataset</span></span>
+<span id="cb23-32"><a href="#cb23-32" tabindex="-1"></a><span class="co">#&gt; No. of target trees: 350      Source inventory size: 597 trees</span></span>
+<span id="cb23-33"><a href="#cb23-33" tabindex="-1"></a><span class="co">#&gt; Target source: 'buff_edge' (12 m)          Search radius: 12 m</span></span>
 <span id="cb23-34"><a href="#cb23-34" tabindex="-1"></a><span class="co">#&gt; --------------------------------------------------------------</span></span>
-<span id="cb23-35"><a href="#cb23-35" tabindex="-1"></a><span class="co">#&gt; 'compete_inv' class distance-based competition index dataset</span></span>
-<span id="cb23-36"><a href="#cb23-36" tabindex="-1"></a><span class="co">#&gt; No. of target trees: 350      Source inventory size: 597 trees</span></span>
-<span id="cb23-37"><a href="#cb23-37" tabindex="-1"></a><span class="co">#&gt; Target source: 'buff_edge' (12 m)          Search radius: 12 m</span></span>
-<span id="cb23-38"><a href="#cb23-38" tabindex="-1"></a><span class="co">#&gt; --------------------------------------------------------------</span></span>
-<span id="cb23-39"><a href="#cb23-39" tabindex="-1"></a><span class="co">#&gt;          id CI_Hegyi_QURO CI_Hegyi_CABE CI_Hegyi_FREC CI_Hegyi</span></span>
-<span id="cb23-40"><a href="#cb23-40" tabindex="-1"></a><span class="co">#&gt;      &lt;char&gt;         &lt;num&gt;         &lt;num&gt;         &lt;num&gt;    &lt;num&gt;</span></span>
-<span id="cb23-41"><a href="#cb23-41" tabindex="-1"></a><span class="co">#&gt;   1:  23028         2.604         1.164         1.005    4.773</span></span>
-<span id="cb23-42"><a href="#cb23-42" tabindex="-1"></a><span class="co">#&gt;   2:  23029         2.685         1.805         1.659    6.149</span></span>
-<span id="cb23-43"><a href="#cb23-43" tabindex="-1"></a><span class="co">#&gt;   3:  23030         3.319         1.213         1.961    6.493</span></span>
-<span id="cb23-44"><a href="#cb23-44" tabindex="-1"></a><span class="co">#&gt;  ---                                                          </span></span>
-<span id="cb23-45"><a href="#cb23-45" tabindex="-1"></a><span class="co">#&gt; 348:  28457         1.947         0.601         0.431    2.979</span></span>
-<span id="cb23-46"><a href="#cb23-46" tabindex="-1"></a><span class="co">#&gt; 349:  28485         4.910         5.807         1.817   12.534</span></span>
-<span id="cb23-47"><a href="#cb23-47" tabindex="-1"></a><span class="co">#&gt; 350:  28534         8.705         6.316         0.904   15.925</span></span></code></pre></div>
-<p>As in the plot the three species are the only species that occur,
-this constitutes a full decomposition of the Hegyi index into the
-contributions of different competitor species:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># test if the decomposition worked</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">comp_species</span>, </span>
-<span>     <span class="fu"><a href="https://rdrr.io/r/base/all.equal.html" class="external-link">all.equal</a></span><span class="op">(</span><span class="va">CI_Hegyi_QURO</span> <span class="op">+</span> <span class="va">CI_Hegyi_CABE</span> <span class="op">+</span> <span class="va">CI_Hegyi_FREC</span>, <span class="va">CI_Hegyi</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] TRUE</span></span></code></pre></div>
+<span id="cb23-35"><a href="#cb23-35" tabindex="-1"></a><span class="co">#&gt;      id                CI_Hegyi                    CI_Hegyi_QURO</span></span>
+<span id="cb23-36"><a href="#cb23-36" tabindex="-1"></a><span class="co">#&gt;      &lt;char&gt;              &lt;num&gt;                         &lt;num&gt;</span></span>
+<span id="cb23-37"><a href="#cb23-37" tabindex="-1"></a><span class="co">#&gt;  1:  23028               4.773                         2.604</span></span>
+<span id="cb23-38"><a href="#cb23-38" tabindex="-1"></a><span class="co">#&gt;  2:  23029               6.149                         2.685</span></span>
+<span id="cb23-39"><a href="#cb23-39" tabindex="-1"></a><span class="co">#&gt;  3:  23030               6.493                         3.319</span></span>
+<span id="cb23-40"><a href="#cb23-40" tabindex="-1"></a><span class="co">#&gt;  ---         </span></span>
+<span id="cb23-41"><a href="#cb23-41" tabindex="-1"></a><span class="co">#&gt;  348: 28457            2.979                       1.947</span></span>
+<span id="cb23-42"><a href="#cb23-42" tabindex="-1"></a><span class="co">#&gt;  349: 28485            12.534                        4.91</span></span>
+<span id="cb23-43"><a href="#cb23-43" tabindex="-1"></a><span class="co">#&gt;  350: 28534            15.925                        8.705</span></span>
+<span id="cb23-44"><a href="#cb23-44" tabindex="-1"></a></span>
+<span id="cb23-45"><a href="#cb23-45" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb23-46"><a href="#cb23-46" tabindex="-1"></a><span class="co"># define partial index for other species if needed, e.g. hornbeam</span></span>
+<span id="cb23-47"><a href="#cb23-47" tabindex="-1"></a>CI_Hegyi_CABE <span class="ot">&lt;-</span> <span class="cf">function</span>(target, neigh) </span>
+<span id="cb23-48"><a href="#cb23-48" tabindex="-1"></a>  <span class="fu">CI_Hegyi</span>(target, neigh[neigh<span class="sc">$</span>species <span class="sc">==</span> <span class="st">"Carpinus betulus"</span>, ])</span>
+<span id="cb23-49"><a href="#cb23-49" tabindex="-1"></a><span class="co"># define partial index for ash</span></span>
+<span id="cb23-50"><a href="#cb23-50" tabindex="-1"></a>CI_Hegyi_FREC <span class="ot">&lt;-</span> <span class="cf">function</span>(target, neigh) </span>
+<span id="cb23-51"><a href="#cb23-51" tabindex="-1"></a>  <span class="fu">CI_Hegyi</span>(target, neigh[neigh<span class="sc">$</span>species <span class="sc">==</span> <span class="st">"Fraxinus excelsior"</span>, ])</span></code></pre></div>
 <p>As species-specific directed interaction are likely very common among
 competing tree species, such a decomposition may often be more
 beneficial for understanding competition between trees than looking at
@@ -899,7 +896,7 @@ in <code>options("cores")[[1]]</code>. If this value is
 <code>⁠parallel::detectCores()</code> to detect the number of cores.</p>
 <p>An example running <code><a href="../reference/compete_inv.html">compete_inv()</a></code> on 8 processor cores
 for a large dataset is provided here:</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">large_inv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/compete_inv.html">compete_inv</a></span><span class="op">(</span></span>
 <span>  inv_source <span class="op">=</span> <span class="st">"data/very_large_inv.csv"</span>, </span>
 <span>  target_source <span class="op">=</span> <span class="st">"buff_edge"</span>, </span>
@@ -928,7 +925,7 @@ analysis into chunks that are analyzed separately.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
